@@ -1,0 +1,11 @@
+.gradle/*
+build/*
+*.iml
+.idea/*
+local.properties
+secrets.properties
+keys/*
+test/*
+androidTest/*
+docs/*
+*/resources/*
