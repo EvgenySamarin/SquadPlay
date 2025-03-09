@@ -1,6 +1,8 @@
 package com.eysamarin.squadplay
 
 import android.app.Application
+import com.eysamarin.squadplay.domain.CalendarUIProvider
+import com.eysamarin.squadplay.domain.CalendarUIProviderImpl
 import com.eysamarin.squadplay.screens.main_screen.MainScreenViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -10,6 +12,7 @@ import org.koin.dsl.module
 
 class SquadPlayApplication : Application() {
     val appModule = module {
+        single<CalendarUIProvider> { CalendarUIProviderImpl() }
         viewModelOf(::MainScreenViewModel)
     }
 

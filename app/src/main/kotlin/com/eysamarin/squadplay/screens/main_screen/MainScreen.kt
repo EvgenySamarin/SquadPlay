@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -129,6 +130,7 @@ private fun MainScreenMediumLayout(
             onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
             onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) }
         ) { onAction(MainScreenAction.OnDateTap(it)) }
+        HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
     }
 }
 

@@ -44,6 +44,7 @@ android {
 
 dependencies {
     implementation(project(":models"))
+    implementation(project(":domain"))
 
     implementation(libs.io.insert.koin.compose)
     implementation(libs.androidx.core.ktx)

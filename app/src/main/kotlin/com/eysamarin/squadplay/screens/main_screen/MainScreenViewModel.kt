@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.screens.main_screen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.domain.CalendarUIProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PollingDialogUI
@@ -10,31 +11,22 @@ import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
-import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.TextStyle
-import java.util.Locale
 
-class MainScreenViewModel : ViewModel() {
+class MainScreenViewModel(
+    private val calendarUIProvider: CalendarUIProvider,
+) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
     private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
     val pollingDialogState = _pollingDialogState.asStateFlow()
 
-    private val dataSource by lazy { CalendarDataSource() }
-    private val daysOfWeek: List<String> by lazy {
-        val daysOfWeek = mutableListOf<String>()
-
-        for (dayOfWeek in DayOfWeek.entries) {
-            val localizedDayName = dayOfWeek.getDisplayName(
-                TextStyle.SHORT, Locale.getDefault(),
-            )
-            daysOfWeek.add(localizedDayName)
+    init {
+        viewModelScope.launch {
+            val calendarState = calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
+            updateMainScreenUI(MainScreenUI(calendarUI = calendarState))
         }
-
-        daysOfWeek
     }
 
     private fun updateMainScreenUI(updatedMainScreenUI: MainScreenUI) = viewModelScope.launch {
@@ -45,34 +37,34 @@ class MainScreenViewModel : ViewModel() {
     fun onNextMonthTap(nextMonth: YearMonth) {
         Log.d("TAG", "onNextMonthTap: $nextMonth")
 
-        val newDates = dataSource.getDates(nextMonth)
-        val newMainScreenUI = MainScreenUI(
-            calendarUI = CalendarUI(
-                daysOfWeek = daysOfWeek,
-                yearMonth = nextMonth,
-                dates = newDates
-            )
-        )
+        val nextMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = nextMonth)
+        val newMainScreenUI = MainScreenUI(calendarUI = nextMonthCalendarUI)
         updateMainScreenUI(newMainScreenUI)
     }
 
     fun onPreviousMonthTap(prevMonth: YearMonth) {
         Log.d("TAG", "onPreviousMonthTap: $prevMonth")
 
-        val newDates = dataSource.getDates(prevMonth)
-        val newMainScreenUI = MainScreenUI(
-            calendarUI = CalendarUI(
-                daysOfWeek = daysOfWeek,
-                yearMonth = prevMonth,
-                dates = newDates
-            )
-        )
+        val prevMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = prevMonth)
+        val newMainScreenUI = MainScreenUI(calendarUI = prevMonthCalendarUI)
         updateMainScreenUI(newMainScreenUI)
     }
 
-    fun onDateTap(date: CalendarUI.Date) = viewModelScope.launch{
+    fun onDateTap(date: CalendarUI.Date) = viewModelScope.launch {
         Log.d("TAG", "onDateTap: $date, showing polling dialog")
         _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = date)))
+
+        val currentMainScreenUI = (uiState.value as? UiState.Normal<MainScreenUI>)?.data
+        if (currentMainScreenUI == null) {
+            Log.w("TAG", "current UI cannot be updated since of no data")
+            return@launch
+        }
+
+        val updatedCalendarUI = calendarUIProvider.updateCalendarBySelectedDate(
+            target = currentMainScreenUI.calendarUI,
+            selectedDate = date,
+        )
+        updateMainScreenUI(currentMainScreenUI.copy(calendarUI = updatedCalendarUI))
     }
 
     fun dismissPolingDialog() = viewModelScope.launch {
@@ -83,45 +75,5 @@ class MainScreenViewModel : ViewModel() {
 
     fun onPollingStartTap() {
         Log.d("TAG", "onPollingStartTap")
-    }
-
-    init {
-        viewModelScope.launch {
-            val yearMonth = YearMonth.now()
-            val dates = dataSource.getDates(yearMonth)
-            val calendarState = CalendarUI(
-                daysOfWeek = daysOfWeek,
-                yearMonth = yearMonth,
-                dates = dates
-            )
-
-            updateMainScreenUI(MainScreenUI(calendarUI = calendarState))
-        }
-    }
-}
-
-class CalendarDataSource {
-    fun YearMonth.getDayOfMonthStartingFromMonday(): List<LocalDate> {
-        val firstDayOfMonth = LocalDate.of(year, month, 1)
-        val firstMondayOfMonth = firstDayOfMonth.with(DayOfWeek.MONDAY)
-        val firstDayOfNextMonth = firstDayOfMonth.plusMonths(1)
-
-        return generateSequence(firstMondayOfMonth) { it.plusDays(1) }
-            .takeWhile { it.isBefore(firstDayOfNextMonth) }
-            .toList()
-    }
-
-    fun getDates(yearMonth: YearMonth): List<CalendarUI.Date> {
-        return yearMonth.getDayOfMonthStartingFromMonday()
-            .map { date ->
-                CalendarUI.Date(
-                    dayOfMonth = if (date.monthValue == yearMonth.monthValue) {
-                        "${date.dayOfMonth}"
-                    } else {
-                        "" // Fill with empty string for days outside the current month
-                    },
-                    isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue
-                )
-            }
     }
 }

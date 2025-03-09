@@ -5,26 +5,35 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.PREVIEW_CALENDAR_UI
+import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
+import com.eysamarin.squadplay.ui.squircle.SquircleShape
+import com.eysamarin.squadplay.ui.theme.Accent
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
+import com.eysamarin.squadplay.ui.theme.SecondaryFont
 import com.eysamarin.squadplay.ui.theme.getAdaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.getAdaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.getAdaptiveTitleByHeight
+import com.eysamarin.squadplay.ui.theme.OnAccent
+import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import java.time.YearMonth
 
 @Composable
@@ -62,7 +71,7 @@ fun WeekDayItem(day: String, modifier: Modifier = Modifier, windowSize: WindowSi
         Text(
             text = day,
             style = getAdaptiveLabelByHeight(windowSize),
-            color = PrimaryFont,
+            color = SecondaryFont,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(10.dp)
@@ -137,24 +146,44 @@ fun ContentItem(
 ) {
     Box(
         modifier = modifier
+            .clip(
+                SquircleShape(
+                    cornerSmoothing = CornerSmoothing.Small
+                )
+            )
             .background(
                 color = if (date.isSelected) {
-                    MaterialTheme.colorScheme.secondaryContainer
+                    Accent
                 } else {
                     Color.Transparent
                 }
             )
-            .clickable {
+            .clickable(enabled = date.dayOfMonth.isNotBlank()) {
                 onItemTap(date)
             }
     ) {
         Text(
             text = date.dayOfMonth,
-            color = PrimaryFont,
+            color = if(date.isSelected) OnAccent else PrimaryFont,
             style = getAdaptiveBodyByHeight(windowSize),
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(10.dp)
+        )
+    }
+}
+
+@PhonePreview
+@Composable
+fun CalendarPreview() {
+    Column {
+        Spacer(Modifier.padding(top = 24.dp))
+        Calendar(
+            ui = PREVIEW_CALENDAR_UI,
+            windowSize = WINDOWS_SIZE_MEDIUM,
+            onPreviousMonthTap = { },
+            onNextMonthTap = { },
+            onDateTap = { }
         )
     }
 }
