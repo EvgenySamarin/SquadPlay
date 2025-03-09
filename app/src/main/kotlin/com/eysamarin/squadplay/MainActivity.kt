@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
+import org.koin.androidx.compose.KoinAndroidContext
 
 class MainActivity : ComponentActivity() {
 
@@ -20,7 +21,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             SquadPlayTheme {
                 val windowSize = calculateWindowSizeClass(this)
-                SquadPlayApp(windowSize)
+                KoinAndroidContext {
+                    SquadPlayApp(windowSize)
+                }
             }
         }
     }

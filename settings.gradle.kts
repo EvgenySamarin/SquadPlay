@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SquadPlay"
 include(":app")
+include(":models")

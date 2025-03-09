@@ -7,6 +7,25 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+
+fun getAdaptiveHeadlineByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+    return when (windowSizeClass.heightSizeClass) {
+        WindowHeightSizeClass.Expanded -> Typography.headlineLarge
+        WindowHeightSizeClass.Medium -> Typography.headlineMedium
+        WindowHeightSizeClass.Compact -> Typography.headlineSmall
+        else -> Typography.headlineMedium
+    }
+}
+
+fun getAdaptiveTitleByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+    return when (windowSizeClass.heightSizeClass) {
+        WindowHeightSizeClass.Expanded -> Typography.titleLarge
+        WindowHeightSizeClass.Medium -> Typography.titleMedium
+        WindowHeightSizeClass.Compact -> Typography.titleSmall
+        else -> Typography.titleMedium
+    }
+}
+
 fun getAdaptiveLabelByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     return when (windowSizeClass.heightSizeClass) {
         WindowHeightSizeClass.Expanded -> Typography.labelLarge
