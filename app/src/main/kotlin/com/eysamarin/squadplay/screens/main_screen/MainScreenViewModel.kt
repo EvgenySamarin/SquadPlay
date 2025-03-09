@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
+import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,9 +20,11 @@ class MainScreenViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val dataSource by lazy { CalendarDataSource() }
+    private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
+    val pollingDialogState = _pollingDialogState.asStateFlow()
 
-    val daysOfWeek: List<String> by lazy {
+    private val dataSource by lazy { CalendarDataSource() }
+    private val daysOfWeek: List<String> by lazy {
         val daysOfWeek = mutableListOf<String>()
 
         for (dayOfWeek in DayOfWeek.entries) {
@@ -67,8 +70,19 @@ class MainScreenViewModel : ViewModel() {
         updateMainScreenUI(newMainScreenUI)
     }
 
-    fun onDateTap(date: CalendarUI.Date) {
-        Log.d("TAG", "onDateTap: $date")
+    fun onDateTap(date: CalendarUI.Date) = viewModelScope.launch{
+        Log.d("TAG", "onDateTap: $date, showing polling dialog")
+        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = date)))
+    }
+
+    fun dismissPolingDialog() = viewModelScope.launch {
+        Log.d("TAG", "dismissPolingDialog")
+
+        _pollingDialogState.emit(UiState.Empty)
+    }
+
+    fun onPollingStartTap() {
+        Log.d("TAG", "onPollingStartTap")
     }
 
     init {

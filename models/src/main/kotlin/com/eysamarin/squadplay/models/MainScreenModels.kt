@@ -3,6 +3,8 @@ package com.eysamarin.squadplay.models
 import java.time.YearMonth
 
 sealed interface MainScreenAction {
+    object OnDismissPolingDialog: MainScreenAction
+    object OnPollingStartTap: MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnDateTap(val date: CalendarUI.Date) : MainScreenAction
@@ -27,6 +29,10 @@ data class CalendarUI(
         }
     }
 }
+
+data class PollingDialogUI(
+    val selectedDate: CalendarUI.Date,
+)
 
 val PREVIEW_MAIN_SCREEN_UI = MainScreenUI(
     calendarUI = CalendarUI(

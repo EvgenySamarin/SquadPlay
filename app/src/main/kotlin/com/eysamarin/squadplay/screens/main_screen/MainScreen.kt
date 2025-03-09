@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
@@ -31,6 +33,7 @@ import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
+import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
@@ -40,6 +43,7 @@ import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient2
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient3
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
+import com.eysamarin.squadplay.ui.theme.getAdaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.getAdaptiveHeadlineByHeight
 import com.eysamarin.squadplay.utils.PhonePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
@@ -52,6 +56,7 @@ import com.eysamarin.squadplay.utils.WearPreview
 @Composable
 fun MainScreen(
     state: UiState<MainScreenUI>,
+    pollingDialogState: UiState<PollingDialogUI>,
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (MainScreenAction) -> Unit
 ) {
@@ -75,6 +80,33 @@ fun MainScreen(
             }
         }
     )
+
+
+    if (pollingDialogState is UiState.Normal<PollingDialogUI>) {
+        ModalBottomSheet(onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) }) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Polling dialog with date: ${pollingDialogState.data.selectedDate}",
+                    style = getAdaptiveBodyByHeight(windowSize),
+                    color = PrimaryFont,
+                )
+                Button(
+                    onClick = { onAction(MainScreenAction.OnPollingStartTap) }
+                ) {
+                    Text(
+                        text = "Start polling",
+                        style = getAdaptiveBodyByHeight(windowSize),
+                        color = PrimaryFont,
+                    )
+                }
+            }
+
+        }
+    }
 }
 
 @Composable
@@ -116,7 +148,7 @@ private fun MainScreenExpandedLayout(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
-        )  {
+        ) {
             item {
                 Calendar(
                     ui = state.data.calendarUI,
@@ -208,6 +240,7 @@ fun MainScreenTabletPreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
+            pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_EXPANDED,
             onAction = {},
         )
@@ -220,7 +253,7 @@ fun MainScreenPhonePreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            windowSize = WINDOWS_SIZE_MEDIUM,
+            pollingDialogState = UiState.Empty,
             onAction = {},
         )
     }
@@ -232,6 +265,7 @@ fun MainScreenWearPreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
+            pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_COMPACT,
             onAction = {},
         )
