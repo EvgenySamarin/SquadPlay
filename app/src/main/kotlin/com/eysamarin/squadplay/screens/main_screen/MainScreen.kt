@@ -4,19 +4,22 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -25,16 +28,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.models.MainScreenAction
+import com.eysamarin.squadplay.models.MainScreenUI
+import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
+import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.PrimaryFont
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
-import com.eysamarin.squadplay.ui.theme.getAdaptiveBodyByHeight
-import com.eysamarin.squadplay.ui.theme.getAdaptiveHeadlineByHeight
-import com.eysamarin.squadplay.ui.theme.getAdaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient1
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient2
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient3
+import com.eysamarin.squadplay.ui.theme.PrimaryFont
+import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
+import com.eysamarin.squadplay.ui.theme.getAdaptiveHeadlineByHeight
 import com.eysamarin.squadplay.utils.PhonePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_EXPANDED
@@ -45,11 +51,11 @@ import com.eysamarin.squadplay.utils.WearPreview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    state: MainUIState,
+    state: UiState<MainScreenUI>,
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
+    onAction: (MainScreenAction) -> Unit
 ) {
     Scaffold(
-        topBar = { SquadPlayTopBar(windowSize, state) },
         content = { innerPadding ->
             Box(
                 modifier = Modifier
@@ -58,9 +64,13 @@ fun MainScreen(
             ) {
                 when (windowSize.widthSizeClass) {
                     WindowWidthSizeClass.Compact,
-                    WindowWidthSizeClass.Medium -> MainScreenMediumLayout(state, windowSize)
+                    WindowWidthSizeClass.Medium -> MainScreenMediumLayout(
+                        state, windowSize, onAction
+                    )
 
-                    WindowWidthSizeClass.Expanded -> MainScreenExpandedLayout(state, windowSize)
+                    WindowWidthSizeClass.Expanded -> MainScreenExpandedLayout(
+                        state, windowSize, onAction
+                    )
                 }
             }
         }
@@ -69,62 +79,80 @@ fun MainScreen(
 
 @Composable
 private fun MainScreenMediumLayout(
-    state: MainUIState,
-    windowSize: WindowSizeClass
+    state: UiState<MainScreenUI>,
+    windowSize: WindowSizeClass,
+    onAction: (MainScreenAction) -> Unit = {},
 ) {
+    if (state !is UiState.Normal) return
+
     Column(
         modifier = Modifier
             .padding(16.dp)
-            .fillMaxHeight()
+            .fillMaxSize()
     ) {
-        Column {
-            Text(
-                text = state.body,
-                style = getAdaptiveBodyByHeight(windowSize),
-                color = PrimaryFont
-            )
-            Text(
-                text = state.label,
-                style = getAdaptiveLabelByHeight(windowSize),
-                color = PrimaryFont
-            )
-        }
+        GreetingBar(windowSize, state)
+        Calendar(
+            ui = state.data.calendarUI,
+            windowSize = windowSize,
+            onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
+            onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) }
+        ) { onAction(MainScreenAction.OnDateTap(it)) }
     }
 }
 
 @Composable
 private fun MainScreenExpandedLayout(
-    state: MainUIState,
-    windowSize: WindowSizeClass
+    state: UiState<MainScreenUI>,
+    windowSize: WindowSizeClass,
+    onAction: (MainScreenAction) -> Unit = {},
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(16.dp)
-    ) {
-        Text(state.body, style = getAdaptiveBodyByHeight(windowSize))
-        Text(state.label, style = getAdaptiveLabelByHeight(windowSize))
+    if (state !is UiState.Normal) return
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        GreetingBar(windowSize, state)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        )  {
+            item {
+                Calendar(
+                    ui = state.data.calendarUI,
+                    windowSize = windowSize,
+                    onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
+                    onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) },
+                    onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
+                )
+            }
+        }
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun SquadPlayTopBar(
+private fun GreetingBar(
     windowSize: WindowSizeClass,
-    state: MainUIState
+    state: UiState<MainScreenUI>,
 ) {
+    if (state !is UiState.Normal) return
+
     if (windowSize.heightSizeClass != WindowHeightSizeClass.Compact) {
-        TopAppBar(
-            title = {
-                Text(
-                    text = state.title,
-                    style = getAdaptiveHeadlineByHeight(windowSize),
-                    color = PrimaryFont
-                )
-            },
-            actions = {
-                UserAvatar(Modifier.padding(horizontal = 16.dp))
-            }
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, false),
+                text = state.data.title,
+                style = getAdaptiveHeadlineByHeight(windowSize),
+                color = PrimaryFont
+            )
+            UserAvatar()
+        }
     }
 }
 
@@ -179,8 +207,9 @@ private fun UserAvatar(
 fun MainScreenTabletPreview() {
     SquadPlayTheme {
         MainScreen(
-            state = MainUIState(),
+            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_EXPANDED,
+            onAction = {},
         )
     }
 }
@@ -190,8 +219,9 @@ fun MainScreenTabletPreview() {
 fun MainScreenPhonePreview() {
     SquadPlayTheme {
         MainScreen(
-            state = MainUIState(),
+            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_MEDIUM,
+            onAction = {},
         )
     }
 }
@@ -201,8 +231,9 @@ fun MainScreenPhonePreview() {
 fun MainScreenWearPreview() {
     SquadPlayTheme {
         MainScreen(
-            state = MainUIState(),
+            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_COMPACT,
+            onAction = {},
         )
     }
 }

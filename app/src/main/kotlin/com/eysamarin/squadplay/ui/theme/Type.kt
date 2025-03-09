@@ -17,6 +17,15 @@ fun getAdaptiveHeadlineByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     }
 }
 
+fun getAdaptiveTitleByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+    return when (windowSizeClass.heightSizeClass) {
+        WindowHeightSizeClass.Expanded -> Typography.titleLarge
+        WindowHeightSizeClass.Medium -> Typography.titleMedium
+        WindowHeightSizeClass.Compact -> Typography.titleSmall
+        else -> Typography.titleMedium
+    }
+}
+
 fun getAdaptiveLabelByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     return when (windowSizeClass.heightSizeClass) {
         WindowHeightSizeClass.Expanded -> Typography.labelLarge
