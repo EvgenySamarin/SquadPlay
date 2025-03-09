@@ -53,8 +53,7 @@ class MainScreenViewModel(
     }
 
     fun onDateTap(date: CalendarUI.Date) = viewModelScope.launch {
-        Log.d("TAG", "onDateTap: $date, showing polling dialog")
-        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = date)))
+        Log.d("TAG", "onDateTap: $date, updating game events")
 
         val currentMainScreenUI = (uiState.value as? UiState.Normal<MainScreenUI>)?.data
         if (currentMainScreenUI == null) {
@@ -84,5 +83,22 @@ class MainScreenViewModel(
 
     fun onPollingStartTap() {
         Log.d("TAG", "onPollingStartTap")
+    }
+
+    fun onAddGameEventTap() = viewModelScope.launch {
+        Log.d("TAG", "onAddGameEventTap show polling dialog state")
+
+        val currentSelectedDate = (uiState.value as? UiState.Normal<MainScreenUI>)
+            ?.data
+            ?.calendarUI
+            ?.dates
+            ?.firstOrNull { it.isSelected }
+
+        if (currentSelectedDate == null) {
+            Log.w("TAG", "selected date is null cannot add game event")
+            return@launch
+        }
+
+        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = currentSelectedDate)))
     }
 }

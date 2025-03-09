@@ -13,8 +13,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -43,8 +45,10 @@ import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.Accent
 import com.eysamarin.squadplay.ui.theme.OnAccent
+import com.eysamarin.squadplay.ui.theme.OnTertiary
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
+import com.eysamarin.squadplay.ui.theme.Tertiary
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
@@ -81,33 +85,30 @@ fun MainScreen(
                     )
                 }
             }
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    onAction(MainScreenAction.OnAddGameEventTap)
+                },
+                shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
+                containerColor = Tertiary,
+                contentColor = OnTertiary,
+            ) {
+                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add game event")
+                Text(text = "New game event")
+            }
         }
     )
 
 
     if (pollingDialogState is UiState.Normal<PollingDialogUI>) {
         ModalBottomSheet(onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) }) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Polling dialog with date: ${pollingDialogState.data.selectedDate}",
-                    style = adaptiveBodyByHeight(windowSize),
-                    color = PrimaryFont,
-                )
-                Button(
-                    onClick = { onAction(MainScreenAction.OnPollingStartTap) }
-                ) {
-                    Text(
-                        text = "Start polling",
-                        style = adaptiveBodyByHeight(windowSize),
-                        color = PrimaryFont,
-                    )
-                }
-            }
-
+            AddGameEvent(
+                ui = pollingDialogState.data,
+                windowSize = windowSize,
+                onAction = onAction
+            )
         }
     }
 }

@@ -5,6 +5,7 @@ import java.time.YearMonth
 sealed interface MainScreenAction {
     object OnDismissPolingDialog : MainScreenAction
     object OnPollingStartTap : MainScreenAction
+    object OnAddGameEventTap : MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnDateTap(val date: CalendarUI.Date) : MainScreenAction
@@ -40,6 +41,10 @@ data class GameEventUI(
 
 data class PollingDialogUI(
     val selectedDate: CalendarUI.Date,
+)
+
+val PREVIEW_POLLING_DIALOG_UI = PollingDialogUI(
+    selectedDate = CalendarUI.Date("6", 4, true),
 )
 
 val PREVIEW_CALENDAR_UI = CalendarUI(
