@@ -10,6 +10,7 @@ class MainViewModel: ViewModel() {
 }
 
 data class MainUIState(
+    val title: String = "Давай прокачаемся вместе, User!",
     val body: String = "STUB_BODY",
     val label: String = "STUB_LABEL"
 )

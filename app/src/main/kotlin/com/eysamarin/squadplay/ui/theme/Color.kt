@@ -6,6 +6,11 @@ import androidx.compose.ui.graphics.Color
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
+
+val PrimaryFont = Color(0xFF1E293B)
+val AvatarBorderGradient1 = Color(0xFF0A94F8)
+val AvatarBorderGradient2 = Color(0xFFC876C9)
+val AvatarBorderGradient3 = Color(0xFFFF6E91)
 //endregion
 
 //region dark colors
