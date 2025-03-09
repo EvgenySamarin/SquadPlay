@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -28,9 +31,9 @@ import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.Accent
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.SecondaryFont
-import com.eysamarin.squadplay.ui.theme.getAdaptiveBodyByHeight
-import com.eysamarin.squadplay.ui.theme.getAdaptiveLabelByHeight
-import com.eysamarin.squadplay.ui.theme.getAdaptiveTitleByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.ui.theme.OnAccent
 import com.eysamarin.squadplay.utils.PhonePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
@@ -70,7 +73,7 @@ fun WeekDayItem(day: String, modifier: Modifier = Modifier, windowSize: WindowSi
     Box(modifier = modifier) {
         Text(
             text = day,
-            style = getAdaptiveLabelByHeight(windowSize),
+            style = adaptiveLabelByHeight(windowSize),
             color = SecondaryFont,
             modifier = Modifier
                 .align(Alignment.Center)
@@ -97,7 +100,7 @@ fun Header(
             text = yearMonth.toString(),
             textAlign = TextAlign.Center,
             color = PrimaryFont,
-            style = getAdaptiveTitleByHeight(windowSize),
+            style = adaptiveTitleByHeight(windowSize),
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically)
@@ -146,30 +149,38 @@ fun ContentItem(
 ) {
     Box(
         modifier = modifier
-            .clip(
-                SquircleShape(
-                    cornerSmoothing = CornerSmoothing.Small
-                )
-            )
-            .background(
-                color = if (date.isSelected) {
-                    Accent
-                } else {
-                    Color.Transparent
-                }
-            )
+            .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
+            .background(color = if (date.isSelected) Accent else Color.Transparent)
             .clickable(enabled = date.dayOfMonth.isNotBlank()) {
                 onItemTap(date)
             }
     ) {
-        Text(
-            text = date.dayOfMonth,
-            color = if(date.isSelected) OnAccent else PrimaryFont,
-            style = getAdaptiveBodyByHeight(windowSize),
+        BadgedBox(
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(10.dp)
-        )
+                .padding(vertical = 12.dp),
+            badge = {
+                if (date.countEvents > 0) {
+                    Badge(
+                        modifier = Modifier.offset(x = 10.dp, y = (-8).dp),
+                        containerColor = if (date.isSelected) OnAccent else Accent,
+                        contentColor = if (date.isSelected) Accent else OnAccent
+                    ) {
+                        Text(
+                            text = date.countEvents.toString(),
+                            style = adaptiveLabelByHeight(windowSize)
+                        )
+                    }
+                }
+            },
+        ) {
+            Text(
+                modifier = Modifier,
+                text = date.dayOfMonth,
+                color = if (date.isSelected) OnAccent else PrimaryFont,
+                style = adaptiveBodyByHeight(windowSize),
+            )
+        }
     }
 }
 

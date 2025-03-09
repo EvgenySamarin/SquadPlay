@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.CalendarUIProvider
+import com.eysamarin.squadplay.domain.GameEventUIProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PollingDialogUI
@@ -15,6 +16,7 @@ import java.time.YearMonth
 
 class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
+    private val gameEventUIProvider: GameEventUIProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -64,7 +66,14 @@ class MainScreenViewModel(
             target = currentMainScreenUI.calendarUI,
             selectedDate = date,
         )
-        updateMainScreenUI(currentMainScreenUI.copy(calendarUI = updatedCalendarUI))
+
+        val gameEvents = gameEventUIProvider.provideGameEventUIBy(date)
+        updateMainScreenUI(
+            updatedMainScreenUI = currentMainScreenUI.copy(
+                calendarUI = updatedCalendarUI,
+                gameEventsOnDate = gameEvents,
+            )
+        )
     }
 
     fun dismissPolingDialog() = viewModelScope.launch {

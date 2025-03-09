@@ -75,7 +75,8 @@ class CalendarDataSource {
                     } else {
                         "" // Fill with empty string for days outside the current month
                     },
-                    isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue
+                    isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue,
+                    countEvents = 0,
                 )
             }
     }
