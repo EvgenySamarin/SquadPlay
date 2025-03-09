@@ -53,6 +53,7 @@ private fun handleMainScreenAction(
     is MainScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
     MainScreenAction.OnDismissPolingDialog -> viewModel.dismissPolingDialog()
     MainScreenAction.OnPollingStartTap -> viewModel.onPollingStartTap()
+    MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
 }
 
 

@@ -8,7 +8,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 
-fun getAdaptiveHeadlineByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+fun adaptiveHeadlineByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     return when (windowSizeClass.heightSizeClass) {
         WindowHeightSizeClass.Expanded -> Typography.headlineLarge
         WindowHeightSizeClass.Medium -> Typography.headlineMedium
@@ -17,7 +17,7 @@ fun getAdaptiveHeadlineByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     }
 }
 
-fun getAdaptiveTitleByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+fun adaptiveTitleByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     return when (windowSizeClass.heightSizeClass) {
         WindowHeightSizeClass.Expanded -> Typography.titleLarge
         WindowHeightSizeClass.Medium -> Typography.titleMedium
@@ -26,7 +26,7 @@ fun getAdaptiveTitleByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     }
 }
 
-fun getAdaptiveLabelByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+fun adaptiveLabelByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     return when (windowSizeClass.heightSizeClass) {
         WindowHeightSizeClass.Expanded -> Typography.labelLarge
         WindowHeightSizeClass.Medium -> Typography.labelMedium
@@ -35,7 +35,7 @@ fun getAdaptiveLabelByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     }
 }
 
-fun getAdaptiveBodyByHeight(windowSizeClass: WindowSizeClass): TextStyle {
+fun adaptiveBodyByHeight(windowSizeClass: WindowSizeClass): TextStyle {
     return when (windowSizeClass.heightSizeClass) {
         WindowHeightSizeClass.Expanded -> Typography.bodyLarge
         WindowHeightSizeClass.Medium -> Typography.bodyMedium

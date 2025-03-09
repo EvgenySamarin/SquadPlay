@@ -1,6 +1,6 @@
 package com.eysamarin.squadplay.screens.main_screen
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,10 +9,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.Button
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -24,27 +29,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.models.GameEventUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.ui.EmptyContent
+import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient1
-import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient2
-import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient3
+import com.eysamarin.squadplay.ui.theme.Accent
+import com.eysamarin.squadplay.ui.theme.OnAccent
+import com.eysamarin.squadplay.ui.theme.OnTertiary
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
-import com.eysamarin.squadplay.ui.theme.getAdaptiveBodyByHeight
-import com.eysamarin.squadplay.ui.theme.getAdaptiveHeadlineByHeight
+import com.eysamarin.squadplay.ui.theme.Tertiary
+import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhonePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_EXPANDED
@@ -78,33 +85,30 @@ fun MainScreen(
                     )
                 }
             }
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    onAction(MainScreenAction.OnAddGameEventTap)
+                },
+                shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
+                containerColor = Tertiary,
+                contentColor = OnTertiary,
+            ) {
+                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add game event")
+                Text(text = "New game event")
+            }
         }
     )
 
 
     if (pollingDialogState is UiState.Normal<PollingDialogUI>) {
         ModalBottomSheet(onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) }) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Polling dialog with date: ${pollingDialogState.data.selectedDate}",
-                    style = getAdaptiveBodyByHeight(windowSize),
-                    color = PrimaryFont,
-                )
-                Button(
-                    onClick = { onAction(MainScreenAction.OnPollingStartTap) }
-                ) {
-                    Text(
-                        text = "Start polling",
-                        style = getAdaptiveBodyByHeight(windowSize),
-                        color = PrimaryFont,
-                    )
-                }
-            }
-
+            AddGameEvent(
+                ui = pollingDialogState.data,
+                windowSize = windowSize,
+                onAction = onAction
+            )
         }
     }
 }
@@ -129,6 +133,8 @@ private fun MainScreenMediumLayout(
             onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
             onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) }
         ) { onAction(MainScreenAction.OnDateTap(it)) }
+        HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+        EventLists(events = state.data.gameEventsOnDate, windowSize = windowSize)
     }
 }
 
@@ -163,6 +169,60 @@ private fun MainScreenExpandedLayout(
 }
 
 @Composable
+private fun EventLists(
+    events: List<GameEventUI>,
+    windowSize: WindowSizeClass,
+) {
+    if (events.isEmpty()) {
+        EmptyContent(windowSize, modifier = Modifier.fillMaxSize())
+        return
+    }
+
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        items(items = events) { item ->
+            GameEvent(
+                windowSize = windowSize,
+                name = item.name,
+                players = item.players,
+                gameIconResId = item.gameIconResId ?: R.drawable.ic_question
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameEvent(
+    windowSize: WindowSizeClass,
+    name: String,
+    players: Int,
+    gameIconResId: Int,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
+                .background(Accent)
+        ) {
+            Icon(
+                modifier = Modifier
+                    .padding(8.dp),
+                painter = painterResource(gameIconResId),
+                contentDescription = null,
+                tint = OnAccent
+            )
+        }
+        Column {
+            Text(text = "Game event", style = adaptiveTitleByHeight(windowSize))
+            Text(name, style = adaptiveBodyByHeight(windowSize))
+        }
+        Text("players: $players")
+    }
+}
+
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GreetingBar(
     windowSize: WindowSizeClass,
@@ -180,7 +240,7 @@ private fun GreetingBar(
                     .fillMaxWidth()
                     .weight(1f, false),
                 text = state.data.title,
-                style = getAdaptiveHeadlineByHeight(windowSize),
+                style = adaptiveHeadlineByHeight(windowSize),
                 color = PrimaryFont
             )
             UserAvatar()
@@ -188,50 +248,6 @@ private fun GreetingBar(
     }
 }
 
-@Composable
-private fun UserAvatar(
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .clip(
-                shape = SquircleShape(
-                    percent = 100,
-                    cornerSmoothing = CornerSmoothing.High
-                )
-            )
-            .border(
-                width = 2.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        AvatarBorderGradient1,
-                        AvatarBorderGradient2,
-                        AvatarBorderGradient3
-                    ),
-                    start = Offset(0f, 0f),
-                    end = Offset(100f, 100f)
-                ),
-                shape = SquircleShape(
-                    percent = 100,
-                    cornerSmoothing = CornerSmoothing.High
-                )
-            )
-            .padding(4.dp)
-    ) {
-        Icon(
-            modifier = Modifier
-                .clip(
-                    shape = SquircleShape(
-                        percent = 100,
-                        cornerSmoothing = CornerSmoothing.High
-                    )
-                ),
-            painter = painterResource(R.drawable.default_avatar),
-            contentDescription = null,
-            tint = Color.Unspecified
-        )
-    }
-}
 
 //region screen preview
 @TabletPreview
