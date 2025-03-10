@@ -4,8 +4,8 @@ import java.time.YearMonth
 
 sealed interface MainScreenAction {
     object OnDismissPolingDialog : MainScreenAction
-    object OnPollingStartTap : MainScreenAction
     object OnAddGameEventTap : MainScreenAction
+    class OnPollingStartTap(val timeFrom: TimeUnit, val timeTo: TimeUnit) : MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnDateTap(val date: CalendarUI.Date) : MainScreenAction
@@ -41,6 +41,29 @@ data class GameEventUI(
 
 data class PollingDialogUI(
     val selectedDate: CalendarUI.Date,
+)
+
+data class TimePickerUI(
+    val currentTarget: DialPickerTarget = DialPickerTarget.FROM,
+    val timeFrom: TimeUnit? = null,
+    val timeTo: TimeUnit? = null,
+    val errorText: String? = null,
+)
+
+data class TimeUnit(
+    val hour: Int,
+    val minute: Int,
+)
+
+enum class DialPickerTarget {
+    FROM,
+    TO
+}
+
+val PREVIEW_TIME_PICKER_UI = TimePickerUI(
+    currentTarget = DialPickerTarget.FROM,
+    timeFrom = TimeUnit(hour = 12, minute = 0),
+    timeTo = TimeUnit(hour = 14, minute = 15),
 )
 
 val PREVIEW_POLLING_DIALOG_UI = PollingDialogUI(

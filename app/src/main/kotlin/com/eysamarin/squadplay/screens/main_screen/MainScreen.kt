@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -44,6 +45,7 @@ import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.Accent
+import com.eysamarin.squadplay.ui.theme.AppBackground
 import com.eysamarin.squadplay.ui.theme.OnAccent
 import com.eysamarin.squadplay.ui.theme.OnTertiary
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
@@ -103,11 +105,18 @@ fun MainScreen(
 
 
     if (pollingDialogState is UiState.Normal<PollingDialogUI>) {
-        ModalBottomSheet(onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) }) {
+        ModalBottomSheet(
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) },
+            containerColor = AppBackground,
+        ) {
             AddGameEvent(
                 ui = pollingDialogState.data,
                 windowSize = windowSize,
-                onAction = onAction
+                onStartPollingTap = { from, to ->
+                    onAction(MainScreenAction.OnPollingStartTap(from, to))
+                    onAction(MainScreenAction.OnDismissPolingDialog)
+                }
             )
         }
     }
