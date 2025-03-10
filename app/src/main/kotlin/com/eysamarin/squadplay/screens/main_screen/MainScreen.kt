@@ -54,12 +54,15 @@ import com.eysamarin.squadplay.ui.theme.Tertiary
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
-import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_EXPANDED
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.utils.TabletPreview
-import com.eysamarin.squadplay.utils.WearPreview
+import com.eysamarin.squadplay.utils.TabletDarkModePreview
+import com.eysamarin.squadplay.utils.TabletLightModePreview
+import com.eysamarin.squadplay.utils.WearDarkModePreview
+import com.eysamarin.squadplay.utils.WearLightModePreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -259,7 +262,8 @@ private fun GreetingBar(
 
 
 //region screen preview
-@TabletPreview
+@TabletDarkModePreview
+@TabletLightModePreview
 @Composable
 fun MainScreenTabletPreview() {
     SquadPlayTheme {
@@ -272,7 +276,8 @@ fun MainScreenTabletPreview() {
     }
 }
 
-@PhonePreview
+@PhoneDarkModePreview
+@PhoneLightModePreview
 @Composable
 fun MainScreenPhonePreview() {
     SquadPlayTheme {
@@ -284,7 +289,8 @@ fun MainScreenPhonePreview() {
     }
 }
 
-@WearPreview
+@WearDarkModePreview
+@WearLightModePreview
 @Composable
 fun MainScreenWearPreview() {
     SquadPlayTheme {

@@ -1,5 +1,6 @@
 package com.eysamarin.squadplay.utils
 
+import android.content.res.Configuration
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.ui.tooling.preview.Preview
@@ -10,31 +11,68 @@ import androidx.compose.ui.unit.dp
     showBackground = true,
     showSystemUi = true,
     device = "spec:width=1280dp,height=800dp,dpi=240",
-    name = "Tablet preview"
+    name = "Tablet preview light",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.FUNCTION)
-annotation class TabletPreview
+annotation class TabletLightModePreview
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = "spec:width=1280dp,height=800dp,dpi=240",
+    name = "Tablet preview dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.FUNCTION)
+annotation class TabletDarkModePreview
 
 @Preview(
     showBackground = true,
     showSystemUi = true,
     device = "spec:width=411dp,height=891dp",
-    name = "Phone preview"
+    name = "Phone preview light",
+    uiMode = Configuration.UI_MODE_NIGHT_NO
 )
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.FUNCTION)
-annotation class PhonePreview
+annotation class PhoneLightModePreview
+
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = "spec:width=411dp,height=891dp",
+    name = "Phone preview night",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.FUNCTION)
+annotation class PhoneDarkModePreview
 
 @Preview(
     showBackground = true,
     showSystemUi = true,
     device = "id:wearos_rect",
-    name = "Phone preview"
+    name = "Phone preview light",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.FUNCTION)
-annotation class WearPreview
+annotation class WearLightModePreview
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = "id:wearos_rect",
+    name = "Phone preview dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.FUNCTION)
+annotation class WearDarkModePreview
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 object PreviewUtils {

@@ -31,7 +31,8 @@ import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.theme.CardBackground
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
-import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -127,7 +128,8 @@ fun AddGameEvent(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@PhonePreview
+@PhoneDarkModePreview
+@PhoneLightModePreview
 @Composable
 private fun AddGameEventContentPreview() {
     Column {

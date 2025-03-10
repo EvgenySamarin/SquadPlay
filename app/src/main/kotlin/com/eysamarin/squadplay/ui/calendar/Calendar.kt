@@ -35,7 +35,8 @@ import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.ui.theme.OnAccent
-import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import java.time.YearMonth
 
@@ -184,7 +185,8 @@ fun ContentItem(
     }
 }
 
-@PhonePreview
+@PhoneDarkModePreview
+@PhoneLightModePreview
 @Composable
 fun CalendarPreview() {
     Column {
