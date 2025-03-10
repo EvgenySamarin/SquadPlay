@@ -8,6 +8,7 @@ import com.eysamarin.squadplay.domain.GameEventUIProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PollingDialogUI
+import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,18 +82,16 @@ class MainScreenViewModel(
         _pollingDialogState.emit(UiState.Empty)
     }
 
-    fun onPollingStartTap() {
-        Log.d("TAG", "onPollingStartTap")
+    fun onPollingStartTap(timeFrom: TimeUnit, timeTo: TimeUnit) {
+        val selectedDate = takeSelectedDate()
+
+        Log.d("TAG", "onPollingStartTap for date: $selectedDate, timeFrom: $timeFrom, timeTo: $timeTo")
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
         Log.d("TAG", "onAddGameEventTap show polling dialog state")
 
-        val currentSelectedDate = (uiState.value as? UiState.Normal<MainScreenUI>)
-            ?.data
-            ?.calendarUI
-            ?.dates
-            ?.firstOrNull { it.isSelected }
+        val currentSelectedDate = takeSelectedDate()
 
         if (currentSelectedDate == null) {
             Log.w("TAG", "selected date is null cannot add game event")
@@ -101,4 +100,11 @@ class MainScreenViewModel(
 
         _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = currentSelectedDate)))
     }
+
+    private fun takeSelectedDate(): CalendarUI.Date? =
+        (uiState.value as? UiState.Normal<MainScreenUI>)
+            ?.data
+            ?.calendarUI
+            ?.dates
+            ?.firstOrNull { it.isSelected }
 }

@@ -2,41 +2,66 @@ package com.eysamarin.squadplay.screens.main_screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.models.MainScreenAction
+import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
 import com.eysamarin.squadplay.models.PollingDialogUI
-import com.eysamarin.squadplay.ui.theme.Accent
-import com.eysamarin.squadplay.ui.theme.OnAccent
+import com.eysamarin.squadplay.models.TimePickerUI
+import com.eysamarin.squadplay.models.TimeUnit
+import com.eysamarin.squadplay.ui.DialPicker
+import com.eysamarin.squadplay.ui.SquadPlayTimePicker
+import com.eysamarin.squadplay.ui.button.PrimaryButton
+import com.eysamarin.squadplay.ui.theme.CardBackground
 import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.PhonePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGameEvent(
     ui: PollingDialogUI,
     windowSize: WindowSizeClass,
-    onAction: (MainScreenAction) -> Unit
+    onStartPollingTap: (timeFrom: TimeUnit, timeTo: TimeUnit) -> Unit
 ) {
+    var timeFrom by remember { mutableStateOf<TimeUnit?>(null) }
+    var timeTo by remember { mutableStateOf<TimeUnit?>(null) }
+    var dialPickerTarget by remember { mutableStateOf(DialPickerTarget.FROM) }
+    var errorText by remember {
+        derivedStateOf {
+            if ((timeFrom?.hour ?: 0) > (timeTo?.hour ?: 0)) {
+                "Time from cannot be more then time to"
+            } else null
+        }
+        mutableStateOf<String?>(null)
+    }
+    val timePickerUI = TimePickerUI(
+        currentTarget = dialPickerTarget,
+        timeFrom = timeFrom,
+        timeTo = timeTo,
+        errorText = errorText,
+    )
+
     Column(
         modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
@@ -44,18 +69,60 @@ fun AddGameEvent(
             style = adaptiveBodyByHeight(windowSize),
             color = PrimaryFont,
         )
-        Button(
-            onClick = { onAction(MainScreenAction.OnPollingStartTap) },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Accent,
-                contentColor = OnAccent,
+        SquadPlayTimePicker(
+            ui = timePickerUI,
+            windowSize = windowSize,
+            modifier = Modifier.fillMaxWidth(),
+            onFromTap = { dialPickerTarget = DialPickerTarget.FROM },
+            onToTap = { dialPickerTarget = DialPickerTarget.TO },
+        )
+        Card(
+            modifier = Modifier,
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = CardBackground
             )
         ) {
-            Text(
-                text = "Start polling",
-                style = adaptiveBodyByHeight(windowSize),
+            DialPicker(
+                target = dialPickerTarget,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                onTimeChange = { timeState, target ->
+                    errorText = null
+                    when (target) {
+                        DialPickerTarget.FROM -> timeFrom = TimeUnit(timeState.hour, timeState.minute)
+                        DialPickerTarget.TO -> timeTo = TimeUnit(timeState.hour, timeState.minute)
+                    }
+                },
             )
         }
+        PrimaryButton(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            windowSize = windowSize,
+            text = "Start polling",
+            onTap = {
+                val from = timeFrom ?: run {
+                    errorText = "Time from not set"
+                    return@PrimaryButton
+                }
+                val to = timeTo ?: run {
+                    errorText = "Time to not set"
+                    return@PrimaryButton
+                }
+
+                val hoursInvalid = from.hour > to.hour
+                val minutesInvalid = from.hour == to.hour
+                        && from.minute > (to.minute)
+
+                if (hoursInvalid || minutesInvalid) {
+                    errorText = "Time from cannot be more then time to"
+                    return@PrimaryButton
+                }
+
+                onStartPollingTap(from, to)
+            },
+        )
     }
 }
 
@@ -63,18 +130,12 @@ fun AddGameEvent(
 @PhonePreview
 @Composable
 private fun AddGameEventContentPreview() {
-    val bottomSheetState = rememberStandardBottomSheetState(
-        initialValue = SheetValue.Expanded
-    )
-
-    ModalBottomSheet(
-        onDismissRequest = {}, sheetState = bottomSheetState
-    ) {
+    Column {
+        Spacer(Modifier.padding(top = 24.dp))
         AddGameEvent(
             ui = PREVIEW_POLLING_DIALOG_UI,
             windowSize = WINDOWS_SIZE_MEDIUM,
-            onAction = {},
+            onStartPollingTap = { _, _ -> },
         )
     }
-
 }
