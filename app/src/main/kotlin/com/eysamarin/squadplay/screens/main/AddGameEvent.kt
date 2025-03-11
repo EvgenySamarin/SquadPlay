@@ -1,4 +1,4 @@
-package com.eysamarin.squadplay.screens.main_screen
+package com.eysamarin.squadplay.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

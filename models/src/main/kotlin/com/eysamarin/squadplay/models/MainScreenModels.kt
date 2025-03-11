@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.models
 import java.time.YearMonth
 
 sealed interface MainScreenAction {
+    object OnBackButtonTap : MainScreenAction
     object OnDismissPolingDialog : MainScreenAction
     object OnAddGameEventTap : MainScreenAction
     class OnPollingStartTap(val timeFrom: TimeUnit, val timeTo: TimeUnit) : MainScreenAction
@@ -12,7 +13,7 @@ sealed interface MainScreenAction {
 }
 
 data class MainScreenUI(
-    val title: String = "Wellcome back, User!",
+    val title: String = "Welcome back, User!",
     val calendarUI: CalendarUI,
     val gameEventsOnDate: List<GameEventUI> = emptyList(),
 )

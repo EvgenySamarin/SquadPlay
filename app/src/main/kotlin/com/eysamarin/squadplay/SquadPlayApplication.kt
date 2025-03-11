@@ -5,7 +5,8 @@ import com.eysamarin.squadplay.domain.CalendarUIProvider
 import com.eysamarin.squadplay.domain.CalendarUIProviderImpl
 import com.eysamarin.squadplay.domain.GameEventUIProvider
 import com.eysamarin.squadplay.domain.GameEventUIProviderImpl
-import com.eysamarin.squadplay.screens.main_screen.MainScreenViewModel
+import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
+import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -17,6 +18,7 @@ class SquadPlayApplication : Application() {
         single<CalendarUIProvider> { CalendarUIProviderImpl() }
         single<GameEventUIProvider> { GameEventUIProviderImpl() }
         viewModelOf(::MainScreenViewModel)
+        viewModelOf(::AuthScreenViewModel)
     }
 
     override fun onCreate() {

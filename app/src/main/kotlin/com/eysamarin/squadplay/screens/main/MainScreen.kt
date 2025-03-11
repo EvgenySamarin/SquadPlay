@@ -1,4 +1,4 @@
-package com.eysamarin.squadplay.screens.main_screen
+package com.eysamarin.squadplay.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,15 +14,18 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -68,6 +71,20 @@ fun MainScreen(
     onAction: (MainScreenAction) -> Unit
 ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(
+                        onClick = { onAction(MainScreenAction.OnBackButtonTap) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back",
+                        )
+                    }
+                })
+        },
         content = { innerPadding ->
             Box(
                 modifier = Modifier
@@ -257,6 +274,19 @@ private fun GreetingBar(
 
 
 //region screen preview
+@PhoneDarkModePreview
+@PhoneLightModePreview
+@Composable
+fun MainScreenPhonePreview() {
+    SquadPlayTheme {
+        MainScreen(
+            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
+            pollingDialogState = UiState.Empty,
+            onAction = {},
+        )
+    }
+}
+
 @TabletDarkModePreview
 @TabletLightModePreview
 @Composable
@@ -266,19 +296,6 @@ fun MainScreenTabletPreview() {
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_EXPANDED,
-            onAction = {},
-        )
-    }
-}
-
-@PhoneDarkModePreview
-@PhoneLightModePreview
-@Composable
-fun MainScreenPhonePreview() {
-    SquadPlayTheme {
-        MainScreen(
-            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             onAction = {},
         )
     }
