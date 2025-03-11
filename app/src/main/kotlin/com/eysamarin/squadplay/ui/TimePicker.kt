@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -24,11 +25,6 @@ import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_TIME_PICKER_UI
 import com.eysamarin.squadplay.models.TimePickerUI
-import com.eysamarin.squadplay.ui.theme.Accent
-import com.eysamarin.squadplay.ui.theme.CardBackground
-import com.eysamarin.squadplay.ui.theme.ErrorFont
-import com.eysamarin.squadplay.ui.theme.PrimaryFont
-import com.eysamarin.squadplay.ui.theme.SecondaryFont
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
@@ -44,14 +40,14 @@ fun SquadPlayTimePicker(
     onToTap: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
-        Text(text = "Select time", style = adaptiveBodyByHeight(windowSize), color = PrimaryFont)
+        Text(text = "Select time", style = adaptiveBodyByHeight(windowSize), color = MaterialTheme.colorScheme.onSurface)
         Card(
             modifier = Modifier.padding(top = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = CardBackground
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             ),
-            border = if (ui.errorText != null) BorderStroke(width = 1.dp, color = ErrorFont) else null,
+            border = if (ui.errorText != null) BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.error) else null,
         ) {
             Row(
                 modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
@@ -86,7 +82,7 @@ fun SquadPlayTimePicker(
                 modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),
                 text = it,
                 style = adaptiveBodyByHeight(windowSize),
-                color = ErrorFont,
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }
@@ -117,13 +113,13 @@ private fun TimeUnit(
         Text(
             text = label,
             style = adaptiveLabelByHeight(windowSize),
-            color = SecondaryFont,
+            color = MaterialTheme.colorScheme.outline,
         )
         Text(
             modifier = Modifier.padding(top = 6.dp),
             text = timeString,
             style = adaptiveHeadlineByHeight(windowSize),
-            color = if(selected) Accent else PrimaryFont,
+            color = if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
         )
     }
 }

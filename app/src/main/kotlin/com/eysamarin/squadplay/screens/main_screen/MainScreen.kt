@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,13 +45,7 @@ import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.Accent
-import com.eysamarin.squadplay.ui.theme.AppBackground
-import com.eysamarin.squadplay.ui.theme.OnAccent
-import com.eysamarin.squadplay.ui.theme.OnTertiary
-import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
-import com.eysamarin.squadplay.ui.theme.Tertiary
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
@@ -97,8 +92,8 @@ fun MainScreen(
                     onAction(MainScreenAction.OnAddGameEventTap)
                 },
                 shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
-                containerColor = Tertiary,
-                contentColor = OnTertiary,
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
             ) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = "Add game event")
                 Text(text = "New game event")
@@ -111,7 +106,7 @@ fun MainScreen(
         ModalBottomSheet(
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) },
-            containerColor = AppBackground,
+            containerColor = MaterialTheme.colorScheme.surface,
         ) {
             AddGameEvent(
                 ui = pollingDialogState.data,
@@ -216,14 +211,14 @@ private fun GameEvent(
         Box(
             modifier = Modifier
                 .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
-                .background(Accent)
+                .background(MaterialTheme.colorScheme.primary)
         ) {
             Icon(
                 modifier = Modifier
                     .padding(8.dp),
                 painter = painterResource(gameIconResId),
                 contentDescription = null,
-                tint = OnAccent
+                tint = MaterialTheme.colorScheme.onPrimary
             )
         }
         Column {
@@ -253,7 +248,7 @@ private fun GreetingBar(
                     .weight(1f, false),
                 text = state.data.title,
                 style = adaptiveHeadlineByHeight(windowSize),
-                color = PrimaryFont
+                color = MaterialTheme.colorScheme.onSurface
             )
             UserAvatar()
         }
