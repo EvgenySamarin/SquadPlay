@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -11,9 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.ui.theme.Accent
-import com.eysamarin.squadplay.ui.theme.OnAccent
-import com.eysamarin.squadplay.ui.theme.SecondaryFont
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
@@ -30,8 +28,8 @@ fun PrimaryButton(
         onClick = onTap,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Accent,
-            contentColor = OnAccent,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
         )
     ) {
         Text(
@@ -55,16 +53,16 @@ fun SecondaryButton(
         border = BorderStroke(
             width = 1.dp,
             color = if (enabled) {
-                Accent
+                MaterialTheme.colorScheme.primary
             } else {
-                SecondaryFont
+                MaterialTheme.colorScheme.outline
             }
         ),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = if (enabled) {
-                Accent
+                MaterialTheme.colorScheme.primary
             } else {
-                SecondaryFont
+                MaterialTheme.colorScheme.outline
             },
         )
     ) {

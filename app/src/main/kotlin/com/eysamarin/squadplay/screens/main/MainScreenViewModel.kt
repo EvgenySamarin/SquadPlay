@@ -1,4 +1,4 @@
-package com.eysamarin.squadplay.screens.main_screen
+package com.eysamarin.squadplay.screens.main
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -7,11 +7,14 @@ import com.eysamarin.squadplay.domain.CalendarUIProvider
 import com.eysamarin.squadplay.domain.GameEventUIProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
+import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 
@@ -25,6 +28,9 @@ class MainScreenViewModel(
     private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
     val pollingDialogState = _pollingDialogState.asStateFlow()
 
+    private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
+    val navigationFlow = navigationChannel.receiveAsFlow()
+
     init {
         viewModelScope.launch {
             val calendarState = calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
@@ -35,6 +41,11 @@ class MainScreenViewModel(
     private fun updateMainScreenUI(updatedMainScreenUI: MainScreenUI) = viewModelScope.launch {
         Log.d("TAG", "updateMainScreenUI by: $updatedMainScreenUI")
         _uiState.emit(UiState.Normal(updatedMainScreenUI))
+    }
+
+    fun onBackButtonTap() = viewModelScope.launch {
+        Log.d("TAG", "onBackButtonTap")
+        navigationChannel.send(NavAction.NavigateBack)
     }
 
     fun onNextMonthTap(nextMonth: YearMonth) {

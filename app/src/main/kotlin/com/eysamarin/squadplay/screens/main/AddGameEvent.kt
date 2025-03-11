@@ -1,14 +1,17 @@
-package com.eysamarin.squadplay.screens.main_screen
+package com.eysamarin.squadplay.screens.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -28,10 +31,10 @@ import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.ui.DialPicker
 import com.eysamarin.squadplay.ui.SquadPlayTimePicker
 import com.eysamarin.squadplay.ui.button.PrimaryButton
-import com.eysamarin.squadplay.ui.theme.CardBackground
-import com.eysamarin.squadplay.ui.theme.PrimaryFont
+import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
-import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +70,7 @@ fun AddGameEvent(
         Text(
             text = "Create new game event polling for date: ${ui.selectedDate.dayOfMonth}",
             style = adaptiveBodyByHeight(windowSize),
-            color = PrimaryFont,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         SquadPlayTimePicker(
             ui = timePickerUI,
@@ -80,7 +83,7 @@ fun AddGameEvent(
             modifier = Modifier,
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = CardBackground
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             )
         ) {
             DialPicker(
@@ -127,15 +130,18 @@ fun AddGameEvent(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@PhonePreview
+@PhoneDarkModePreview
+@PhoneLightModePreview
 @Composable
 private fun AddGameEventContentPreview() {
-    Column {
-        Spacer(Modifier.padding(top = 24.dp))
-        AddGameEvent(
-            ui = PREVIEW_POLLING_DIALOG_UI,
-            windowSize = WINDOWS_SIZE_MEDIUM,
-            onStartPollingTap = { _, _ -> },
-        )
+    SquadPlayTheme {
+        Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+            Spacer(Modifier.padding(top = 24.dp))
+            AddGameEvent(
+                ui = PREVIEW_POLLING_DIALOG_UI,
+                windowSize = WINDOWS_SIZE_MEDIUM,
+                onStartPollingTap = { _, _ -> },
+            )
+        }
     }
 }

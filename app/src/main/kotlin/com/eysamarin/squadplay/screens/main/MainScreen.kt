@@ -1,4 +1,4 @@
-package com.eysamarin.squadplay.screens.main_screen
+package com.eysamarin.squadplay.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,14 +14,18 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -44,22 +48,19 @@ import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.Accent
-import com.eysamarin.squadplay.ui.theme.AppBackground
-import com.eysamarin.squadplay.ui.theme.OnAccent
-import com.eysamarin.squadplay.ui.theme.OnTertiary
-import com.eysamarin.squadplay.ui.theme.PrimaryFont
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
-import com.eysamarin.squadplay.ui.theme.Tertiary
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
-import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_EXPANDED
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.utils.TabletPreview
-import com.eysamarin.squadplay.utils.WearPreview
+import com.eysamarin.squadplay.utils.TabletDarkModePreview
+import com.eysamarin.squadplay.utils.TabletLightModePreview
+import com.eysamarin.squadplay.utils.WearDarkModePreview
+import com.eysamarin.squadplay.utils.WearLightModePreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +71,20 @@ fun MainScreen(
     onAction: (MainScreenAction) -> Unit
 ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(
+                        onClick = { onAction(MainScreenAction.OnBackButtonTap) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back",
+                        )
+                    }
+                })
+        },
         content = { innerPadding ->
             Box(
                 modifier = Modifier
@@ -94,8 +109,8 @@ fun MainScreen(
                     onAction(MainScreenAction.OnAddGameEventTap)
                 },
                 shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
-                containerColor = Tertiary,
-                contentColor = OnTertiary,
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
             ) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = "Add game event")
                 Text(text = "New game event")
@@ -108,7 +123,7 @@ fun MainScreen(
         ModalBottomSheet(
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) },
-            containerColor = AppBackground,
+            containerColor = MaterialTheme.colorScheme.surface,
         ) {
             AddGameEvent(
                 ui = pollingDialogState.data,
@@ -213,14 +228,14 @@ private fun GameEvent(
         Box(
             modifier = Modifier
                 .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
-                .background(Accent)
+                .background(MaterialTheme.colorScheme.primary)
         ) {
             Icon(
                 modifier = Modifier
                     .padding(8.dp),
                 painter = painterResource(gameIconResId),
                 contentDescription = null,
-                tint = OnAccent
+                tint = MaterialTheme.colorScheme.onPrimary
             )
         }
         Column {
@@ -250,7 +265,7 @@ private fun GreetingBar(
                     .weight(1f, false),
                 text = state.data.title,
                 style = adaptiveHeadlineByHeight(windowSize),
-                color = PrimaryFont
+                color = MaterialTheme.colorScheme.onSurface
             )
             UserAvatar()
         }
@@ -259,7 +274,21 @@ private fun GreetingBar(
 
 
 //region screen preview
-@TabletPreview
+@PhoneDarkModePreview
+@PhoneLightModePreview
+@Composable
+fun MainScreenPhonePreview() {
+    SquadPlayTheme {
+        MainScreen(
+            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
+            pollingDialogState = UiState.Empty,
+            onAction = {},
+        )
+    }
+}
+
+@TabletDarkModePreview
+@TabletLightModePreview
 @Composable
 fun MainScreenTabletPreview() {
     SquadPlayTheme {
@@ -272,19 +301,8 @@ fun MainScreenTabletPreview() {
     }
 }
 
-@PhonePreview
-@Composable
-fun MainScreenPhonePreview() {
-    SquadPlayTheme {
-        MainScreen(
-            state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
-            onAction = {},
-        )
-    }
-}
-
-@WearPreview
+@WearDarkModePreview
+@WearLightModePreview
 @Composable
 fun MainScreenWearPreview() {
     SquadPlayTheme {

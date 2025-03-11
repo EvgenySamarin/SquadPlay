@@ -15,6 +15,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -28,14 +29,12 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.PREVIEW_CALENDAR_UI
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.Accent
-import com.eysamarin.squadplay.ui.theme.PrimaryFont
-import com.eysamarin.squadplay.ui.theme.SecondaryFont
+import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
-import com.eysamarin.squadplay.ui.theme.OnAccent
-import com.eysamarin.squadplay.utils.PhonePreview
+import com.eysamarin.squadplay.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import java.time.YearMonth
 
@@ -74,7 +73,7 @@ fun WeekDayItem(day: String, modifier: Modifier = Modifier, windowSize: WindowSi
         Text(
             text = day,
             style = adaptiveLabelByHeight(windowSize),
-            color = SecondaryFont,
+            color = MaterialTheme.colorScheme.outline,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(10.dp)
@@ -99,7 +98,7 @@ fun Header(
         Text(
             text = yearMonth.toString(),
             textAlign = TextAlign.Center,
-            color = PrimaryFont,
+            color = MaterialTheme.colorScheme.onSurface,
             style = adaptiveTitleByHeight(windowSize),
             modifier = Modifier
                 .weight(1f)
@@ -150,7 +149,7 @@ fun ContentItem(
     Box(
         modifier = modifier
             .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
-            .background(color = if (date.isSelected) Accent else Color.Transparent)
+            .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
             .clickable(enabled = date.dayOfMonth.isNotBlank()) {
                 onItemTap(date)
             }
@@ -163,8 +162,8 @@ fun ContentItem(
                 if (date.countEvents > 0) {
                     Badge(
                         modifier = Modifier.offset(x = 10.dp, y = (-8).dp),
-                        containerColor = if (date.isSelected) OnAccent else Accent,
-                        contentColor = if (date.isSelected) Accent else OnAccent
+                        containerColor = if (date.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        contentColor = if (date.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
                     ) {
                         Text(
                             text = date.countEvents.toString(),
@@ -177,24 +176,27 @@ fun ContentItem(
             Text(
                 modifier = Modifier,
                 text = date.dayOfMonth,
-                color = if (date.isSelected) OnAccent else PrimaryFont,
+                color = if (date.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                 style = adaptiveBodyByHeight(windowSize),
             )
         }
     }
 }
 
-@PhonePreview
+@PhoneDarkModePreview
+@PhoneLightModePreview
 @Composable
 fun CalendarPreview() {
-    Column {
-        Spacer(Modifier.padding(top = 24.dp))
-        Calendar(
-            ui = PREVIEW_CALENDAR_UI,
-            windowSize = WINDOWS_SIZE_MEDIUM,
-            onPreviousMonthTap = { },
-            onNextMonthTap = { },
-            onDateTap = { }
-        )
+    SquadPlayTheme {
+        Column {
+            Spacer(Modifier.padding(top = 24.dp))
+            Calendar(
+                ui = PREVIEW_CALENDAR_UI,
+                windowSize = WINDOWS_SIZE_MEDIUM,
+                onPreviousMonthTap = { },
+                onNextMonthTap = { },
+                onDateTap = { }
+            )
+        }
     }
 }
