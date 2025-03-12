@@ -3,8 +3,9 @@ package com.eysamarin.squadplay.screens.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eysamarin.squadplay.domain.CalendarUIProvider
-import com.eysamarin.squadplay.domain.GameEventUIProvider
+import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
+import com.eysamarin.squadplay.domain.event.GameEventUIProvider
+import com.eysamarin.squadplay.domain.polling.PollingProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
@@ -21,6 +22,7 @@ import java.time.YearMonth
 class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
     private val gameEventUIProvider: GameEventUIProvider,
+    private val pollingProvider: PollingProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -97,6 +99,7 @@ class MainScreenViewModel(
         val selectedDate = takeSelectedDate()
 
         Log.d("TAG", "onPollingStartTap for date: $selectedDate, timeFrom: $timeFrom, timeTo: $timeTo")
+        pollingProvider.savePollingData("timeFrom: $timeFrom, timeTo: $timeTo")
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {

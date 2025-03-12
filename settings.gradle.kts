@@ -23,3 +23,5 @@ rootProject.name = "SquadPlay"
 include(":app")
 include(":models")
 include(":domain")
+include(":data")
+include(":contract")

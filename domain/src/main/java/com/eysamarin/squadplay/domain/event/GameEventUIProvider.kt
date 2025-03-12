@@ -1,4 +1,4 @@
-package com.eysamarin.squadplay.domain
+package com.eysamarin.squadplay.domain.event
 
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.GameEventUI

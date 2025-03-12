@@ -1,12 +1,19 @@
 package com.eysamarin.squadplay
 
 import android.app.Application
-import com.eysamarin.squadplay.domain.CalendarUIProvider
-import com.eysamarin.squadplay.domain.CalendarUIProviderImpl
-import com.eysamarin.squadplay.domain.GameEventUIProvider
-import com.eysamarin.squadplay.domain.GameEventUIProviderImpl
+import com.eysamarin.squadplay.contracts.PollingRepository
+import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSource
+import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSourceImpl
+import com.eysamarin.squadplay.data.contract.PollingRepositoryImpl
+import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
+import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
+import com.eysamarin.squadplay.domain.event.GameEventUIProvider
+import com.eysamarin.squadplay.domain.event.GameEventUIProviderImpl
+import com.eysamarin.squadplay.domain.polling.PollingProvider
+import com.eysamarin.squadplay.domain.polling.PollingProviderImpl
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
+import com.google.firebase.database.FirebaseDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -15,10 +22,28 @@ import org.koin.dsl.module
 
 class SquadPlayApplication : Application() {
     val appModule = module {
+        //region data
+        single<FirebaseDatabaseDataSource> {
+            FirebaseDatabaseDataSourceImpl(
+                firebaseDatabase = FirebaseDatabase.getInstance(BuildConfig.FIREBASE_DATABASE_URL),
+            )
+        }
+        //endregion
+
+        //region contracts
+        single<PollingRepository> { PollingRepositoryImpl(firebaseDatabaseDataSource = get()) }
+        //endregion
+
+        //region domain
         single<CalendarUIProvider> { CalendarUIProviderImpl() }
         single<GameEventUIProvider> { GameEventUIProviderImpl() }
+        single<PollingProvider> { PollingProviderImpl(pollingRepository = get()) }
+        //endregion
+
+        //region presentation
         viewModelOf(::MainScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
+        //endregion
     }
 
     override fun onCreate() {

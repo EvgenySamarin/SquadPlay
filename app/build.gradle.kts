@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +20,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").inputStream())
+
+        buildConfigField("String", "FIREBASE_DATABASE_URL", "\"${properties.getProperty("FIREBASE_DATABASE_URL")}\"")
     }
 
     buildTypes {
@@ -41,12 +48,15 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(project(":models"))
     implementation(project(":domain"))
+    implementation(project(":data"))
+    implementation(project(":contract"))
 
     implementation(libs.io.insert.koin.compose)
     implementation(libs.androidx.core.ktx)
@@ -55,6 +65,7 @@ dependencies {
 
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics)
+    implementation(libs.com.google.firebase.database.ktx)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.navigationCompose)
