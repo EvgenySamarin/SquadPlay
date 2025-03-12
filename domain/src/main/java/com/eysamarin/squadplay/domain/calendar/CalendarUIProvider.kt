@@ -1,4 +1,4 @@
-package com.eysamarin.squadplay.domain
+package com.eysamarin.squadplay.domain.calendar
 
 import com.eysamarin.squadplay.models.CalendarUI
 import java.time.DayOfWeek
