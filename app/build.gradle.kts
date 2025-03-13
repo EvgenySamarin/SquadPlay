@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.dsl.NdkOptions.DebugSymbolLevel.SYMBOL_TABLE
 import java.util.Properties
 
 plugins {
@@ -12,19 +13,32 @@ android {
     namespace = "com.eysamarin.squadplay"
     compileSdk = 35
 
+    val properties = Properties()
+        .also { it.load(project.rootProject.file("local.properties").inputStream()) }
+
     defaultConfig {
         applicationId = "com.eysamarin.squadplay"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val properties = Properties()
-        properties.load(project.rootProject.file("local.properties").inputStream())
+        buildConfigField(
+            type = "String",
+            name = "FIREBASE_DATABASE_URL",
+            value = "\"${properties.getProperty("FIREBASE_DATABASE_URL")}\""
+        )
+    }
 
-        buildConfigField("String", "FIREBASE_DATABASE_URL", "\"${properties.getProperty("FIREBASE_DATABASE_URL")}\"")
+    signingConfigs {
+        create("release") {
+            storeFile = file(properties.getProperty("KEYSTORE_PATH"))
+            storePassword = properties.getProperty("KEYSTORE_PASSWORD")
+            keyAlias = properties.getProperty("KEY_ALIAS")
+            keyPassword = properties.getProperty("KEY_PASSWORD")
+        }
     }
 
     buildTypes {
@@ -32,7 +46,11 @@ android {
             isMinifyEnabled = false
         }
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
+            ndk {
+                debugSymbolLevel = SYMBOL_TABLE.toString()
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
