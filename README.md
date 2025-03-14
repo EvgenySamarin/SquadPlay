@@ -28,7 +28,7 @@ Thx a lot Othneil Drew for this awesome template, shared with MIT License!
 <h3 align="center">SquadPlay</h3>
 
   <p>
-    A simple android application for tracking your stocks and crypto assets.
+    Project description
     <br />
     <a href="https://github.com/EvgenySamarin/SquadPlay"><strong>Explore the docs »</strong></a>
     <br />
