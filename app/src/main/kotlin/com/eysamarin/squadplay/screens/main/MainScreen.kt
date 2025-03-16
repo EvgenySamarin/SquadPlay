@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.screens.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -148,7 +149,9 @@ private fun MainScreenMediumLayout(
             .padding(16.dp)
             .fillMaxSize()
     ) {
-        GreetingBar(windowSize, state)
+        GreetingBar(windowSize = windowSize, state = state, onAvatarTap = {
+            onAction(MainScreenAction.OnAvatarTap)
+        })
         Calendar(
             ui = state.data.calendarUI,
             windowSize = windowSize,
@@ -169,7 +172,9 @@ private fun MainScreenExpandedLayout(
     if (state !is UiState.Normal) return
 
     Column(modifier = Modifier.padding(16.dp)) {
-        GreetingBar(windowSize, state)
+        GreetingBar(windowSize = windowSize, state = state, onAvatarTap = {
+            onAction(MainScreenAction.OnAvatarTap)
+        })
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
@@ -249,6 +254,7 @@ private fun GameEvent(
 private fun GreetingBar(
     windowSize: WindowSizeClass,
     state: UiState<MainScreenUI>,
+    onAvatarTap: () -> Unit = {},
 ) {
     if (state !is UiState.Normal) return
 
@@ -265,7 +271,13 @@ private fun GreetingBar(
                 style = adaptiveHeadlineByHeight(windowSize),
                 color = MaterialTheme.colorScheme.onSurface
             )
-            UserAvatar()
+            Box(modifier = Modifier
+                .padding(4.dp)
+                .clickable {
+                    onAvatarTap()
+                }) {
+                UserAvatar()
+            }
         }
     }
 }

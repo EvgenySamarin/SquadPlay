@@ -20,6 +20,7 @@ import com.eysamarin.squadplay.domain.polling.PollingProvider
 import com.eysamarin.squadplay.domain.polling.PollingProviderImpl
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
+import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import org.koin.android.ext.koin.androidContext
@@ -66,6 +67,7 @@ class SquadPlayApplication : Application() {
         //region presentation
         viewModelOf(::MainScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
+        viewModelOf(::ProfileScreenViewModel)
         //endregion
     }
 

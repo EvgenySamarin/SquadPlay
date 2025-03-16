@@ -14,11 +14,14 @@ import androidx.navigation.compose.rememberNavController
 import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.NavAction
+import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.Routes
 import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreen
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
+import com.eysamarin.squadplay.screens.profile.ProfileScreen
+import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.koinViewModel
 
@@ -71,6 +74,24 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 }
             )
         }
+        composable(Routes.Profile.route) {
+            val viewModel: ProfileScreenViewModel = koinViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+            NavigationEffect(
+                navigationFlow = viewModel.navigationFlow,
+                navController = navController,
+                startDestination = Routes.Main,
+            )
+
+            ProfileScreen(
+                state = uiState,
+                windowSize = windowSize,
+                onAction = {
+                    handleProfileScreenAction(action = it, viewModel = viewModel)
+                }
+            )
+        }
     }
 }
 
@@ -101,6 +122,13 @@ private fun handleAuthScreenAction(
     AuthScreenAction.OnSignUpTap -> viewModel.onSignUpTap()
 }
 
+private fun handleProfileScreenAction(
+    action: ProfileScreenAction,
+    viewModel: ProfileScreenViewModel,
+) = when (action) {
+    ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
+}
+
 private fun handleMainScreenAction(
     action: MainScreenAction,
     viewModel: MainScreenViewModel,
@@ -115,6 +143,6 @@ private fun handleMainScreenAction(
     )
 
     MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
-    MainScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
     MainScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
+    MainScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
 }

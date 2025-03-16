@@ -57,7 +57,7 @@ fun AuthScreen(
 }
 
 @Composable
-fun AuthScreenMediumLayout(
+private fun AuthScreenMediumLayout(
     state: UiState<AuthScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit
@@ -79,7 +79,7 @@ fun AuthScreenMediumLayout(
 }
 
 @Composable
-fun AuthScreenExpandedLayout(
+private fun AuthScreenExpandedLayout(
     state: UiState<AuthScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit

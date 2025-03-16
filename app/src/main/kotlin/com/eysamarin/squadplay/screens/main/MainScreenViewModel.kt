@@ -12,6 +12,7 @@ import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.Routes.Auth
+import com.eysamarin.squadplay.models.Routes.Profile
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
@@ -48,11 +49,6 @@ class MainScreenViewModel(
         _uiState.emit(UiState.Normal(updatedMainScreenUI))
     }
 
-    fun onBackButtonTap() = viewModelScope.launch {
-        Log.d("TAG", "onBackButtonTap")
-        navigationChannel.send(NavAction.NavigateBack)
-    }
-
     fun onLogOutTap() = viewModelScope.launch {
         Log.d("TAG", "onLogOutTap")
         val isSuccess = authProvider.signOut()
@@ -61,6 +57,11 @@ class MainScreenViewModel(
         } else {
             Log.d("TAG", "cannot log out")
         }
+    }
+
+    fun onAvatarTap() = viewModelScope.launch {
+        Log.d("TAG", "onAvatarTap")
+        navigationChannel.send(NavAction.NavigateTo(Profile.route))
     }
 
     fun onNextMonthTap(nextMonth: YearMonth) {
