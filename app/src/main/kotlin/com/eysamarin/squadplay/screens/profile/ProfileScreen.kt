@@ -36,6 +36,7 @@ import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
@@ -100,14 +101,25 @@ private fun ProfileScreenMediumLayout(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f, false),
-                text = state.data.username,
-                style = adaptiveHeadlineByHeight(windowSize),
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            ) {
+                Text(
+                    text = state.data.user.username,
+                    style = adaptiveHeadlineByHeight(windowSize),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                state.data.user.email?.let {
+                    Text(
+                        text = it,
+                        style = adaptiveTitleByHeight(windowSize),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
             UserAvatar()
         }
         HorizontalDivider()
@@ -115,7 +127,7 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            PrimaryButton(windowSize, text = "Add new", onTap = {
+            PrimaryButton(windowSize, text = "Add new friend", onTap = {
                 onAction(ProfileScreenAction.OnAddNewFriendTap)
             })
         }

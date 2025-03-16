@@ -5,7 +5,7 @@ import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.models.User
 
 interface ProfileProvider {
-    suspend fun getUserInfo(): User
+    suspend fun getUserInfo(): User?
 }
 
 class ProfileProviderImpl(
@@ -13,15 +13,9 @@ class ProfileProviderImpl(
     private val authRepository: AuthRepository,
 ) : ProfileProvider {
 
-    override suspend fun getUserInfo(): User {
+    override suspend fun getUserInfo(): User? {
         val userUid = authRepository.getCurrentUserId()
-        val friends = profileRepository.getFriends(userUid)
-
-        return User(
-            uid = userUid,
-            username = "User",
-            email = "user email",
-            friends = friends,
-        )
+        val userInfo = profileRepository.getUserInfo(userUid)
+        return userInfo
     }
 }

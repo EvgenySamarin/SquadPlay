@@ -73,7 +73,12 @@ class SquadPlayApplication : Application() {
         //endregion
 
         //region domain
-        single<AuthProvider> { AuthProviderImpl(authRepository = get()) }
+        single<AuthProvider> {
+            AuthProviderImpl(
+                authRepository = get(),
+                profileRepository = get(),
+            )
+        }
         single<CalendarUIProvider> { CalendarUIProviderImpl() }
         single<GameEventUIProvider> { GameEventUIProviderImpl() }
         single<PollingProvider> { PollingProviderImpl(pollingRepository = get()) }

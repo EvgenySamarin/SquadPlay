@@ -27,8 +27,15 @@ class ProfileScreenViewModel(
     }
 
     private fun fetchUserInfo() = viewModelScope.launch {
-        Log.d("TAG", "fetchUserFriends")
+        Log.d("TAG", "fetching user info")
         val userInfo = profileProvider.getUserInfo()
+
+        if (userInfo == null) {
+            _uiState.emit(UiState.Error(description = "User info is null"))
+            return@launch
+        }
+
+        Log.d("TAG", "user info fetched: $userInfo")
         _uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo)))
     }
 

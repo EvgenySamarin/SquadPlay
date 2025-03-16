@@ -1,7 +1,9 @@
 package com.eysamarin.squadplay.contracts
 
-import com.eysamarin.squadplay.models.Friend
+import com.eysamarin.squadplay.models.User
 
-fun interface ProfileRepository {
-    suspend fun getFriends(userId: String): List<Friend>
+interface ProfileRepository {
+    suspend fun getUserInfo(userId: String): User?
+    suspend fun saveUserProfile(user: User)
+    suspend fun deleteUserProfile(userId: String)
 }
