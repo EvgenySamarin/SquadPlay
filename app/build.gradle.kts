@@ -30,6 +30,11 @@ android {
             name = "FIREBASE_DATABASE_URL",
             value = "\"${properties.getProperty("FIREBASE_DATABASE_URL")}\""
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID")}\""
+        )
     }
 
     signingConfigs {
@@ -81,9 +86,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
+    implementation(libs.androidx.credentials.credentials)
+    implementation(libs.androidx.credentials.credentials.play.services.auth)
+    implementation(libs.com.google.android.libraries.identity.googleid)
+
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics)
-    implementation(libs.com.google.firebase.database.ktx)
+    implementation(libs.com.google.firebase.database)
+    implementation(libs.com.google.firebase.auth)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.navigationCompose)

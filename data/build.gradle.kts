@@ -35,5 +35,6 @@ dependencies {
     implementation(project(":contract"))
 
     implementation(platform(libs.com.google.firebase.bom))
-    implementation(libs.com.google.firebase.database.ktx)
+    implementation(libs.com.google.firebase.database)
+    implementation(libs.com.google.firebase.auth)
 }

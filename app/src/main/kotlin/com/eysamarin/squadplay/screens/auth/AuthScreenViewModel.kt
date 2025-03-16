@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.screens.auth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.models.AuthScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.Routes.Main
@@ -13,7 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class AuthScreenViewModel() : ViewModel() {
+class AuthScreenViewModel(
+    private val authProvider: AuthProvider,
+) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<AuthScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
@@ -28,6 +31,11 @@ class AuthScreenViewModel() : ViewModel() {
 
     fun onSignUpTap() = viewModelScope.launch {
         Log.d("TAG", "onSignUpTap")
-        navigationChannel.send(NavAction.NavigateTo(Main.route))
+        if(authProvider.isUserSigned()) {
+            navigationChannel.send(NavAction.NavigateTo(Main.route))
+        } else {
+            Log.d("TAG", "user not signed in")
+            // TODO: implement logic of google sign in
+        }
     }
 }
