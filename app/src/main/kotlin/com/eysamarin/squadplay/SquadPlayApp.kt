@@ -127,6 +127,7 @@ private fun handleProfileScreenAction(
     viewModel: ProfileScreenViewModel,
 ) = when (action) {
     ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
+    ProfileScreenAction.OnAddNewFriendTap -> viewModel.onAddNewFriendTap()
 }
 
 private fun handleMainScreenAction(

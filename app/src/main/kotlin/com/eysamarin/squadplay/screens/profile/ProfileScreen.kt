@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,11 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.PREVIEW_PROFILE_SCREEN_UI
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
+import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
@@ -67,7 +72,9 @@ fun ProfileScreen(
                 when (windowSize.widthSizeClass) {
                     WindowWidthSizeClass.Expanded,
                     WindowWidthSizeClass.Compact,
-                    WindowWidthSizeClass.Medium -> ProfileScreenMediumLayout(state, windowSize)
+                    WindowWidthSizeClass.Medium -> ProfileScreenMediumLayout(
+                        state, windowSize, onAction
+                    )
                 }
             }
         }
@@ -78,6 +85,7 @@ fun ProfileScreen(
 private fun ProfileScreenMediumLayout(
     state: UiState<ProfileScreenUI>,
     windowSize: WindowSizeClass,
+    onAction: (ProfileScreenAction) -> Unit,
 ) {
     if (state !is UiState.Normal) return
 
@@ -86,6 +94,7 @@ private fun ProfileScreenMediumLayout(
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
@@ -95,11 +104,20 @@ private fun ProfileScreenMediumLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f, false),
-                text = state.data.title,
+                text = state.data.username,
                 style = adaptiveHeadlineByHeight(windowSize),
                 color = MaterialTheme.colorScheme.onSurface
             )
             UserAvatar()
+        }
+        HorizontalDivider()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            PrimaryButton(windowSize, text = "Add new", onTap = {
+                onAction(ProfileScreenAction.OnAddNewFriendTap)
+            })
         }
         Text(
             modifier = Modifier
@@ -109,19 +127,28 @@ private fun ProfileScreenMediumLayout(
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f, false),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(state.data.friends.size) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = state.data.friends[it],
-                    style = adaptiveBodyByHeight(windowSize),
-                )
-            }
+
+        FriendsList(state.data.user.friends, windowSize)
+    }
+}
+
+@Composable
+private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
+    if (friends.isEmpty()) {
+        EmptyContent(windowSize, modifier = Modifier.fillMaxSize())
+        return
+    }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(friends) { friend ->
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = friend.username,
+                style = adaptiveBodyByHeight(windowSize),
+            )
         }
     }
 }

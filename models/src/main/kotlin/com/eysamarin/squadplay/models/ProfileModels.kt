@@ -1,0 +1,13 @@
+package com.eysamarin.squadplay.models
+
+data class User(
+    val uid: String,
+    val username: String,
+    val email: String,
+    val friends: List<Friend>
+)
+
+data class Friend(
+    val uid: String,
+    val username: String,
+)

@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.screens.profile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -12,7 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class ProfileScreenViewModel : ViewModel() {
+class ProfileScreenViewModel(
+    private val profileProvider: ProfileProvider,
+) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
@@ -20,15 +23,21 @@ class ProfileScreenViewModel : ViewModel() {
     val navigationFlow = navigationChannel.receiveAsFlow()
 
     init {
-        fetchUserFriends()
+        fetchUserInfo()
     }
 
-    private fun fetchUserFriends() {
+    private fun fetchUserInfo() = viewModelScope.launch {
         Log.d("TAG", "fetchUserFriends")
+        val userInfo = profileProvider.getUserInfo()
+        _uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo)))
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
         Log.d("TAG", "onBackButtonTap")
         navigationChannel.send(NavAction.NavigateBack)
+    }
+
+    fun onAddNewFriendTap() = viewModelScope.launch {
+        Log.d("TAG", "onAddNewFriendTap")
     }
 }

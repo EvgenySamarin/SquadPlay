@@ -21,6 +21,7 @@ interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): Boolean
     suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
+    fun getCurrentUserId(): String
 }
 
 class FirebaseAuthManagerImpl(
@@ -35,6 +36,9 @@ class FirebaseAuthManagerImpl(
         Log.d("TAG", "currentUser: $currentUser")
         return currentUser != null
     }
+
+    override fun getCurrentUserId(): String = firebaseAuth.currentUser?.uid
+        ?: throw IllegalStateException("User is not signed in")
 
     override suspend fun signInWithGoogle(): Boolean {
         val credential = getUserCredential(filterByAuthorizedAccounts = true)
