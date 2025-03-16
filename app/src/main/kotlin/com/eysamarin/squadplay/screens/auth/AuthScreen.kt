@@ -69,10 +69,12 @@ fun AuthScreenMediumLayout(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
-        Spacer(modifier = Modifier.height(24.dp))
-        PrimaryButton(windowSize, text = "Sign UP with Google", onTap = {
-            onAction(AuthScreenAction.OnSignUpTap)
-        })
+        if (state.data.isSignButtonVisible) {
+            Spacer(modifier = Modifier.height(24.dp))
+            PrimaryButton(windowSize, text = "Sign UP with Google", onTap = {
+                onAction(AuthScreenAction.OnSignUpTap)
+            })
+        }
     }
 }
 
