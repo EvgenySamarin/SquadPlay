@@ -4,10 +4,10 @@ import com.eysamarin.squadplay.contracts.PollingRepository
 import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSource
 
 class PollingRepositoryImpl(
-    val firebaseDatabaseDataSource: FirebaseDatabaseDataSource,
+    val realtimeDatabaseDataSource: FirebaseDatabaseDataSource,
 ) : PollingRepository {
 
     override fun savePollingData(data: String) {
-        firebaseDatabaseDataSource.saveTestData(data)
+        realtimeDatabaseDataSource.saveTestData(data)
     }
 }

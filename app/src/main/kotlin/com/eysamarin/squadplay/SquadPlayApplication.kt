@@ -12,6 +12,7 @@ import com.eysamarin.squadplay.data.contract.PollingRepositoryImpl
 import com.eysamarin.squadplay.data.contract.ProfileRepositoryImpl
 import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSource
 import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSourceImpl
+import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.auth.AuthProviderImpl
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
@@ -49,6 +50,10 @@ class SquadPlayApplication : Application() {
         single<FirebaseDatabaseDataSource> {
             FirebaseDatabaseDataSourceImpl(
                 firebaseDatabase = FirebaseDatabase.getInstance(BuildConfig.FIREBASE_DATABASE_URL),
+            )
+        }
+        single {
+            FirebaseFirestoreDataSourceImpl(
                 firebaseFirestore = FirebaseFirestore.getInstance(),
             )
         }
@@ -60,8 +65,8 @@ class SquadPlayApplication : Application() {
                 firebaseAuthManager = get(),
             )
         }
-        single<PollingRepository> { PollingRepositoryImpl(firebaseDatabaseDataSource = get()) }
-        single<ProfileRepository> { ProfileRepositoryImpl(firebaseDatabaseDataSource = get()) }
+        single<PollingRepository> { PollingRepositoryImpl(realtimeDatabaseDataSource = get()) }
+        single<ProfileRepository> { ProfileRepositoryImpl(firestoreDataSource = get()) }
         //endregion
 
         //region domain
