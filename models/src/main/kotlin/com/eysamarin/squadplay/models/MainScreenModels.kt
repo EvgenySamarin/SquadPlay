@@ -6,6 +6,7 @@ sealed interface MainScreenAction {
     object OnBackButtonTap : MainScreenAction
     object OnDismissPolingDialog : MainScreenAction
     object OnAddGameEventTap : MainScreenAction
+    object OnLogOutTap : MainScreenAction
     class OnPollingStartTap(val timeFrom: TimeUnit, val timeTo: TimeUnit) : MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction

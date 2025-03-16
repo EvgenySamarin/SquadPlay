@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.screens.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.GameEventUIProvider
 import com.eysamarin.squadplay.domain.polling.PollingProvider
@@ -10,6 +11,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.PollingDialogUI
+import com.eysamarin.squadplay.models.Routes.Auth
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
@@ -23,6 +25,7 @@ class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
     private val gameEventUIProvider: GameEventUIProvider,
     private val pollingProvider: PollingProvider,
+    private val authProvider: AuthProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -48,6 +51,16 @@ class MainScreenViewModel(
     fun onBackButtonTap() = viewModelScope.launch {
         Log.d("TAG", "onBackButtonTap")
         navigationChannel.send(NavAction.NavigateBack)
+    }
+
+    fun onLogOutTap() = viewModelScope.launch {
+        Log.d("TAG", "onLogOutTap")
+        val isSuccess = authProvider.signOut()
+        if (isSuccess) {
+            navigationChannel.send(NavAction.NavigateTo(Auth.route))
+        } else {
+            Log.d("TAG", "cannot log out")
+        }
     }
 
     fun onNextMonthTap(nextMonth: YearMonth) {

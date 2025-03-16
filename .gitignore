@@ -2,6 +2,8 @@
 /local.properties
 .gradle**
 .kotlin
+keystore
+/keystore/upload-keystore.jks
 .idea
 /.idea/caches
 /.idea/libraries

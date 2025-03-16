@@ -6,13 +6,15 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-navigationCompose = "2.8.8"
-composeBom = "2025.02.00"
+navigationCompose = "2.8.9"
+composeBom = "2025.03.00"
 jetbrainsKotlinJvm = "2.0.21"
 koin = "4.0.2"
 firebaseBom = "33.10.0"
 googleGmsGoogleServices = "4.4.2"
 googleFirebaseCrashlytics = "3.0.3"
+credentials = "1.5.0"
+comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,9 +35,14 @@ androidx-compose-material3-windowSize = { group = "androidx.compose.material3", 
 io-insert-koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 io-insert-koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
 
+androidx-credentials-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+com-google-android-libraries-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "comGoogleAndroidLibrariesIdentityGoogleid" }
+
 com-google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 com-google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
-com-google-firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx" }
+com-google-firebase-database = { group = "com.google.firebase", name = "firebase-database" }
+com-google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

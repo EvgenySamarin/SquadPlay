@@ -116,4 +116,5 @@ private fun handleMainScreenAction(
 
     MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
     MainScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
+    MainScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
 }
