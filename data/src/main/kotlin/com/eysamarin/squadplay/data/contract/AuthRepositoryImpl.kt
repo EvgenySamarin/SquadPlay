@@ -8,8 +8,6 @@ class AuthRepositoryImpl(
 ) : AuthRepository {
 
     override fun isUserSigned(): Boolean = firebaseAuthManager.isUserSigned()
-
-    override fun authWithGoogle(idToken: String) {
-        firebaseAuthManager.authWithGoogle(idToken)
-    }
+    override suspend fun signInWithGoogle() = firebaseAuthManager.signInWithGoogle()
+    override suspend fun signOut() = firebaseAuthManager.signOut()
 }

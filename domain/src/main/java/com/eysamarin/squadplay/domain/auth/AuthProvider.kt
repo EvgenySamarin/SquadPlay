@@ -3,7 +3,8 @@ package com.eysamarin.squadplay.domain.auth
 import com.eysamarin.squadplay.contracts.AuthRepository
 
 interface AuthProvider {
-    fun authWithGoogle(idToken: String)
+    suspend fun signInWithGoogle(): Boolean
+    suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
 }
 
@@ -13,7 +14,6 @@ class AuthProviderImpl(
 
     override fun isUserSigned(): Boolean = authRepository.isUserSigned()
 
-    override fun authWithGoogle(idToken: String) {
-        authRepository.authWithGoogle(idToken)
-    }
+    override suspend fun signInWithGoogle() = authRepository.signInWithGoogle()
+    override suspend fun signOut() = authRepository.signOut()
 }

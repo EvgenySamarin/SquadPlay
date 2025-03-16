@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay
 
 import android.app.Application
+import androidx.credentials.CredentialManager
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.PollingRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
@@ -30,9 +31,12 @@ import org.koin.dsl.module
 class SquadPlayApplication : Application() {
     val appModule = module {
         //region data
+        single<CredentialManager> { CredentialManager.create(baseContext) }
         single<FirebaseAuthManager> {
             FirebaseAuthManagerImpl(
                 firebaseAuth = FirebaseAuth.getInstance(),
+                webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID,
+                credentialManager = get(),
                 appContext = applicationContext,
             )
         }
@@ -44,7 +48,11 @@ class SquadPlayApplication : Application() {
         //endregion
 
         //region contracts
-        single<AuthRepository> { AuthRepositoryImpl(firebaseAuthManager = get()) }
+        single<AuthRepository> {
+            AuthRepositoryImpl(
+                firebaseAuthManager = get(),
+            )
+        }
         single<PollingRepository> { PollingRepositoryImpl(firebaseDatabaseDataSource = get()) }
         //endregion
 
