@@ -60,6 +60,7 @@ class FirebaseFirestoreDataSourceImpl(
 
     override suspend fun saveUserProfile(user: User) {
         val userDataMap = hashMapOf(
+            "inviteId" to user.inviteId,
             "username" to user.username,
             "email" to user.email,
             "photoUrl" to user.photoUrl,
@@ -108,6 +109,7 @@ class FirebaseFirestoreDataSourceImpl(
 
         return User(
             uid = userId,
+            inviteId = userData["inviteId"] as String,
             username = userData["username"] as String? ?: "User",
             email = userData["email"] as String?,
             photoUrl = userData["photoUrl"] as String?,

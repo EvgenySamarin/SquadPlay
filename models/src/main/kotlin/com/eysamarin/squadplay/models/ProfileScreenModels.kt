@@ -13,6 +13,7 @@ data class ProfileScreenUI(
 
 val PREVIEW_USER = User(
     uid = UUID.randomUUID().toString(),
+    inviteId = UUID.randomUUID().toString(),
     username = "Peter Parker",
     email = "peter.parker@gmail.com",
     photoUrl = null,

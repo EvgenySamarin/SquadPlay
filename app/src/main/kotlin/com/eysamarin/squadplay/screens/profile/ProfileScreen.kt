@@ -130,7 +130,7 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            PrimaryButton(windowSize, text = "Add new friend", onTap = {
+            PrimaryButton(windowSize, text = "Create invite link", onTap = {
                 onAction(ProfileScreenAction.OnAddNewFriendTap)
             })
         }

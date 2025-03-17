@@ -8,9 +8,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.NavAction
@@ -54,7 +57,22 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 }
             )
         }
-        composable(Routes.Main.route) {
+        composable(
+            route = Routes.Main.route,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "https://evgenysamarin.github.io/invite/{inviteID}"
+                }
+            ),
+            arguments = listOf(
+                navArgument("inviteID") {
+                    type = NavType.StringType
+                    defaultValue = null
+                    nullable = true
+                }
+            )
+        ) { entry ->
+            val inviteId = entry.arguments?.getString("inviteID")
             val viewModel: MainScreenViewModel = koinViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val pollingDialogState by viewModel.pollingDialogState.collectAsStateWithLifecycle()
@@ -67,6 +85,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
 
             MainScreen(
                 state = uiState,
+                inviteId = inviteId,
                 pollingDialogState = pollingDialogState,
                 windowSize = windowSize,
                 onAction = {
@@ -76,6 +95,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
         }
         composable(Routes.Profile.route) {
             val viewModel: ProfileScreenViewModel = koinViewModel()
+
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
             NavigationEffect(

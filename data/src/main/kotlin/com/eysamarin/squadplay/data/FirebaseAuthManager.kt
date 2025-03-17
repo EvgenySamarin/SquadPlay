@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): User?
@@ -98,6 +99,7 @@ class FirebaseAuthManagerImpl(
 
             User(
                 uid = firebaseUser.uid,
+                inviteId = UUID.randomUUID().toString(),
                 username = firebaseUser.displayName ?: "User",
                 email = firebaseUser.email,
                 photoUrl = firebaseUser.photoUrl?.toString(),

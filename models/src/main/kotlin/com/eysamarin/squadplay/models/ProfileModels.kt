@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.models
 
 data class User(
     val uid: String,
+    val inviteId: String,
     val username: String,
     val email: String?,
     val photoUrl: String?,

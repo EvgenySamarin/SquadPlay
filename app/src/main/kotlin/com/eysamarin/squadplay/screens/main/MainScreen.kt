@@ -70,12 +70,13 @@ fun MainScreen(
     state: UiState<MainScreenUI>,
     pollingDialogState: UiState<PollingDialogUI>,
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
-    onAction: (MainScreenAction) -> Unit
+    onAction: (MainScreenAction) -> Unit,
+    inviteId: String? = null,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                title = { Text(text = inviteId.toString()) },
                 actions = {
                     IconButton(onClick = { onAction(MainScreenAction.OnLogOutTap) }) {
                         Icon(
