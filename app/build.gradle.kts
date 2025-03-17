@@ -86,6 +86,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
+    implementation(libs.io.coil.kt.coil3.compose)
+    implementation(libs.io.coil.kt.coil3.network.okhttp)
+
     implementation(libs.androidx.credentials.credentials)
     implementation(libs.androidx.credentials.credentials.play.services.auth)
     implementation(libs.com.google.android.libraries.identity.googleid)

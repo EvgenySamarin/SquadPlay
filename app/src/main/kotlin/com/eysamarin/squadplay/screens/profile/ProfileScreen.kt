@@ -98,6 +98,7 @@ private fun ProfileScreenMediumLayout(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
+            modifier = Modifier.padding(top = 16.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -120,7 +121,9 @@ private fun ProfileScreenMediumLayout(
                 }
             }
 
-            UserAvatar()
+            UserAvatar(
+                imageUrl = state.data.user.photoUrl,
+            )
         }
         HorizontalDivider()
         Row(

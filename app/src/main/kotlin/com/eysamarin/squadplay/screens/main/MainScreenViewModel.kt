@@ -7,6 +7,7 @@ import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.GameEventUIProvider
 import com.eysamarin.squadplay.domain.polling.PollingProvider
+import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
@@ -27,6 +28,7 @@ class MainScreenViewModel(
     private val gameEventUIProvider: GameEventUIProvider,
     private val pollingProvider: PollingProvider,
     private val authProvider: AuthProvider,
+    private val profileProvider: ProfileProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -39,8 +41,17 @@ class MainScreenViewModel(
 
     init {
         viewModelScope.launch {
+            val userInfo = profileProvider.getUserInfo()
+            if (userInfo == null) {
+                _uiState.emit(UiState.Error(description = "User info is null"))
+                return@launch
+            }
+
             val calendarState = calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
-            updateMainScreenUI(MainScreenUI(calendarUI = calendarState))
+            updateMainScreenUI(MainScreenUI(
+                user = userInfo,
+                calendarUI = calendarState,
+            ))
         }
     }
 
@@ -67,16 +78,26 @@ class MainScreenViewModel(
     fun onNextMonthTap(nextMonth: YearMonth) {
         Log.d("TAG", "onNextMonthTap: $nextMonth")
 
+        val currentUiState = uiState.value
+        if (currentUiState !is UiState.Normal<MainScreenUI>) return
+
         val nextMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = nextMonth)
-        val newMainScreenUI = MainScreenUI(calendarUI = nextMonthCalendarUI)
+        val newMainScreenUI = currentUiState.data.copy(
+            calendarUI = nextMonthCalendarUI
+        )
         updateMainScreenUI(newMainScreenUI)
     }
 
     fun onPreviousMonthTap(prevMonth: YearMonth) {
         Log.d("TAG", "onPreviousMonthTap: $prevMonth")
 
+        val currentUiState = uiState.value
+        if (currentUiState !is UiState.Normal<MainScreenUI>) return
+
         val prevMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = prevMonth)
-        val newMainScreenUI = MainScreenUI(calendarUI = prevMonthCalendarUI)
+        val newMainScreenUI = currentUiState.data.copy(
+            calendarUI = prevMonthCalendarUI
+        )
         updateMainScreenUI(newMainScreenUI)
     }
 

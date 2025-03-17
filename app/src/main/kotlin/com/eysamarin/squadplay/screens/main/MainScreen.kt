@@ -44,6 +44,7 @@ import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
@@ -149,7 +150,7 @@ private fun MainScreenMediumLayout(
             .padding(16.dp)
             .fillMaxSize()
     ) {
-        GreetingBar(windowSize = windowSize, state = state, onAvatarTap = {
+        GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
             onAction(MainScreenAction.OnAvatarTap)
         })
         Calendar(
@@ -172,7 +173,7 @@ private fun MainScreenExpandedLayout(
     if (state !is UiState.Normal) return
 
     Column(modifier = Modifier.padding(16.dp)) {
-        GreetingBar(windowSize = windowSize, state = state, onAvatarTap = {
+        GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
             onAction(MainScreenAction.OnAvatarTap)
         })
         LazyVerticalGrid(
@@ -253,11 +254,9 @@ private fun GameEvent(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GreetingBar(
     windowSize: WindowSizeClass,
-    state: UiState<MainScreenUI>,
+    user: User,
     onAvatarTap: () -> Unit = {},
 ) {
-    if (state !is UiState.Normal) return
-
     if (windowSize.heightSizeClass != WindowHeightSizeClass.Compact) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -267,16 +266,17 @@ private fun GreetingBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f, false),
-                text = state.data.title,
+                text = "Welcome back, ${user.username}!",
                 style = adaptiveHeadlineByHeight(windowSize),
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Box(modifier = Modifier
-                .padding(4.dp)
-                .clickable {
-                    onAvatarTap()
-                }) {
-                UserAvatar()
+            Box(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .clickable {
+                        onAvatarTap()
+                    }) {
+                UserAvatar(imageUrl = user.photoUrl)
             }
         }
     }

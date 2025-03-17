@@ -14,7 +14,7 @@ sealed interface MainScreenAction {
 }
 
 data class MainScreenUI(
-    val title: String = "Welcome back, User!",
+    val user: User,
     val calendarUI: CalendarUI,
     val gameEventsOnDate: List<GameEventUI> = emptyList(),
 )
@@ -118,4 +118,7 @@ val PREVIEW_GAME_EVENTS = listOf(
     GameEventUI(name = "Fortnight", players = 7),
 )
 
-val PREVIEW_MAIN_SCREEN_UI = MainScreenUI(calendarUI = PREVIEW_CALENDAR_UI)
+val PREVIEW_MAIN_SCREEN_UI = MainScreenUI(
+    user = PREVIEW_USER,
+    calendarUI = PREVIEW_CALENDAR_UI
+)

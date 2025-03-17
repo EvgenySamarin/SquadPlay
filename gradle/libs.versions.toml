@@ -15,6 +15,8 @@ googleGmsGoogleServices = "4.4.2"
 googleFirebaseCrashlytics = "3.0.3"
 credentials = "1.5.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
+ioCoilKtCoil3Compose = "3.1.0"
+ioCoilKtCoil3NetworkOkHttp = "3.0.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +36,9 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-material3-windowSize = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 io-insert-koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 io-insert-koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
+
+io-coil-kt-coil3-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "ioCoilKtCoil3Compose" }
+io-coil-kt-coil3-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "ioCoilKtCoil3NetworkOkHttp" }
 
 androidx-credentials-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
