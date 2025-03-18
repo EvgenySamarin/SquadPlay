@@ -1,8 +1,8 @@
 package com.eysamarin.squadplay.data.datasource
 
 import android.util.Log
-import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.FRIENDS_DATASET
-import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_DATASET
+import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.FRIENDS_COLLECTION
+import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.User
 import com.google.firebase.firestore.CollectionReference
@@ -14,13 +14,14 @@ import kotlinx.coroutines.withContext
 
 interface FirebaseFirestoreDataSource {
     suspend fun getUserInfo(userId: String): User?
-    fun addFriend(userId: String, friendId: String)
+    suspend fun addFriend(userId: String, inviteId: String): Boolean
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
+    suspend fun getFriendInfoByInviteId(inviteId: String): Friend?
 
     companion object {
-        const val USERS_DATASET = "users"
-        const val FRIENDS_DATASET = "friends"
+        const val USERS_COLLECTION = "users"
+        const val FRIENDS_COLLECTION = "friends"
     }
 }
 
@@ -31,8 +32,8 @@ class FirebaseFirestoreDataSourceImpl(
     override suspend fun deleteUserProfile(userId: String) {
         Log.d("TAG", "Deleting user data for $userId")
         try {
-            val userRef = firebaseFirestore.collection(USERS_DATASET).document(userId)
-            val friendsCollectionRef = userRef.collection(FRIENDS_DATASET)
+            val userRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
+            val friendsCollectionRef = userRef.collection(FRIENDS_COLLECTION)
             val friendDocs = getCollectionDocuments(friendsCollectionRef)
 
             firebaseFirestore.runTransaction { transaction ->
@@ -66,7 +67,7 @@ class FirebaseFirestoreDataSourceImpl(
             "photoUrl" to user.photoUrl,
         )
 
-        firebaseFirestore.collection(USERS_DATASET).document(user.uid)
+        firebaseFirestore.collection(USERS_COLLECTION).document(user.uid)
             .set(userDataMap)
             .addOnSuccessListener {
                 Log.d("TAG", "User profile saved successfully")
@@ -79,7 +80,7 @@ class FirebaseFirestoreDataSourceImpl(
 
     override suspend fun getUserInfo(userId: String): User? {
         val userDocument = firebaseFirestore
-            .collection(USERS_DATASET)
+            .collection(USERS_COLLECTION)
             .document(userId)
 
         val userData = userDocument.get()
@@ -94,7 +95,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
 
         val friends = userDocument
-            .collection(FRIENDS_DATASET)
+            .collection(FRIENDS_COLLECTION)
             .get()
             .addOnFailureListener {
                 Log.e("TAG", "Error getting friends: ${it.message}")
@@ -117,21 +118,74 @@ class FirebaseFirestoreDataSourceImpl(
         )
     }
 
-    override fun addFriend(userId: String, friendId: String) {
-        //update friends from user's side
-        firebaseFirestore.collection(USERS_DATASET).document(userId)
-            .collection(FRIENDS_DATASET).document(friendId)
-            .set(hashMapOf<String, Any>())
-            .addOnFailureListener {
-                Log.e("TAG", "Error adding friend for userId: ${it.message}")
-            }
+    override suspend fun getFriendInfoByInviteId(inviteId: String): Friend? =
+        findFriendByInviteId(inviteId)
 
-        //update friends from friend's side
-        firebaseFirestore.collection(USERS_DATASET).document(friendId)
-            .collection(FRIENDS_DATASET).document(userId)
-            .set(hashMapOf<String, Any>())
-            .addOnFailureListener {
-                Log.e("TAG", "Error adding user as friend for friendId: ${it.message}")
-            }
+    private suspend fun findFriendByInviteId(inviteId: String): Friend? =
+        withContext(Dispatchers.IO) {
+            firebaseFirestore
+                .collection(USERS_COLLECTION)
+                .whereEqualTo("inviteId", inviteId)
+                .get()
+                .addOnFailureListener {
+                    Log.e("TAG", "Error getting user info by inviteId: ${it.message}")
+                }
+                .await()
+                .documents.firstOrNull()
+                ?.let {
+                    Friend(
+                        uid = it.id,
+                        username = it.getString("username") ?: "Friend"
+                    )
+                }
+        }
+
+    override suspend fun addFriend(userId: String, inviteId: String): Boolean {
+        val friend = findFriendByInviteId(inviteId) ?: run {
+            Log.e("TAG", "Friend with inviteId: $inviteId not found")
+            return@addFriend false
+        }
+
+        val userRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
+        val friendRef = firebaseFirestore.collection(USERS_COLLECTION).document(friend.uid)
+
+        return try {
+            firebaseFirestore.runTransaction { transaction ->
+                val userSnapshot = transaction.get(userRef)
+                if (!userSnapshot.exists()) {
+                    Log.e("TAG", "User with userId: $userId not found")
+                    return@runTransaction false
+                }
+                val username = userSnapshot.getString("username") ?: "User"
+
+                val friendSnapshot = transaction.get(friendRef)
+                if (!friendSnapshot.exists()) {
+                    Log.e("TAG", "Friend with inviteId: $inviteId not found")
+                    return@runTransaction false
+                }
+
+                val userFriendRef = userRef.collection(FRIENDS_COLLECTION).document(friend.uid)
+                val friendFriendRef = friendRef.collection(FRIENDS_COLLECTION).document(userId)
+
+                transaction.set(
+                    userFriendRef,
+                    mapOf(
+                        "addedAt" to System.currentTimeMillis(),
+                        "username" to friend.username,
+                    )
+                )
+                transaction.set(
+                    friendFriendRef,
+                    mapOf(
+                        "addedAt" to System.currentTimeMillis(),
+                        "username" to username,
+                    )
+                )
+                true
+            }.await()
+        } catch (exception: Exception) {
+            Log.e("TAG", "error adding friend: ${exception.message}", exception)
+            false
+        }
     }
 }

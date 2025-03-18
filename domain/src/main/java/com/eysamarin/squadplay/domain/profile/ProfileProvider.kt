@@ -2,12 +2,14 @@ package com.eysamarin.squadplay.domain.profile
 
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
+import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.User
 
 interface ProfileProvider {
     suspend fun getUserInfo(): User?
     fun createNewInviteLink(userInviteId: String): String
-    fun addFriend(userId: String, friendId: String)
+    suspend fun addFriend(userId: String, inviteId: String): Boolean
+    suspend fun getFriendInfoByInviteId(inviteId: String): Friend?
 }
 
 class ProfileProviderImpl(
@@ -25,7 +27,11 @@ class ProfileProviderImpl(
         return "https://evgenysamarin.github.io/invite/$userInviteId"
     }
 
-    override fun addFriend(userId: String, friendId: String) {
-        profileRepository.addFriend(userId, friendId)
+    override suspend fun getFriendInfoByInviteId(inviteId: String): Friend? {
+        return profileRepository.getFriendInfoByInviteId(inviteId)
+    }
+
+    override suspend fun addFriend(userId: String, inviteId: String): Boolean {
+        return profileRepository.addFriend(userId = userId, inviteId = inviteId)
     }
 }

@@ -81,7 +81,14 @@ class MainScreenViewModel(
                     Log.w("TAG", "You cannot invite yourself")
                     return@onEach
                 }
-                _confirmInviteDialogState.emit(UiState.Normal("Want to add user as friend?"))
+
+                val friendInfo = profileProvider.getFriendInfoByInviteId(inviteId)
+                if (friendInfo == null) {
+                    snackbarChannel.send("Friend with inviteId: $inviteId not found")
+                    Log.w("TAG", "Friend with inviteId: $inviteId not found")
+                    return@onEach
+                }
+                _confirmInviteDialogState.emit(UiState.Normal("Want to add ${friendInfo.username} as friend?"))
             }
             .launchIn(viewModelScope)
     }
@@ -207,7 +214,16 @@ class MainScreenViewModel(
             return@launch
         }
 
-        Log.d("TAG", "adding friend with inviteId: $currentInviteId for user: $currentUser")
+        val isSuccess = profileProvider.addFriend(
+            userId = currentUser.uid, inviteId = currentInviteId,
+        )
+        snackbarChannel.send(
+            if (isSuccess) {
+                "Friend added successfully"
+            } else {
+                "Add friend failed"
+            }
+        )
     }
 
     fun onAddFriendDialogDismiss() = viewModelScope.launch {
