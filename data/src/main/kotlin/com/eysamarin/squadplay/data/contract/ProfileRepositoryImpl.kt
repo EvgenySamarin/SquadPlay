@@ -13,4 +13,5 @@ class ProfileRepositoryImpl(
 
     override suspend fun saveUserProfile(user: User) = firestoreDataSource.saveUserProfile(user)
     override suspend fun deleteUserProfile(userId: String) = firestoreDataSource.deleteUserProfile(userId)
+    override fun addFriend(userId: String, friendId: String) = firestoreDataSource.addFriend(userId, friendId)
 }

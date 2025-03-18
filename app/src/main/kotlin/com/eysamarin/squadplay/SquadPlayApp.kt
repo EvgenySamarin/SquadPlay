@@ -3,10 +3,13 @@
 package com.eysamarin.squadplay
 
 import android.content.Intent
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -75,10 +78,28 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 }
             )
         ) { entry ->
-            val inviteId = entry.arguments?.getString("inviteID")
             val viewModel: MainScreenViewModel = koinViewModel()
+
+            val inviteId = remember { entry.arguments?.getString("inviteID") }
+            LaunchedEffect(inviteId) {
+                viewModel.onInviteDeepLinkRetrieved(inviteId)
+            }
+
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val pollingDialogState by viewModel.pollingDialogState.collectAsStateWithLifecycle()
+            val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            MainScreen(
+                state = uiState,
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
+                pollingDialogState = pollingDialogState,
+                confirmInviteDialogState = confirmInviteDialogState,
+                windowSize = windowSize,
+                onAction = {
+                    handleMainScreenAction(action = it, viewModel = viewModel)
+                }
+            )
 
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
@@ -86,15 +107,11 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 startDestination = Routes.Main,
             )
 
-            MainScreen(
-                state = uiState,
-                inviteId = inviteId,
-                pollingDialogState = pollingDialogState,
-                windowSize = windowSize,
-                onAction = {
-                    handleMainScreenAction(action = it, viewModel = viewModel)
+            LaunchedEffect(Unit) {
+                viewModel.snackbarFlow.collect {
+                    snackbarHostState.showSnackbar(message = it)
                 }
-            )
+            }
         }
         composable(Routes.Profile.route) {
             val viewModel: ProfileScreenViewModel = koinViewModel()
@@ -181,4 +198,10 @@ private fun handleMainScreenAction(
     MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
     MainScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
     MainScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
+    MainScreenAction.OnAddFriendDialogConfirm -> {
+        viewModel.onAddFriendDialogConfirm()
+        viewModel.onAddFriendDialogDismiss()
+    }
+
+    MainScreenAction.OnAddFriendDialogDismiss -> viewModel.onAddFriendDialogDismiss()
 }

@@ -68,15 +68,16 @@ import com.eysamarin.squadplay.utils.WearLightModePreview
 @Composable
 fun MainScreen(
     state: UiState<MainScreenUI>,
-    pollingDialogState: UiState<PollingDialogUI>,
+    pollingDialogState: UiState<PollingDialogUI> = UiState.Empty,
+    confirmInviteDialogState: UiState<String> = UiState.Empty,
+    snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (MainScreenAction) -> Unit,
-    inviteId: String? = null,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = inviteId.toString()) },
+                title = { },
                 actions = {
                     IconButton(onClick = { onAction(MainScreenAction.OnLogOutTap) }) {
                         Icon(
@@ -104,6 +105,7 @@ fun MainScreen(
                 }
             }
         },
+        snackbarHost = snackbarHost,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
@@ -135,6 +137,20 @@ fun MainScreen(
                 }
             )
         }
+    }
+
+    if (confirmInviteDialogState is UiState.Normal<String>) {
+        ConfirmationDialog(
+            windowSize = windowSize,
+            title = "Invite new friend",
+            text = confirmInviteDialogState.data,
+            onDismiss = {
+                onAction(MainScreenAction.OnAddFriendDialogDismiss)
+            },
+            onConfirmTap = {
+                onAction(MainScreenAction.OnAddFriendDialogConfirm)
+            }
+        )
     }
 }
 
@@ -292,7 +308,6 @@ fun MainScreenPhonePreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             onAction = {},
         )
     }
@@ -305,7 +320,6 @@ fun MainScreenTabletPreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_EXPANDED,
             onAction = {},
         )
@@ -319,7 +333,6 @@ fun MainScreenWearPreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_COMPACT,
             onAction = {},
         )

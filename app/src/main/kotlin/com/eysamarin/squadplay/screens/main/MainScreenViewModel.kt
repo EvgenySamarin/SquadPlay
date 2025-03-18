@@ -19,6 +19,12 @@ import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.YearMonth
@@ -33,11 +39,20 @@ class MainScreenViewModel(
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
-    val pollingDialogState = _pollingDialogState.asStateFlow()
-
     private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
     val navigationFlow = navigationChannel.receiveAsFlow()
+
+    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
+    val snackbarFlow = snackbarChannel.receiveAsFlow()
+
+    private val _confirmInviteDialogState = MutableStateFlow<UiState<String>>(UiState.Empty)
+    val confirmInviteDialogState = _confirmInviteDialogState.asStateFlow()
+
+    private val _inviteLinkState = MutableStateFlow<String?>(null)
+    val inviteLinkState = _inviteLinkState.asStateFlow()
+
+    private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
+    val pollingDialogState = _pollingDialogState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -53,6 +68,22 @@ class MainScreenViewModel(
                 calendarUI = calendarState,
             ))
         }
+
+        uiState
+            .mapNotNull { it as? UiState.Normal<MainScreenUI> }
+            .map { it.data.user }
+            .combine(inviteLinkState.filterNotNull()) { user, inviteId ->
+                user to inviteId
+            }
+            .onEach { (user, inviteId) ->
+                if (user.inviteId == inviteId) {
+                    snackbarChannel.send("You cannot invite yourself")
+                    Log.w("TAG", "You cannot invite yourself")
+                    return@onEach
+                }
+                _confirmInviteDialogState.emit(UiState.Normal("Want to add user as friend?"))
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun updateMainScreenUI(updatedMainScreenUI: MainScreenUI) = viewModelScope.launch {
@@ -156,4 +187,30 @@ class MainScreenViewModel(
             ?.calendarUI
             ?.dates
             ?.firstOrNull { it.isSelected }
+
+    fun onInviteDeepLinkRetrieved(inviteId: String?) = viewModelScope.launch {
+        if (inviteId == null) return@launch
+
+        Log.d("TAG", "onInviteDeepLinkRetrieved: $inviteId")
+        _inviteLinkState.emit(inviteId)
+    }
+
+    fun onAddFriendDialogConfirm() = viewModelScope.launch {
+        Log.d("TAG", "onAddFriendDialogConfirm")
+
+        val currentInviteId = inviteLinkState.value ?: run {
+            Log.w("TAG", "currentInviteId is null, cannot add friend")
+            return@launch
+        }
+        val currentUser = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.user ?: run {
+            Log.w("TAG", "currentUser is null, cannot add friend")
+            return@launch
+        }
+
+        Log.d("TAG", "adding friend with inviteId: $currentInviteId for user: $currentUser")
+    }
+
+    fun onAddFriendDialogDismiss() = viewModelScope.launch {
+        _confirmInviteDialogState.emit(UiState.Empty)
+    }
 }

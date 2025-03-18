@@ -7,6 +7,7 @@ import com.eysamarin.squadplay.models.User
 interface ProfileProvider {
     suspend fun getUserInfo(): User?
     fun createNewInviteLink(userInviteId: String): String
+    fun addFriend(userId: String, friendId: String)
 }
 
 class ProfileProviderImpl(
@@ -22,5 +23,9 @@ class ProfileProviderImpl(
 
     override fun createNewInviteLink(userInviteId: String): String {
         return "https://evgenysamarin.github.io/invite/$userInviteId"
+    }
+
+    override fun addFriend(userId: String, friendId: String) {
+        profileRepository.addFriend(userId, friendId)
     }
 }

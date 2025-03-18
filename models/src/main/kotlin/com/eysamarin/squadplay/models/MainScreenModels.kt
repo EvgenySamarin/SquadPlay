@@ -7,6 +7,9 @@ sealed interface MainScreenAction {
     object OnAddGameEventTap : MainScreenAction
     object OnLogOutTap : MainScreenAction
     object OnAvatarTap : MainScreenAction
+    object OnAddFriendDialogDismiss : MainScreenAction
+    object OnAddFriendDialogConfirm : MainScreenAction
+
     class OnPollingStartTap(val timeFrom: TimeUnit, val timeTo: TimeUnit) : MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
