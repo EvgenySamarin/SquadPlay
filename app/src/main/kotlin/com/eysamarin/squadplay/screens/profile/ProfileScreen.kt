@@ -130,8 +130,8 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            PrimaryButton(windowSize, text = "Create invite link", onTap = {
-                onAction(ProfileScreenAction.OnAddNewFriendTap)
+            PrimaryButton(windowSize, text = "Share invite link", onTap = {
+                onAction(ProfileScreenAction.OnCreateInviteLinkTap)
             })
         }
         Text(
@@ -176,7 +176,7 @@ fun ProfileScreenPhonePreview() {
     SquadPlayTheme {
         ProfileScreen(
             state = UiState.Normal(PREVIEW_PROFILE_SCREEN_UI),
-            onAction = {},
+            onAction = {}
         )
     }
 }

@@ -4,7 +4,7 @@ import java.util.UUID
 
 sealed interface ProfileScreenAction {
     data object OnBackButtonTap : ProfileScreenAction
-    object OnAddNewFriendTap : ProfileScreenAction
+    object OnCreateInviteLinkTap : ProfileScreenAction
 }
 
 data class ProfileScreenUI(

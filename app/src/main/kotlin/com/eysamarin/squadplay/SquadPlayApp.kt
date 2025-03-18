@@ -2,10 +2,12 @@
 
 package com.eysamarin.squadplay
 
+import android.content.Intent
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -19,6 +21,7 @@ import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.Routes
+import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreen
@@ -97,6 +100,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             val viewModel: ProfileScreenViewModel = koinViewModel()
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val inviteLinkState by viewModel.inviteLinkState.collectAsStateWithLifecycle()
 
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
@@ -111,6 +115,17 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                     handleProfileScreenAction(action = it, viewModel = viewModel)
                 }
             )
+
+            if (inviteLinkState is UiState.Normal<String>) {
+                val inviteLink = (inviteLinkState as UiState.Normal<String>).data
+                val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                    putExtra(Intent.EXTRA_TEXT, inviteLink)
+                    type = "text/plain"
+                }
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                LocalContext.current.startActivity(shareIntent)
+                viewModel.hideShareLink()
+            }
         }
     }
 }
@@ -147,7 +162,7 @@ private fun handleProfileScreenAction(
     viewModel: ProfileScreenViewModel,
 ) = when (action) {
     ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
-    ProfileScreenAction.OnAddNewFriendTap -> viewModel.onAddNewFriendTap()
+    ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteLinkTap()
 }
 
 private fun handleMainScreenAction(

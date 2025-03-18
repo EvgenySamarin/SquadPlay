@@ -19,6 +19,9 @@ class ProfileScreenViewModel(
     private val _uiState = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private val _inviteLinkState = MutableStateFlow<UiState<String>>(UiState.Empty)
+    val inviteLinkState = _inviteLinkState.asStateFlow()
+
     private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
     val navigationFlow = navigationChannel.receiveAsFlow()
 
@@ -44,7 +47,17 @@ class ProfileScreenViewModel(
         navigationChannel.send(NavAction.NavigateBack)
     }
 
-    fun onAddNewFriendTap() = viewModelScope.launch {
-        Log.d("TAG", "onAddNewFriendTap")
+    fun onCreateInviteLinkTap() = viewModelScope.launch {
+        Log.d("TAG", "onCreateInviteLinkTap")
+        val currentUiState = uiState.value
+        if(currentUiState !is UiState.Normal) return@launch
+
+        val inviteLink = profileProvider.createNewInviteLink(currentUiState.data.user.inviteId)
+        _inviteLinkState.emit(UiState.Normal(inviteLink))
+    }
+
+    fun hideShareLink() = viewModelScope.launch {
+        Log.d("TAG", "hideShareLink")
+        _inviteLinkState.emit(UiState.Empty)
     }
 }
