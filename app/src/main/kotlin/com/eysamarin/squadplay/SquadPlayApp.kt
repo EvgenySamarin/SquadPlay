@@ -73,11 +73,11 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             route = Route.Main.route,
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "https://evgenysamarin.github.io/invite/{inviteID}"
+                    uriPattern = "https://evgenysamarin.github.io/invite/{inviteGroupID}"
                 }
             ),
             arguments = listOf(
-                navArgument("inviteID") {
+                navArgument("inviteGroupID") {
                     type = NavType.StringType
                     defaultValue = null
                     nullable = true
@@ -86,9 +86,9 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
         ) { entry ->
             val viewModel: MainScreenViewModel = koinViewModel()
 
-            val inviteId = remember { entry.arguments?.getString("inviteID") }
-            LaunchedEffect(inviteId) {
-                viewModel.onInviteDeepLinkRetrieved(inviteId)
+            val groupId = remember { entry.arguments?.getString("inviteGroupID") }
+            LaunchedEffect(groupId) {
+                viewModel.onJoinGroupDeepLinkRetrieved(groupId)
             }
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -204,7 +204,7 @@ private fun handleProfileScreenAction(
     viewModel: ProfileScreenViewModel,
 ) = when (action) {
     ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
-    ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteLinkTap()
+    ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteGroupLinkTap()
 }
 
 private fun handleMainScreenAction(
@@ -226,10 +226,10 @@ private fun handleMainScreenAction(
     MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
     MainScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
     MainScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
-    MainScreenAction.OnAddFriendDialogConfirm -> {
-        viewModel.onAddFriendDialogConfirm()
-        viewModel.onAddFriendDialogDismiss()
+    MainScreenAction.OnJoinGroupDialogConfirm -> {
+        viewModel.onJoinGroupDialogConfirm()
+        viewModel.onJoinGroupDialogDismiss()
     }
 
-    MainScreenAction.OnAddFriendDialogDismiss -> viewModel.onAddFriendDialogDismiss()
+    MainScreenAction.OnJoinGroupDialogDismiss -> viewModel.onJoinGroupDialogDismiss()
 }

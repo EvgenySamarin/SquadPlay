@@ -8,8 +8,8 @@ sealed interface MainScreenAction {
     object OnAddGameEventTap : MainScreenAction
     object OnLogOutTap : MainScreenAction
     object OnAvatarTap : MainScreenAction
-    object OnAddFriendDialogDismiss : MainScreenAction
-    object OnAddFriendDialogConfirm : MainScreenAction
+    object OnJoinGroupDialogDismiss : MainScreenAction
+    object OnJoinGroupDialogConfirm : MainScreenAction
 
     class OnEventSaveTap(
         val year: Int,

@@ -143,7 +143,7 @@ private fun ProfileScreenMediumLayout(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        FriendsList(state.data.user.friends, windowSize)
+        FriendsList(state.data.friends, windowSize)
     }
 }
 

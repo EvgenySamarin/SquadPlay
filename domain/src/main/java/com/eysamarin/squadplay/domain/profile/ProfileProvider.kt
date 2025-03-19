@@ -3,14 +3,21 @@ package com.eysamarin.squadplay.domain.profile
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.models.Friend
+import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.flow.Flow
 
 interface ProfileProvider {
     fun getUserInfoFlow(): Flow<User?>
-    fun createNewInviteLink(userInviteId: String): String
-    suspend fun addFriend(userId: String, inviteId: String): Boolean
-    suspend fun getFriendInfoByInviteId(inviteId: String): Friend?
+    fun createNewInviteLink(inviteGroupId: String): String
+    suspend fun joinGroup(userId: String, groupId: String): Boolean
+    suspend fun getGroupInfo(groupId: String): Group?
+
+    /**
+     * @return created group uid
+     */
+    suspend fun createNewUserGroup(userId: String): String
+    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
 }
 
 class ProfileProviderImpl(
@@ -23,15 +30,23 @@ class ProfileProviderImpl(
         return profileRepository.getUserInfoFlow(userUid)
     }
 
-    override fun createNewInviteLink(userInviteId: String): String {
-        return "https://evgenysamarin.github.io/invite/$userInviteId"
+    override suspend fun createNewUserGroup(userId: String): String {
+        return profileRepository.createNewUserGroup(userId, "Friends")
     }
 
-    override suspend fun getFriendInfoByInviteId(inviteId: String): Friend? {
-        return profileRepository.getFriendInfoByInviteId(inviteId)
+    override fun createNewInviteLink(inviteGroupId: String): String {
+        return "https://evgenysamarin.github.io/invite/$inviteGroupId"
     }
 
-    override suspend fun addFriend(userId: String, inviteId: String): Boolean {
-        return profileRepository.addFriend(userId = userId, inviteId = inviteId)
+    override suspend fun getGroupInfo(groupId: String): Group? {
+        return profileRepository.getGroupInfo(groupId)
+    }
+
+    override suspend fun joinGroup(userId: String, groupId: String): Boolean {
+        return profileRepository.joinGroup(userId = userId, groupId = groupId)
+    }
+
+    override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>> {
+        return profileRepository.getGroupsMembersInfoFlow(groups)
     }
 }

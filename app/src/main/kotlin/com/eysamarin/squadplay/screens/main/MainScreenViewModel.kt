@@ -46,8 +46,8 @@ class MainScreenViewModel(
     private val _confirmInviteDialogState = MutableStateFlow<UiState<String>>(UiState.Empty)
     val confirmInviteDialogState = _confirmInviteDialogState.asStateFlow()
 
-    private val _inviteLinkState = MutableStateFlow<String?>(null)
-    val inviteLinkState = _inviteLinkState.asStateFlow()
+    private val _inviteGroupIdState = MutableStateFlow<String?>(null)
+    val inviteGroupIdState = _inviteGroupIdState.asStateFlow()
 
     private val _eventDialogState = MutableStateFlow<UiState<EventDialogUI>>(UiState.Empty)
     val eventDialogState = _eventDialogState.asStateFlow()
@@ -57,7 +57,6 @@ class MainScreenViewModel(
     }
 
     private fun collectUserInfo() {
-        Log.d("TAG", "subscribe on user info flow")
         profileProvider.getUserInfoFlow()
             .filterNotNull()
             .onEach { userInfo ->
@@ -65,23 +64,23 @@ class MainScreenViewModel(
                     calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
                 updateMainScreenUI(MainScreenUI(user = userInfo, calendarUI = calendarState))
             }
-            .combine(inviteLinkState.filterNotNull()) { user, inviteId ->
-                user to inviteId
+            .combine(inviteGroupIdState.filterNotNull()) { user, inviteGroupId ->
+                user to inviteGroupId
             }
-            .onEach { (user, inviteId) ->
-                if (user.inviteId == inviteId) {
-                    snackbarChannel.send("You cannot invite yourself")
-                    Log.w("TAG", "You cannot invite yourself")
+            .onEach { (user, inviteGroupId) ->
+                if (user.groups.map { it.uid }.contains(inviteGroupId)) {
+                    snackbarChannel.send("You're already in this squad")
+                    Log.w("TAG", "You're already in this squad")
                     return@onEach
                 }
 
-                val friendInfo = profileProvider.getFriendInfoByInviteId(inviteId)
-                if (friendInfo == null) {
-                    snackbarChannel.send("Friend with inviteId: $inviteId not found")
-                    Log.w("TAG", "Friend with inviteId: $inviteId not found")
+                val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
+                if (groupInfo == null) {
+                    snackbarChannel.send("Squad with uid: $inviteGroupId not found")
+                    Log.w("TAG", "Group with uid: $inviteGroupId not found")
                     return@onEach
                 }
-                _confirmInviteDialogState.emit(UiState.Normal("Want to add ${friendInfo.username} as friend?"))
+                _confirmInviteDialogState.emit(UiState.Normal("Want to join ${groupInfo.title} squad?"))
             }
             .launchIn(viewModelScope)
     }
@@ -200,38 +199,38 @@ class MainScreenViewModel(
         )))
     }
 
-    fun onInviteDeepLinkRetrieved(inviteId: String?) = viewModelScope.launch {
-        if (inviteId == null) return@launch
+    fun onJoinGroupDeepLinkRetrieved(inviteGroupId: String?) = viewModelScope.launch {
+        if (inviteGroupId == null) return@launch
 
-        Log.d("TAG", "onInviteDeepLinkRetrieved: $inviteId")
-        _inviteLinkState.emit(inviteId)
+        Log.d("TAG", "onInviteGroupDeepLinkRetrieved: $inviteGroupId")
+        _inviteGroupIdState.emit(inviteGroupId)
     }
 
-    fun onAddFriendDialogConfirm() = viewModelScope.launch {
-        Log.d("TAG", "onAddFriendDialogConfirm")
+    fun onJoinGroupDialogConfirm() = viewModelScope.launch {
+        Log.d("TAG", "onJoinGroupDialogConfirm")
 
-        val currentInviteId = inviteLinkState.value ?: run {
-            Log.w("TAG", "currentInviteId is null, cannot add friend")
+        val inviteGroupId = inviteGroupIdState.value ?: run {
+            Log.w("TAG", "groupId is null, cannot join group")
             return@launch
         }
         val currentUser = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.user ?: run {
-            Log.w("TAG", "currentUser is null, cannot add friend")
+            Log.w("TAG", "currentUser is null, cannot join group")
             return@launch
         }
 
-        val isSuccess = profileProvider.addFriend(
-            userId = currentUser.uid, inviteId = currentInviteId,
+        val isSuccess = profileProvider.joinGroup(
+            userId = currentUser.uid, groupId = inviteGroupId,
         )
         snackbarChannel.send(
             if (isSuccess) {
-                "Friend added successfully"
+                "You joined the squad"
             } else {
-                "Add friend failed"
+                "You failed joining the squad"
             }
         )
     }
 
-    fun onAddFriendDialogDismiss() = viewModelScope.launch {
+    fun onJoinGroupDialogDismiss() = viewModelScope.launch {
         _confirmInviteDialogState.emit(UiState.Empty)
     }
 }

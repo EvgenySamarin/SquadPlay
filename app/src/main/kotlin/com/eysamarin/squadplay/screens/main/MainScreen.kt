@@ -149,10 +149,10 @@ fun MainScreen(
             title = "Invite new friend",
             text = confirmInviteDialogState.data,
             onDismiss = {
-                onAction(MainScreenAction.OnAddFriendDialogDismiss)
+                onAction(MainScreenAction.OnJoinGroupDialogDismiss)
             },
             onConfirmTap = {
-                onAction(MainScreenAction.OnAddFriendDialogConfirm)
+                onAction(MainScreenAction.OnJoinGroupDialogConfirm)
             }
         )
     }
