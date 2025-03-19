@@ -68,7 +68,7 @@ fun AddGameEvent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "Create new game event polling for date: ${ui.selectedDate.dayOfMonth}",
+            text = "Create new game event polling for date: ${ui.yearMonth.year}.${ui.yearMonth.monthValue}.${ui.selectedDate.dayOfMonth}",
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -135,7 +135,9 @@ fun AddGameEvent(
 @Composable
 private fun AddGameEventContentPreview() {
     SquadPlayTheme {
-        Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)) {
             Spacer(Modifier.padding(top = 24.dp))
             AddGameEvent(
                 ui = PREVIEW_POLLING_DIALOG_UI,

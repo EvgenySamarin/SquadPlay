@@ -10,7 +10,13 @@ sealed interface MainScreenAction {
     object OnAddFriendDialogDismiss : MainScreenAction
     object OnAddFriendDialogConfirm : MainScreenAction
 
-    class OnPollingStartTap(val timeFrom: TimeUnit, val timeTo: TimeUnit) : MainScreenAction
+    class OnPollingStartTap(
+        val year: Int,
+        val month: Int,
+        val day: Int,
+        val timeFrom: TimeUnit,
+        val timeTo: TimeUnit,
+    ) : MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnDateTap(val date: CalendarUI.Date) : MainScreenAction
@@ -28,12 +34,14 @@ data class CalendarUI(
     val dates: List<Date>
 ) {
     data class Date(
-        val dayOfMonth: String,
+        val dayOfMonth: Int? = null,
         val countEvents: Int,
-        val isSelected: Boolean
+        val isSelected: Boolean,
+        val enabled: Boolean,
     ) {
         companion object {
-            val Empty = Date(dayOfMonth = "", countEvents = 0, isSelected = false)
+            val Empty =
+                Date(dayOfMonth = null, countEvents = 0, isSelected = false, enabled = false)
         }
     }
 }
@@ -46,6 +54,7 @@ data class GameEventUI(
 
 data class PollingDialogUI(
     val selectedDate: CalendarUI.Date,
+    val yearMonth: YearMonth,
 )
 
 data class TimePickerUI(
@@ -72,44 +81,50 @@ val PREVIEW_TIME_PICKER_UI = TimePickerUI(
 )
 
 val PREVIEW_POLLING_DIALOG_UI = PollingDialogUI(
-    selectedDate = CalendarUI.Date("6", 4, true),
+    selectedDate = CalendarUI.Date(
+        dayOfMonth = 6,
+        countEvents = 4,
+        enabled = true,
+        isSelected = true,
+    ),
+    yearMonth = YearMonth.now()
 )
 
 val PREVIEW_CALENDAR_UI = CalendarUI(
     daysOfWeek = listOf("Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"),
     yearMonth = YearMonth.now(),
     dates = listOf(
-        CalendarUI.Date("1", 0, false),
-        CalendarUI.Date("2", 0, false),
-        CalendarUI.Date("3", 1, false),
-        CalendarUI.Date("4", 0, false),
-        CalendarUI.Date("5", 0, false),
-        CalendarUI.Date("6", 5, true),
-        CalendarUI.Date("7", 0, false),
-        CalendarUI.Date("8", 0, false),
-        CalendarUI.Date("9", 0, false),
-        CalendarUI.Date("10", 0, false),
-        CalendarUI.Date("11", 0, false),
-        CalendarUI.Date("12", 3, false),
-        CalendarUI.Date("13", 0, false),
-        CalendarUI.Date("14", 0, false),
-        CalendarUI.Date("15", 0, false),
-        CalendarUI.Date("16", 0, false),
-        CalendarUI.Date("17", 2, false),
-        CalendarUI.Date("18", 0, false),
-        CalendarUI.Date("19", 0, false),
-        CalendarUI.Date("20", 0, false),
-        CalendarUI.Date("21", 0, false),
-        CalendarUI.Date("22", 0, false),
-        CalendarUI.Date("23", 0, false),
-        CalendarUI.Date("24", 0, false),
-        CalendarUI.Date("25", 0, false),
-        CalendarUI.Date("26", 5, false),
-        CalendarUI.Date("27", 0, false),
-        CalendarUI.Date("28", 0, false),
-        CalendarUI.Date("29", 1, false),
-        CalendarUI.Date("30", 0, false),
-        CalendarUI.Date("31", 0, false),
+        CalendarUI.Date(1, 0, false, true),
+        CalendarUI.Date(2, 0, false, true),
+        CalendarUI.Date(3, 1, false, true),
+        CalendarUI.Date(4, 0, false, true),
+        CalendarUI.Date(5, 0, false, true),
+        CalendarUI.Date(6, 5, true, true),
+        CalendarUI.Date(7, 0, false, true),
+        CalendarUI.Date(8, 0, false, true),
+        CalendarUI.Date(9, 0, false, true),
+        CalendarUI.Date(10, 0, false, true),
+        CalendarUI.Date(11, 0, false, true),
+        CalendarUI.Date(12, 3, false, true),
+        CalendarUI.Date(13, 0, false, true),
+        CalendarUI.Date(14, 0, false, true),
+        CalendarUI.Date(15, 0, false, true),
+        CalendarUI.Date(16, 0, false, true),
+        CalendarUI.Date(17, 2, false, true),
+        CalendarUI.Date(18, 0, false, true),
+        CalendarUI.Date(19, 0, false, true),
+        CalendarUI.Date(20, 0, false, true),
+        CalendarUI.Date(21, 0, false, true),
+        CalendarUI.Date(22, 0, false, true),
+        CalendarUI.Date(23, 0, false, true),
+        CalendarUI.Date(24, 0, false, true),
+        CalendarUI.Date(25, 0, false, true),
+        CalendarUI.Date(26, 5, false, true),
+        CalendarUI.Date(27, 0, false, true),
+        CalendarUI.Date(28, 0, false, true),
+        CalendarUI.Date(29, 1, false, true),
+        CalendarUI.Date(30, 0, false, true),
+        CalendarUI.Date(31, 0, false, true),
     ),
 )
 

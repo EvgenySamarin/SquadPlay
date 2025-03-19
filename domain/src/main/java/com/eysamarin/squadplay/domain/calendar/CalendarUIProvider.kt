@@ -45,7 +45,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         return target.copy(
             dates = target.dates.map { item ->
                 when {
-                    item.dayOfMonth == selectedDate.dayOfMonth -> item.copy(isSelected = true)
+                    item.dayOfMonth == selectedDate.dayOfMonth && item.enabled-> item.copy(isSelected = true)
                     item.isSelected == true -> item.copy(isSelected = false)
                     else -> item
                 }
@@ -63,6 +63,13 @@ class CalendarDataSource {
 
         return generateSequence(firstMondayOfMonth) { it.plusDays(1) }
             .takeWhile { it.isBefore(firstDayOfNextMonth) }
+            .toMutableList()
+            .apply {
+                val extraDaysCount = DayOfWeek.SUNDAY.value - last().dayOfWeek.value
+                repeat(extraDaysCount) {
+                    add(last().plusDays(1))
+                }
+            }
             .toList()
     }
 
@@ -71,11 +78,12 @@ class CalendarDataSource {
             .map { date ->
                 CalendarUI.Date(
                     dayOfMonth = if (date.monthValue == yearMonth.monthValue) {
-                        "${date.dayOfMonth}"
+                        date.dayOfMonth
                     } else {
-                        "" // Fill with empty string for days outside the current month
+                        date.dayOfMonth
                     },
                     isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue,
+                    enabled = date.monthValue == yearMonth.monthValue,
                     countEvents = 0,
                 )
             }

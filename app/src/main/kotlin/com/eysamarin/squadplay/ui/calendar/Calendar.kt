@@ -45,8 +45,9 @@ fun Calendar(
     onPreviousMonthTap: (YearMonth) -> Unit,
     onNextMonthTap: (YearMonth) -> Unit,
     onDateTap: (CalendarUI.Date) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Column {
+    Column(modifier = modifier) {
         Row {
             repeat(ui.daysOfWeek.size) {
                 val item = ui.daysOfWeek[it]
@@ -150,7 +151,7 @@ fun ContentItem(
         modifier = modifier
             .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
             .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-            .clickable(enabled = date.dayOfMonth.isNotBlank()) {
+            .clickable(enabled = date.enabled) {
                 onItemTap(date)
             }
     ) {
@@ -173,10 +174,15 @@ fun ContentItem(
                 }
             },
         ) {
+            
             Text(
                 modifier = Modifier,
-                text = date.dayOfMonth,
-                color = if (date.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                text = date.dayOfMonth?.toString() ?: "",
+                color = when {
+                    !date.enabled -> MaterialTheme.colorScheme.outlineVariant
+                    date.isSelected -> MaterialTheme.colorScheme.onPrimary
+                    else -> MaterialTheme.colorScheme.onSurface
+                },
                 style = adaptiveBodyByHeight(windowSize),
             )
         }

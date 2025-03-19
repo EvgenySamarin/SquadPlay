@@ -161,32 +161,37 @@ class MainScreenViewModel(
         _pollingDialogState.emit(UiState.Empty)
     }
 
-    fun onPollingStartTap(timeFrom: TimeUnit, timeTo: TimeUnit) {
-        val selectedDate = takeSelectedDate()
-
-        Log.d("TAG", "onPollingStartTap for date: $selectedDate, timeFrom: $timeFrom, timeTo: $timeTo")
+    fun onPollingStartTap(
+        year: Int,
+        month: Int,
+        day: Int,
+        timeFrom: TimeUnit,
+        timeTo: TimeUnit
+    ) {
+        Log.d("TAG", "onPollingStartTap for date: $year-$month-$day, timeFrom: $timeFrom, timeTo: $timeTo")
         pollingProvider.savePollingData("timeFrom: $timeFrom, timeTo: $timeTo")
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
         Log.d("TAG", "onAddGameEventTap show polling dialog state")
 
-        val currentSelectedDate = takeSelectedDate()
+        val calendarUi = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.calendarUI
+        if (calendarUi == null) {
+            Log.w("TAG", "calendar ui is null cannot add game event")
+            return@launch
+        }
+        val selectedDate = calendarUi.dates.firstOrNull { it.enabled && it.isSelected }
 
-        if (currentSelectedDate == null) {
+        if (selectedDate == null) {
             Log.w("TAG", "selected date is null cannot add game event")
             return@launch
         }
 
-        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = currentSelectedDate)))
+        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(
+            selectedDate = selectedDate,
+            yearMonth = calendarUi.yearMonth
+        )))
     }
-
-    private fun takeSelectedDate(): CalendarUI.Date? =
-        (uiState.value as? UiState.Normal<MainScreenUI>)
-            ?.data
-            ?.calendarUI
-            ?.dates
-            ?.firstOrNull { it.isSelected }
 
     fun onInviteDeepLinkRetrieved(inviteId: String?) = viewModelScope.launch {
         if (inviteId == null) return@launch

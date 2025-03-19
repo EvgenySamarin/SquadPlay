@@ -216,6 +216,9 @@ private fun handleMainScreenAction(
     is MainScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
     MainScreenAction.OnDismissPolingDialog -> viewModel.dismissPolingDialog()
     is MainScreenAction.OnPollingStartTap -> viewModel.onPollingStartTap(
+        year = action.year,
+        month = action.month,
+        day = action.day,
         timeFrom = action.timeFrom,
         timeTo = action.timeTo,
     )

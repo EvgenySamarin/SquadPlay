@@ -5,14 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -28,7 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -132,7 +128,15 @@ fun MainScreen(
                 ui = pollingDialogState.data,
                 windowSize = windowSize,
                 onStartPollingTap = { from, to ->
-                    onAction(MainScreenAction.OnPollingStartTap(from, to))
+                    onAction(
+                        MainScreenAction.OnPollingStartTap(
+                            year = pollingDialogState.data.yearMonth.year,
+                            month = pollingDialogState.data.yearMonth.monthValue,
+                            day = pollingDialogState.data.selectedDate.dayOfMonth ?: 0,
+                            timeFrom = from,
+                            timeTo = to
+                        )
+                    )
                     onAction(MainScreenAction.OnDismissPolingDialog)
                 }
             )
@@ -174,8 +178,9 @@ private fun MainScreenMediumLayout(
             ui = state.data.calendarUI,
             windowSize = windowSize,
             onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
-            onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) }
-        ) { onAction(MainScreenAction.OnDateTap(it)) }
+            onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) },
+            onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
+        )
         HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
         EventLists(events = state.data.gameEventsOnDate, windowSize = windowSize)
     }
@@ -189,17 +194,13 @@ private fun MainScreenExpandedLayout(
 ) {
     if (state !is UiState.Normal) return
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
-            onAction(MainScreenAction.OnAvatarTap)
-        })
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+    Row(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        LazyColumn(modifier = Modifier.weight(1f)) {
             item {
                 Calendar(
                     ui = state.data.calendarUI,
@@ -209,6 +210,14 @@ private fun MainScreenExpandedLayout(
                     onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
                 )
             }
+
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
+                onAction(MainScreenAction.OnAvatarTap)
+            })
+            HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+            EventLists(events = state.data.gameEventsOnDate, windowSize = windowSize)
         }
     }
 }
@@ -274,27 +283,25 @@ private fun GreetingBar(
     user: User,
     onAvatarTap: () -> Unit = {},
 ) {
-    if (windowSize.heightSizeClass != WindowHeightSizeClass.Compact) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, false),
-                text = "Welcome back, ${user.username}!",
-                style = adaptiveHeadlineByHeight(windowSize),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .clickable {
-                        onAvatarTap()
-                    }) {
-                UserAvatar(imageUrl = user.photoUrl)
-            }
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, false),
+            text = "Welcome back, ${user.username}!",
+            style = adaptiveHeadlineByHeight(windowSize),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Box(
+            modifier = Modifier
+                .padding(4.dp)
+                .clickable {
+                    onAvatarTap()
+                }) {
+            UserAvatar(imageUrl = user.photoUrl)
         }
     }
 }
