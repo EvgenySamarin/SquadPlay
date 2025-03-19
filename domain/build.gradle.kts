@@ -14,4 +14,6 @@ kotlin {
 dependencies {
     implementation(project(":models"))
     implementation(project(":contract"))
+
+    implementation(libs.org.jetbrains.kotlinx.coroutines.core)
 }

@@ -10,6 +10,9 @@ import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -26,20 +29,18 @@ class ProfileScreenViewModel(
     val navigationFlow = navigationChannel.receiveAsFlow()
 
     init {
-        fetchUserInfo()
+        collectUserInfo()
     }
 
-    private fun fetchUserInfo() = viewModelScope.launch {
-        Log.d("TAG", "fetching user info")
-        val userInfo = profileProvider.getUserInfo()
-
-        if (userInfo == null) {
-            _uiState.emit(UiState.Error(description = "User info is null"))
-            return@launch
-        }
-
-        Log.d("TAG", "user info fetched: $userInfo")
-        _uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo)))
+    private fun collectUserInfo() {
+        Log.d("TAG", "subscribe on user info flow")
+        profileProvider.getUserInfoFlow()
+            .filterNotNull()
+            .onEach { userInfo ->
+                Log.d("TAG", "user info received: $userInfo")
+                _uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo)))
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onBackButtonTap() = viewModelScope.launch {

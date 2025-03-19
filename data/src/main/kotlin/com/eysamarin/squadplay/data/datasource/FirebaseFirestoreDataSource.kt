@@ -9,11 +9,14 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 interface FirebaseFirestoreDataSource {
-    suspend fun getUserInfo(userId: String): User?
+    fun getUserInfoFlow(userId: String): Flow<User?>
     suspend fun addFriend(userId: String, inviteId: String): Boolean
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
@@ -78,44 +81,59 @@ class FirebaseFirestoreDataSourceImpl(
             .await()
     }
 
-    override suspend fun getUserInfo(userId: String): User? {
+    override fun getUserInfoFlow(userId: String): Flow<User?> = callbackFlow {
         val userDocument = firebaseFirestore
             .collection(USERS_COLLECTION)
             .document(userId)
 
-        val userData = userDocument.get()
-            .addOnFailureListener {
-                Log.e("TAG", "Error getting user data: ${it.message}")
+        val listenerRegistration = userDocument.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.e("TAG", "Error getting user data: ${exception.message}")
+                close(exception) // Close the flow with an error
+                return@addSnapshotListener
             }
-            .await().data
 
-        if (userData == null) {
-            Log.e("TAG", "User data is null")
-            return null
+            if (snapshot == null || !snapshot.exists()) {
+                trySend(null)
+                return@addSnapshotListener
+            }
+
+            val userData = snapshot.data
+            if (userData == null) {
+                Log.e("TAG", "User data is null")
+                trySend(null)
+                return@addSnapshotListener
+            }
+
+            userDocument
+                .collection(FRIENDS_COLLECTION)
+                .get()
+                .addOnSuccessListener { friendsSnapshot ->
+                    val friends = friendsSnapshot.documents.map {
+                        Friend(
+                            uid = it.id,
+                            username = it.getString("username") ?: ""
+                        )
+                    }
+
+                    val user = User(
+                        uid = userId,
+                        inviteId = userData["inviteId"] as String,
+                        username = userData["username"] as String? ?: "User",
+                        email = userData["email"] as String?,
+                        photoUrl = userData["photoUrl"] as String?,
+                        friends = friends
+                    )
+                    trySend(user)
+                }
+                .addOnFailureListener {
+                    Log.e("TAG", "Error getting friends: ${it.message}")
+                }
         }
 
-        val friends = userDocument
-            .collection(FRIENDS_COLLECTION)
-            .get()
-            .addOnFailureListener {
-                Log.e("TAG", "Error getting friends: ${it.message}")
-            }
-            .await()
-            .documents.map {
-                Friend(
-                    uid = it.id,
-                    username = it.getString("username") ?: ""
-                )
-            }
-
-        return User(
-            uid = userId,
-            inviteId = userData["inviteId"] as String,
-            username = userData["username"] as String? ?: "User",
-            email = userData["email"] as String?,
-            photoUrl = userData["photoUrl"] as String?,
-            friends = friends
-        )
+        awaitClose {
+            listenerRegistration.remove()
+        }
     }
 
     override suspend fun getFriendInfoByInviteId(inviteId: String): Friend? =

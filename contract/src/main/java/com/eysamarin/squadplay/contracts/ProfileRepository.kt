@@ -2,9 +2,10 @@ package com.eysamarin.squadplay.contracts
 
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.User
+import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
-    suspend fun getUserInfo(userId: String): User?
+    fun getUserInfoFlow(userId: String): Flow<User?>
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
     suspend fun getFriendInfoByInviteId(inviteId: String): Friend?

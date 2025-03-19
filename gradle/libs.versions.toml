@@ -1,6 +1,7 @@
 [versions]
 agp = "8.9.0"
 kotlin = "2.0.21"
+orgJetbrainsKotlinxCoroutinesCore = "1.10.1"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -49,6 +50,8 @@ com-google-firebase-crashlytics = { group = "com.google.firebase", name = "fireb
 com-google-firebase-database = { group = "com.google.firebase", name = "firebase-database" }
 com-google-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 com-google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+
+org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

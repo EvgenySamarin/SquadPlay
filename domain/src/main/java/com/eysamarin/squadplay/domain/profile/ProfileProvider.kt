@@ -4,9 +4,10 @@ import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.User
+import kotlinx.coroutines.flow.Flow
 
 interface ProfileProvider {
-    suspend fun getUserInfo(): User?
+    fun getUserInfoFlow(): Flow<User?>
     fun createNewInviteLink(userInviteId: String): String
     suspend fun addFriend(userId: String, inviteId: String): Boolean
     suspend fun getFriendInfoByInviteId(inviteId: String): Friend?
@@ -17,10 +18,9 @@ class ProfileProviderImpl(
     private val authRepository: AuthRepository,
 ) : ProfileProvider {
 
-    override suspend fun getUserInfo(): User? {
+    override fun getUserInfoFlow(): Flow<User?> {
         val userUid = authRepository.getCurrentUserId()
-        val userInfo = profileRepository.getUserInfo(userUid)
-        return userInfo
+        return profileRepository.getUserInfoFlow(userUid)
     }
 
     override fun createNewInviteLink(userInviteId: String): String {

@@ -22,8 +22,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -55,23 +53,18 @@ class MainScreenViewModel(
     val pollingDialogState = _pollingDialogState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            val userInfo = profileProvider.getUserInfo()
-            if (userInfo == null) {
-                _uiState.emit(UiState.Error(description = "User info is null"))
-                return@launch
+        collectUserInfo()
+    }
+
+    private fun collectUserInfo() {
+        Log.d("TAG", "subscribe on user info flow")
+        profileProvider.getUserInfoFlow()
+            .filterNotNull()
+            .onEach { userInfo ->
+                val calendarState =
+                    calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
+                updateMainScreenUI(MainScreenUI(user = userInfo, calendarUI = calendarState))
             }
-
-            val calendarState = calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
-            updateMainScreenUI(MainScreenUI(
-                user = userInfo,
-                calendarUI = calendarState,
-            ))
-        }
-
-        uiState
-            .mapNotNull { it as? UiState.Normal<MainScreenUI> }
-            .map { it.data.user }
             .combine(inviteLinkState.filterNotNull()) { user, inviteId ->
                 user to inviteId
             }
