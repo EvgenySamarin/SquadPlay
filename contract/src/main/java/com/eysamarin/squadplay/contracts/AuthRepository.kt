@@ -1,7 +1,10 @@
 package com.eysamarin.squadplay.contracts
 
+import com.eysamarin.squadplay.models.User
+
 interface AuthRepository {
-    suspend fun signInWithGoogle(): Boolean
+    suspend fun signInWithGoogle(): User?
     suspend fun signOut(): Boolean
+    fun getCurrentUserId(): String
     fun isUserSigned(): Boolean
 }

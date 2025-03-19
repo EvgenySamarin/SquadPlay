@@ -57,7 +57,7 @@ fun AuthScreen(
 }
 
 @Composable
-fun AuthScreenMediumLayout(
+private fun AuthScreenMediumLayout(
     state: UiState<AuthScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit
@@ -69,15 +69,17 @@ fun AuthScreenMediumLayout(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
-        Spacer(modifier = Modifier.height(24.dp))
-        PrimaryButton(windowSize, text = "Sign UP with Google", onTap = {
-            onAction(AuthScreenAction.OnSignUpTap)
-        })
+        if (state.data.isSignButtonVisible) {
+            Spacer(modifier = Modifier.height(24.dp))
+            PrimaryButton(windowSize, text = "Sign UP with Google", onTap = {
+                onAction(AuthScreenAction.OnSignUpTap)
+            })
+        }
     }
 }
 
 @Composable
-fun AuthScreenExpandedLayout(
+private fun AuthScreenExpandedLayout(
     state: UiState<AuthScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit

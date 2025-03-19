@@ -24,13 +24,15 @@ class AuthScreenViewModel(
     val navigationFlow = navigationChannel.receiveAsFlow()
 
     init {
-        viewModelScope.launch { _uiState.emit(UiState.Normal(AuthScreenUI())) }
         checkUserSignedIn()
     }
 
     private fun checkUserSignedIn() = viewModelScope.launch {
-        if (authProvider.isUserSigned()) {
+        val isUserSigned = authProvider.isUserSigned()
+        if (isUserSigned) {
             navigationChannel.send(NavAction.NavigateTo(Main.route))
+        } else {
+            _uiState.emit(UiState.Normal(AuthScreenUI(isSignButtonVisible = true)))
         }
     }
 

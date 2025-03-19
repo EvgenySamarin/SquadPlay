@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.screens.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +44,7 @@ import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.PollingDialogUI
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
@@ -67,24 +68,16 @@ import com.eysamarin.squadplay.utils.WearLightModePreview
 @Composable
 fun MainScreen(
     state: UiState<MainScreenUI>,
-    pollingDialogState: UiState<PollingDialogUI>,
+    pollingDialogState: UiState<PollingDialogUI> = UiState.Empty,
+    confirmInviteDialogState: UiState<String> = UiState.Empty,
+    snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
-    onAction: (MainScreenAction) -> Unit
+    onAction: (MainScreenAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(
-                        onClick = { onAction(MainScreenAction.OnBackButtonTap) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back",
-                        )
-                    }
-                },
+                title = { },
                 actions = {
                     IconButton(onClick = { onAction(MainScreenAction.OnLogOutTap) }) {
                         Icon(
@@ -112,6 +105,7 @@ fun MainScreen(
                 }
             }
         },
+        snackbarHost = snackbarHost,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
@@ -144,6 +138,20 @@ fun MainScreen(
             )
         }
     }
+
+    if (confirmInviteDialogState is UiState.Normal<String>) {
+        ConfirmationDialog(
+            windowSize = windowSize,
+            title = "Invite new friend",
+            text = confirmInviteDialogState.data,
+            onDismiss = {
+                onAction(MainScreenAction.OnAddFriendDialogDismiss)
+            },
+            onConfirmTap = {
+                onAction(MainScreenAction.OnAddFriendDialogConfirm)
+            }
+        )
+    }
 }
 
 @Composable
@@ -159,7 +167,9 @@ private fun MainScreenMediumLayout(
             .padding(16.dp)
             .fillMaxSize()
     ) {
-        GreetingBar(windowSize, state)
+        GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
+            onAction(MainScreenAction.OnAvatarTap)
+        })
         Calendar(
             ui = state.data.calendarUI,
             windowSize = windowSize,
@@ -180,7 +190,9 @@ private fun MainScreenExpandedLayout(
     if (state !is UiState.Normal) return
 
     Column(modifier = Modifier.padding(16.dp)) {
-        GreetingBar(windowSize, state)
+        GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
+            onAction(MainScreenAction.OnAvatarTap)
+        })
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
@@ -259,10 +271,9 @@ private fun GameEvent(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GreetingBar(
     windowSize: WindowSizeClass,
-    state: UiState<MainScreenUI>,
+    user: User,
+    onAvatarTap: () -> Unit = {},
 ) {
-    if (state !is UiState.Normal) return
-
     if (windowSize.heightSizeClass != WindowHeightSizeClass.Compact) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -272,11 +283,18 @@ private fun GreetingBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f, false),
-                text = state.data.title,
+                text = "Welcome back, ${user.username}!",
                 style = adaptiveHeadlineByHeight(windowSize),
                 color = MaterialTheme.colorScheme.onSurface
             )
-            UserAvatar()
+            Box(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .clickable {
+                        onAvatarTap()
+                    }) {
+                UserAvatar(imageUrl = user.photoUrl)
+            }
         }
     }
 }
@@ -290,7 +308,6 @@ fun MainScreenPhonePreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             onAction = {},
         )
     }
@@ -303,7 +320,6 @@ fun MainScreenTabletPreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_EXPANDED,
             onAction = {},
         )
@@ -317,7 +333,6 @@ fun MainScreenWearPreview() {
     SquadPlayTheme {
         MainScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
-            pollingDialogState = UiState.Empty,
             windowSize = WINDOWS_SIZE_COMPACT,
             onAction = {},
         )

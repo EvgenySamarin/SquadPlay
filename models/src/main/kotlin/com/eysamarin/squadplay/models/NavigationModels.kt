@@ -9,4 +9,5 @@ sealed class NavAction {
 sealed class Routes(val route: String) {
     data object Main : Routes(route = "Main")
     data object Auth : Routes(route = "Auth")
+    data object Profile : Routes(route = "Profile")
 }

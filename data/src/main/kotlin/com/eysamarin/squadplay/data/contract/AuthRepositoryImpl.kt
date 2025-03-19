@@ -7,6 +7,7 @@ class AuthRepositoryImpl(
     val firebaseAuthManager: FirebaseAuthManager,
 ) : AuthRepository {
 
+    override fun getCurrentUserId(): String = firebaseAuthManager.getCurrentUserId()
     override fun isUserSigned(): Boolean = firebaseAuthManager.isUserSigned()
     override suspend fun signInWithGoogle() = firebaseAuthManager.signInWithGoogle()
     override suspend fun signOut() = firebaseAuthManager.signOut()

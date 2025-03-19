@@ -86,6 +86,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
+    implementation(libs.io.coil.kt.coil3.compose)
+    implementation(libs.io.coil.kt.coil3.network.okhttp)
+
     implementation(libs.androidx.credentials.credentials)
     implementation(libs.androidx.credentials.credentials.play.services.auth)
     implementation(libs.com.google.android.libraries.identity.googleid)
@@ -93,6 +96,7 @@ dependencies {
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics)
     implementation(libs.com.google.firebase.database)
+    implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
 
     implementation(platform(libs.androidx.compose.bom))

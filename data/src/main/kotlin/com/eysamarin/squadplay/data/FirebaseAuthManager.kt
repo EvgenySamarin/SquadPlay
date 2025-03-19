@@ -9,6 +9,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
+import com.eysamarin.squadplay.models.User
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
@@ -16,11 +17,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 interface FirebaseAuthManager {
-    suspend fun signInWithGoogle(): Boolean
+    suspend fun signInWithGoogle(): User?
     suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
+    fun getCurrentUserId(): String
 }
 
 class FirebaseAuthManagerImpl(
@@ -36,14 +39,17 @@ class FirebaseAuthManagerImpl(
         return currentUser != null
     }
 
-    override suspend fun signInWithGoogle(): Boolean {
+    override fun getCurrentUserId(): String = firebaseAuth.currentUser?.uid
+        ?: throw IllegalStateException("User is not signed in")
+
+    override suspend fun signInWithGoogle(): User? {
         val credential = getUserCredential(filterByAuthorizedAccounts = true)
             ?: getUserCredential(filterByAuthorizedAccounts = false)
 
         return if (credential != null) {
             handleSignIn(credential)
         } else {
-            false
+            null
         }
     }
 
@@ -70,27 +76,38 @@ class FirebaseAuthManagerImpl(
         }
     }
 
-    private suspend fun handleSignIn(credential: Credential): Boolean {
+    private suspend fun handleSignIn(credential: Credential): User? {
         return if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
             firebaseAuthWithGoogle(googleIdTokenCredential.idToken)
         } else {
             Log.w("TAG", "Credential is not of type Google ID!")
-            false
+            null
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun firebaseAuthWithGoogle(idToken: String): Boolean {
+    private suspend fun firebaseAuthWithGoogle(idToken: String): User? {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         return try {
             firebaseAuth.signInWithCredential(credential).await()
-            val user = firebaseAuth.currentUser
-            Log.d("TAG", "signInWithCredential:success, user: $user")
-            true
+
+            val firebaseUser = firebaseAuth.currentUser
+            if(firebaseUser == null) return null
+
+            Log.d("TAG", "signInWithCredential:success")
+
+            User(
+                uid = firebaseUser.uid,
+                inviteId = UUID.randomUUID().toString(),
+                username = firebaseUser.displayName ?: "User",
+                email = firebaseUser.email,
+                photoUrl = firebaseUser.photoUrl?.toString(),
+                friends = listOf()
+            )
         } catch (e: Exception) {
             Log.w("TAG", "signInWithCredential:failure", e)
-            false
+            null
         }
     }
 

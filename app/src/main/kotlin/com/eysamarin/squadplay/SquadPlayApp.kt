@@ -2,23 +2,35 @@
 
 package com.eysamarin.squadplay
 
+import android.content.Intent
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.NavAction
+import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.Routes
+import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreen
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
+import com.eysamarin.squadplay.screens.profile.ProfileScreen
+import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.koinViewModel
 
@@ -51,10 +63,43 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 }
             )
         }
-        composable(Routes.Main.route) {
+        composable(
+            route = Routes.Main.route,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "https://evgenysamarin.github.io/invite/{inviteID}"
+                }
+            ),
+            arguments = listOf(
+                navArgument("inviteID") {
+                    type = NavType.StringType
+                    defaultValue = null
+                    nullable = true
+                }
+            )
+        ) { entry ->
             val viewModel: MainScreenViewModel = koinViewModel()
+
+            val inviteId = remember { entry.arguments?.getString("inviteID") }
+            LaunchedEffect(inviteId) {
+                viewModel.onInviteDeepLinkRetrieved(inviteId)
+            }
+
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val pollingDialogState by viewModel.pollingDialogState.collectAsStateWithLifecycle()
+            val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            MainScreen(
+                state = uiState,
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
+                pollingDialogState = pollingDialogState,
+                confirmInviteDialogState = confirmInviteDialogState,
+                windowSize = windowSize,
+                onAction = {
+                    handleMainScreenAction(action = it, viewModel = viewModel)
+                }
+            )
 
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
@@ -62,14 +107,42 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 startDestination = Routes.Main,
             )
 
-            MainScreen(
+            LaunchedEffect(Unit) {
+                viewModel.snackbarFlow.collect {
+                    snackbarHostState.showSnackbar(message = it)
+                }
+            }
+        }
+        composable(Routes.Profile.route) {
+            val viewModel: ProfileScreenViewModel = koinViewModel()
+
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val inviteLinkState by viewModel.inviteLinkState.collectAsStateWithLifecycle()
+
+            NavigationEffect(
+                navigationFlow = viewModel.navigationFlow,
+                navController = navController,
+                startDestination = Routes.Main,
+            )
+
+            ProfileScreen(
                 state = uiState,
-                pollingDialogState = pollingDialogState,
                 windowSize = windowSize,
                 onAction = {
-                    handleMainScreenAction(action = it, viewModel = viewModel)
+                    handleProfileScreenAction(action = it, viewModel = viewModel)
                 }
             )
+
+            if (inviteLinkState is UiState.Normal<String>) {
+                val inviteLink = (inviteLinkState as UiState.Normal<String>).data
+                val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                    putExtra(Intent.EXTRA_TEXT, inviteLink)
+                    type = "text/plain"
+                }
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                LocalContext.current.startActivity(shareIntent)
+                viewModel.hideShareLink()
+            }
         }
     }
 }
@@ -101,6 +174,14 @@ private fun handleAuthScreenAction(
     AuthScreenAction.OnSignUpTap -> viewModel.onSignUpTap()
 }
 
+private fun handleProfileScreenAction(
+    action: ProfileScreenAction,
+    viewModel: ProfileScreenViewModel,
+) = when (action) {
+    ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
+    ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteLinkTap()
+}
+
 private fun handleMainScreenAction(
     action: MainScreenAction,
     viewModel: MainScreenViewModel,
@@ -115,6 +196,12 @@ private fun handleMainScreenAction(
     )
 
     MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
-    MainScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
     MainScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
+    MainScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
+    MainScreenAction.OnAddFriendDialogConfirm -> {
+        viewModel.onAddFriendDialogConfirm()
+        viewModel.onAddFriendDialogDismiss()
+    }
+
+    MainScreenAction.OnAddFriendDialogDismiss -> viewModel.onAddFriendDialogDismiss()
 }
