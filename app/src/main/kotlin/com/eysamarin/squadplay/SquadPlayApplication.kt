@@ -10,8 +10,6 @@ import com.eysamarin.squadplay.data.FirebaseAuthManagerImpl
 import com.eysamarin.squadplay.data.contract.AuthRepositoryImpl
 import com.eysamarin.squadplay.data.contract.EventRepositoryImpl
 import com.eysamarin.squadplay.data.contract.ProfileRepositoryImpl
-import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSource
-import com.eysamarin.squadplay.data.datasource.FirebaseDatabaseDataSourceImpl
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
 import com.eysamarin.squadplay.domain.auth.AuthProvider
@@ -26,7 +24,6 @@ import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -44,11 +41,6 @@ class SquadPlayApplication : Application() {
                 webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID,
                 credentialManager = get(),
                 appContext = applicationContext,
-            )
-        }
-        single<FirebaseDatabaseDataSource> {
-            FirebaseDatabaseDataSourceImpl(
-                firebaseDatabase = FirebaseDatabase.getInstance(BuildConfig.FIREBASE_DATABASE_URL),
             )
         }
         single<FirebaseFirestoreDataSource> {

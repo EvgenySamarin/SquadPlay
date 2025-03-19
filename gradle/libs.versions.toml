@@ -47,7 +47,6 @@ com-google-android-libraries-identity-googleid = { group = "com.google.android.l
 
 com-google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 com-google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
-com-google-firebase-database = { group = "com.google.firebase", name = "firebase-database" }
 com-google-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 com-google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 
