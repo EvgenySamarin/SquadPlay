@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.data.datasource
 import android.util.Log
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.FRIENDS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
+import com.eysamarin.squadplay.models.EventData
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.User
 import com.google.firebase.firestore.CollectionReference
@@ -21,6 +22,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
     suspend fun getFriendInfoByInviteId(inviteId: String): Friend?
+    suspend fun saveEvent(data: EventData)
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -31,6 +33,10 @@ interface FirebaseFirestoreDataSource {
 class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
 ): FirebaseFirestoreDataSource {
+
+    override suspend fun saveEvent(data: EventData) {
+
+    }
 
     override suspend fun deleteUserProfile(userId: String) {
         Log.d("TAG", "Deleting user data for $userId")

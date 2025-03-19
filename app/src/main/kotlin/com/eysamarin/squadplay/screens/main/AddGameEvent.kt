@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
-import com.eysamarin.squadplay.models.PollingDialogUI
+import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.TimePickerUI
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.ui.DialPicker
@@ -40,7 +40,7 @@ import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGameEvent(
-    ui: PollingDialogUI,
+    ui: EventDialogUI,
     windowSize: WindowSizeClass,
     onStartPollingTap: (timeFrom: TimeUnit, timeTo: TimeUnit) -> Unit
 ) {

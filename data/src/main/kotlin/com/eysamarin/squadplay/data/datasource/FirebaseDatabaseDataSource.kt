@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
+@Deprecated("migrated to firestore")
 interface FirebaseDatabaseDataSource {
     fun saveTestData(string: String)
 }

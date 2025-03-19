@@ -1,16 +1,17 @@
 package com.eysamarin.squadplay.models
 
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 sealed interface MainScreenAction {
-    object OnDismissPolingDialog : MainScreenAction
+    object OnDismissEventDialog : MainScreenAction
     object OnAddGameEventTap : MainScreenAction
     object OnLogOutTap : MainScreenAction
     object OnAvatarTap : MainScreenAction
     object OnAddFriendDialogDismiss : MainScreenAction
     object OnAddFriendDialogConfirm : MainScreenAction
 
-    class OnPollingStartTap(
+    class OnEventSaveTap(
         val year: Int,
         val month: Int,
         val day: Int,
@@ -52,7 +53,7 @@ data class GameEventUI(
     val gameIconResId: Int? = null,
 )
 
-data class PollingDialogUI(
+data class EventDialogUI(
     val selectedDate: CalendarUI.Date,
     val yearMonth: YearMonth,
 )
@@ -74,13 +75,18 @@ enum class DialPickerTarget {
     TO
 }
 
+data class EventData(
+    val fromDateTime: LocalDateTime,
+    val toDateTime: LocalDateTime,
+)
+
 val PREVIEW_TIME_PICKER_UI = TimePickerUI(
     currentTarget = DialPickerTarget.FROM,
     timeFrom = TimeUnit(hour = 12, minute = 0),
     timeTo = TimeUnit(hour = 14, minute = 15),
 )
 
-val PREVIEW_POLLING_DIALOG_UI = PollingDialogUI(
+val PREVIEW_POLLING_DIALOG_UI = EventDialogUI(
     selectedDate = CalendarUI.Date(
         dayOfMonth = 6,
         countEvents = 4,

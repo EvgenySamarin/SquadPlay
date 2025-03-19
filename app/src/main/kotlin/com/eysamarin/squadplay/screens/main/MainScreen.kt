@@ -38,7 +38,7 @@ import com.eysamarin.squadplay.models.GameEventUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
-import com.eysamarin.squadplay.models.PollingDialogUI
+import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
@@ -64,7 +64,7 @@ import com.eysamarin.squadplay.utils.WearLightModePreview
 @Composable
 fun MainScreen(
     state: UiState<MainScreenUI>,
-    pollingDialogState: UiState<PollingDialogUI> = UiState.Empty,
+    eventDialogState: UiState<EventDialogUI> = UiState.Empty,
     confirmInviteDialogState: UiState<String> = UiState.Empty,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
@@ -118,26 +118,26 @@ fun MainScreen(
     )
 
 
-    if (pollingDialogState is UiState.Normal<PollingDialogUI>) {
+    if (eventDialogState is UiState.Normal<EventDialogUI>) {
         ModalBottomSheet(
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            onDismissRequest = { onAction(MainScreenAction.OnDismissPolingDialog) },
+            onDismissRequest = { onAction(MainScreenAction.OnDismissEventDialog) },
             containerColor = MaterialTheme.colorScheme.surface,
         ) {
             AddGameEvent(
-                ui = pollingDialogState.data,
+                ui = eventDialogState.data,
                 windowSize = windowSize,
                 onStartPollingTap = { from, to ->
                     onAction(
-                        MainScreenAction.OnPollingStartTap(
-                            year = pollingDialogState.data.yearMonth.year,
-                            month = pollingDialogState.data.yearMonth.monthValue,
-                            day = pollingDialogState.data.selectedDate.dayOfMonth ?: 0,
+                        MainScreenAction.OnEventSaveTap(
+                            year = eventDialogState.data.yearMonth.year,
+                            month = eventDialogState.data.yearMonth.monthValue,
+                            day = eventDialogState.data.selectedDate.dayOfMonth ?: 0,
                             timeFrom = from,
                             timeTo = to
                         )
                     )
-                    onAction(MainScreenAction.OnDismissPolingDialog)
+                    onAction(MainScreenAction.OnDismissEventDialog)
                 }
             )
         }

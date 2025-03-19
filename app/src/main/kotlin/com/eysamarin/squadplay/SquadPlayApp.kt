@@ -92,14 +92,14 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             }
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            val pollingDialogState by viewModel.pollingDialogState.collectAsStateWithLifecycle()
+            val eventDialogState by viewModel.eventDialogState.collectAsStateWithLifecycle()
             val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
             val snackbarHostState = remember { SnackbarHostState() }
 
             MainScreen(
                 state = uiState,
                 snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
-                pollingDialogState = pollingDialogState,
+                eventDialogState = eventDialogState,
                 confirmInviteDialogState = confirmInviteDialogState,
                 windowSize = windowSize,
                 onAction = {
@@ -214,8 +214,8 @@ private fun handleMainScreenAction(
     is MainScreenAction.OnDateTap -> viewModel.onDateTap(action.date)
     is MainScreenAction.OnNextMonthTap -> viewModel.onNextMonthTap(action.yearMonth)
     is MainScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
-    MainScreenAction.OnDismissPolingDialog -> viewModel.dismissPolingDialog()
-    is MainScreenAction.OnPollingStartTap -> viewModel.onPollingStartTap(
+    MainScreenAction.OnDismissEventDialog -> viewModel.dismissEventDialog()
+    is MainScreenAction.OnEventSaveTap -> viewModel.onEventSaveTap(
         year = action.year,
         month = action.month,
         day = action.day,

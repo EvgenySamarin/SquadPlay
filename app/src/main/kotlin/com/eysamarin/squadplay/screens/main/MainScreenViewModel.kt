@@ -5,13 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
-import com.eysamarin.squadplay.domain.event.GameEventUIProvider
-import com.eysamarin.squadplay.domain.polling.PollingProvider
+import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.EventData
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.PollingDialogUI
+import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
@@ -25,12 +25,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
-    private val gameEventUIProvider: GameEventUIProvider,
-    private val pollingProvider: PollingProvider,
+    private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
     private val profileProvider: ProfileProvider,
 ) : ViewModel() {
@@ -49,8 +49,8 @@ class MainScreenViewModel(
     private val _inviteLinkState = MutableStateFlow<String?>(null)
     val inviteLinkState = _inviteLinkState.asStateFlow()
 
-    private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
-    val pollingDialogState = _pollingDialogState.asStateFlow()
+    private val _eventDialogState = MutableStateFlow<UiState<EventDialogUI>>(UiState.Empty)
+    val eventDialogState = _eventDialogState.asStateFlow()
 
     init {
         collectUserInfo()
@@ -146,7 +146,7 @@ class MainScreenViewModel(
             selectedDate = date,
         )
 
-        val gameEvents = gameEventUIProvider.provideGameEventUIBy(date)
+        val gameEvents = eventProvider.provideEventsUIBy(date)
         updateMainScreenUI(
             updatedMainScreenUI = currentMainScreenUI.copy(
                 calendarUI = updatedCalendarUI,
@@ -155,21 +155,28 @@ class MainScreenViewModel(
         )
     }
 
-    fun dismissPolingDialog() = viewModelScope.launch {
-        Log.d("TAG", "dismissPolingDialog")
+    fun dismissEventDialog() = viewModelScope.launch {
+        Log.d("TAG", "dismissEventDialog")
 
-        _pollingDialogState.emit(UiState.Empty)
+        _eventDialogState.emit(UiState.Empty)
     }
 
-    fun onPollingStartTap(
+    fun onEventSaveTap(
         year: Int,
         month: Int,
         day: Int,
         timeFrom: TimeUnit,
         timeTo: TimeUnit
-    ) {
-        Log.d("TAG", "onPollingStartTap for date: $year-$month-$day, timeFrom: $timeFrom, timeTo: $timeTo")
-        pollingProvider.savePollingData("timeFrom: $timeFrom, timeTo: $timeTo")
+    ) = viewModelScope.launch {
+        Log.d("TAG", "onEventSaveTap")
+
+        val fromDateTime = LocalDateTime.of(year, month, day, timeFrom.hour, timeFrom.minute)
+        val toDateTime = LocalDateTime.of(year, month, day, timeTo.hour, timeTo.minute)
+
+        val eventData = EventData(fromDateTime, toDateTime)
+        Log.d("TAG", "eventData to save: $eventData")
+
+        eventProvider.saveEventData(eventData)
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
@@ -187,7 +194,7 @@ class MainScreenViewModel(
             return@launch
         }
 
-        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(
+        _eventDialogState.emit(UiState.Normal(EventDialogUI(
             selectedDate = selectedDate,
             yearMonth = calendarUi.yearMonth
         )))
