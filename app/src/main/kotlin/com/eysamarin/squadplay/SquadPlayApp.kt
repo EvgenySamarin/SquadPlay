@@ -3,19 +3,24 @@
 package com.eysamarin.squadplay
 
 import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
@@ -23,7 +28,7 @@ import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.ProfileScreenAction
-import com.eysamarin.squadplay.models.Routes
+import com.eysamarin.squadplay.models.Route
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
@@ -31,6 +36,7 @@ import com.eysamarin.squadplay.screens.main.MainScreen
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreen
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
+import com.eysamarin.squadplay.utils.findActivity
 import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.koinViewModel
 
@@ -44,15 +50,15 @@ import org.koin.androidx.compose.koinViewModel
 fun SquadPlayApp(windowSize: WindowSizeClass) {
 
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Routes.Auth.route) {
-        composable(Routes.Auth.route) {
+    NavHost(navController = navController, startDestination = Route.Auth.route) {
+        composable(Route.Auth.route) {
             val viewModel: AuthScreenViewModel = koinViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
                 navController = navController,
-                startDestination = Routes.Auth,
+                startDestination = Route.Auth,
             )
 
             AuthScreen(
@@ -64,7 +70,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             )
         }
         composable(
-            route = Routes.Main.route,
+            route = Route.Main.route,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern = "https://evgenysamarin.github.io/invite/{inviteID}"
@@ -104,7 +110,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
                 navController = navController,
-                startDestination = Routes.Main,
+                startDestination = Route.Main,
             )
 
             LaunchedEffect(Unit) {
@@ -113,7 +119,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 }
             }
         }
-        composable(Routes.Profile.route) {
+        composable(Route.Profile.route) {
             val viewModel: ProfileScreenViewModel = koinViewModel()
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -122,7 +128,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
                 navController = navController,
-                startDestination = Routes.Main,
+                startDestination = Route.Main,
             )
 
             ProfileScreen(
@@ -151,8 +157,26 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
 private fun NavigationEffect(
     navigationFlow: Flow<NavAction>,
     navController: NavHostController,
-    startDestination: Routes,
+    startDestination: Route,
 ) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val context = LocalContext.current
+    var backPressedTime by remember { mutableLongStateOf(0L) }
+
+    BackHandler(
+        enabled = currentRoute == Route.Main.route,
+    ) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            context.findActivity()?.finish()
+            return@BackHandler
+        } else {
+            backPressedTime = currentTime
+            Toast.makeText(context, "Back again to exit", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     LaunchedEffect(Unit) {
         navigationFlow.collect { action ->
             when (action) {
@@ -165,6 +189,7 @@ private fun NavigationEffect(
             }
         }
     }
+
 }
 
 private fun handleAuthScreenAction(

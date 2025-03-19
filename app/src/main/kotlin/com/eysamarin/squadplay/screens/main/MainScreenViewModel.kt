@@ -12,8 +12,8 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.PollingDialogUI
-import com.eysamarin.squadplay.models.Routes.Auth
-import com.eysamarin.squadplay.models.Routes.Profile
+import com.eysamarin.squadplay.models.Route.Auth
+import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
