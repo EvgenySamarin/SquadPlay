@@ -4,10 +4,12 @@ import android.util.Log
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.EVENTS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
+import com.eysamarin.squadplay.data.toLocalDateTime
 import com.eysamarin.squadplay.models.EventData
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.time.ZoneOffset
 import java.util.UUID
 
 interface FirebaseFirestoreDataSource {
@@ -50,8 +53,8 @@ class FirebaseFirestoreDataSourceImpl(
             "creatorId" to event.creatorId,
             "groupId" to event.groupId,
             "title" to event.title,
-            "dateFrom" to event.fromDateTime,
-            "dateTo" to event.toDateTime,
+            "dateFrom" to Timestamp(event.fromDateTime.toInstant(ZoneOffset.UTC)),
+            "dateTo" to Timestamp(event.toDateTime.toInstant(ZoneOffset.UTC)),
         )
 
         val groupsDocumentRef = firebaseFirestore.collection(GROUPS_COLLECTION)
@@ -60,8 +63,6 @@ class FirebaseFirestoreDataSourceImpl(
 
         return try {
             firebaseFirestore.runTransaction { transaction ->
-                transaction.set(eventDocumentRef, eventDataMap)
-
                 val groupDocumentSnapshot = transaction.get(groupsDocumentRef)
                 if (!groupDocumentSnapshot.exists()) {
                     Log.e("TAG", "Group with id: ${event.groupId} not found")
@@ -72,6 +73,7 @@ class FirebaseFirestoreDataSourceImpl(
                     anyList?.filterIsInstance<String>()
                 } ?: emptyList()
 
+                transaction.set(eventDocumentRef, eventDataMap)
                 transaction.update(groupsDocumentRef, mapOf("events" to events.plus(eventId)))
                 true
             }.await()
@@ -126,10 +128,8 @@ class FirebaseFirestoreDataSourceImpl(
                         creatorId = creatorId,
                         groupId = groupId,
                         title = title,
-                        fromDateTime = dateFrom.toInstant().atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDateTime(),
-                        toDateTime = dateTo.toInstant().atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDateTime(),
+                        fromDateTime = dateFrom.toInstant().toLocalDateTime(),
+                        toDateTime = dateTo.toInstant().toLocalDateTime(),
                     )
                 }
                 trySend(events)

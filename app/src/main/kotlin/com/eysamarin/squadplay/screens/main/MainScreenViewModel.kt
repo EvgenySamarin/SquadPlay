@@ -13,17 +13,23 @@ import com.eysamarin.squadplay.models.EventData
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.EventDialogUI
+import com.eysamarin.squadplay.models.GameEventUI
 import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -64,6 +70,7 @@ class MainScreenViewModel(
         collectUserInfo()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUserInfo() {
         profileProvider.getUserInfoFlow()
             .filterNotNull()
@@ -71,6 +78,18 @@ class MainScreenViewModel(
                 Log.d("TAG", "user info received: $it")
                 userInfoState.emit(it)
             }
+            .map { it.groups.firstOrNull() }
+            .filterNotNull()
+            .flatMapLatest { eventProvider.getEventsFlow(it.uid) }
+            .onEach {
+                Log.d("TAG", "events received: $it")
+                eventsState.emit(it)
+            }
+            .launchIn(viewModelScope)
+
+
+        userInfoState
+            .filterNotNull()
             .combine(inviteGroupIdState.filterNotNull()) { user, inviteGroupId ->
                 user to inviteGroupId
             }
@@ -96,15 +115,36 @@ class MainScreenViewModel(
             calendarUIState,
             eventsState,
         ) { userInfo, calendar, events ->
-            userInfo?.let {
-                userInfo to calendar
+            userInfo ?: return@combine null
+
+            val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(calendar, events)
+
+            val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
+            val eventsBySelectedDate =  events.filter {
+                selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth &&
+                        selectedDate.dayOfMonth == it.toDateTime.dayOfMonth
             }
+            Triple(userInfo, eventBasedCalendar, eventsBySelectedDate)
         }
             .filterNotNull()
-            .onEach { (userInfo, calendar) ->
+            .onEach { (userInfo, calendar, eventsBySelectedDate) ->
                 Log.d("TAG", "updateMainScreenUI")
-                _uiState.emit(UiState.Normal(MainScreenUI(user = userInfo, calendarUI = calendar)))
+                _uiState.emit(
+                    UiState.Normal(
+                        MainScreenUI(
+                            user = userInfo,
+                            calendarUI = calendar,
+                            gameEventsOnDate = eventsBySelectedDate.map {
+                                GameEventUI(
+                                    name = it.title,
+                                    players = 1,
+                                    gameIconResId = null
+                                )
+                            })
+                    )
+                )
             }
+            .flowOn(Dispatchers.IO)
             .launchIn(viewModelScope)
     }
 
