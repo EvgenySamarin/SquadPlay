@@ -14,9 +14,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -49,7 +51,9 @@ class ProfileScreenViewModel(
                 Log.d("TAG", "user info received: $it")
                 userInfoFlow.emit(it)
             }
-            .flatMapLatest { user -> profileProvider.getGroupsMembersInfoFlow(user.groups) }
+            .map { it.groups }
+            .filter { it.isNotEmpty() }
+            .flatMapLatest { groups -> profileProvider.getGroupsMembersInfoFlow(groups) }
             .onEach {
                 Log.d("TAG", "user friends received: $it")
                 userFriendsFlow.emit(it)

@@ -81,6 +81,7 @@ class FirebaseFirestoreDataSourceImpl(
 
     override suspend fun saveUserProfile(user: User) {
         val userDataMap = hashMapOf(
+            "uid" to user.uid,
             "username" to user.username,
             "email" to user.email,
             "photoUrl" to user.photoUrl,
@@ -191,8 +192,8 @@ class FirebaseFirestoreDataSourceImpl(
                 return@addSnapshotListener
             }
 
-            if (snapshot == null || !snapshot.isEmpty) {
-                Log.w("TAG", "Friends snapshot is null or empty")
+            if (snapshot == null || snapshot.isEmpty) {
+                Log.d("TAG", "Friends snapshot is null or empty")
                 trySend(emptyList())
                 return@addSnapshotListener
             }

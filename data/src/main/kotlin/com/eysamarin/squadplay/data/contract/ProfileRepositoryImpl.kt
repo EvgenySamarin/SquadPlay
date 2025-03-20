@@ -19,7 +19,10 @@ class ProfileRepositoryImpl(
         if (groups.isEmpty()) {
             user
         } else {
-            user?.copy(groups = groups)
+            val groupsExcludingCurrentUserMember = groups.map {
+                it.copy(members = it.members.filter { it != userId })
+            }
+            user?.copy(groups = groupsExcludingCurrentUserMember)
         }
     }
 

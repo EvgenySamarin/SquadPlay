@@ -86,7 +86,7 @@ class MainScreenViewModel(
     }
 
     private fun updateMainScreenUI(updatedMainScreenUI: MainScreenUI) = viewModelScope.launch {
-        Log.d("TAG", "updateMainScreenUI by: $updatedMainScreenUI")
+        Log.d("TAG", "updateMainScreenUI")
         _uiState.emit(UiState.Normal(updatedMainScreenUI))
     }
 

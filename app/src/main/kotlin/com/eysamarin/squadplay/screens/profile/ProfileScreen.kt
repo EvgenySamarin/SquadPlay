@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -24,7 +25,12 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.PREVIEW_PROFILE_SCREEN_UI
 import com.eysamarin.squadplay.models.ProfileScreenAction
@@ -33,9 +39,12 @@ import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.button.PrimaryButton
+import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
+import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
+import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
@@ -156,14 +165,46 @@ private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(friends) { friend ->
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = friend.username,
-                style = adaptiveBodyByHeight(windowSize),
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (friend.photoUrl != null) {
+                    AsyncImage(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                        model = friend.photoUrl,
+                        contentDescription = null,
+                    )
+                } else {
+                    Icon(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                        painter = painterResource(R.drawable.default_avatar),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = friend.username,
+                        style = adaptiveTitleByHeight(windowSize),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Group: ${friend.groupTitleFrom}",
+                        style = adaptiveLabelByHeight(windowSize),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
