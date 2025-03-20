@@ -8,6 +8,7 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.CalendarUI.Date
 import com.eysamarin.squadplay.models.EventData
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
@@ -16,6 +17,7 @@ import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +54,12 @@ class MainScreenViewModel(
     private val _eventDialogState = MutableStateFlow<UiState<EventDialogUI>>(UiState.Empty)
     val eventDialogState = _eventDialogState.asStateFlow()
 
+    private val userInfoState = MutableStateFlow<User?>(null)
+    private val eventsState = MutableStateFlow<List<EventData>>(emptyList())
+    private val calendarUIState = MutableStateFlow<CalendarUI>(
+        calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
+    )
+
     init {
         collectUserInfo()
     }
@@ -59,10 +67,9 @@ class MainScreenViewModel(
     private fun collectUserInfo() {
         profileProvider.getUserInfoFlow()
             .filterNotNull()
-            .onEach { userInfo ->
-                val calendarState =
-                    calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
-                updateMainScreenUI(MainScreenUI(user = userInfo, calendarUI = calendarState))
+            .onEach {
+                Log.d("TAG", "user info received: $it")
+                userInfoState.emit(it)
             }
             .combine(inviteGroupIdState.filterNotNull()) { user, inviteGroupId ->
                 user to inviteGroupId
@@ -83,11 +90,22 @@ class MainScreenViewModel(
                 _confirmInviteDialogState.emit(UiState.Normal("Want to join ${groupInfo.title} squad?"))
             }
             .launchIn(viewModelScope)
-    }
 
-    private fun updateMainScreenUI(updatedMainScreenUI: MainScreenUI) = viewModelScope.launch {
-        Log.d("TAG", "updateMainScreenUI")
-        _uiState.emit(UiState.Normal(updatedMainScreenUI))
+        combine(
+            userInfoState,
+            calendarUIState,
+            eventsState,
+        ) { userInfo, calendar, events ->
+            userInfo?.let {
+                userInfo to calendar
+            }
+        }
+            .filterNotNull()
+            .onEach { (userInfo, calendar) ->
+                Log.d("TAG", "updateMainScreenUI")
+                _uiState.emit(UiState.Normal(MainScreenUI(user = userInfo, calendarUI = calendar)))
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onLogOutTap() = viewModelScope.launch {
@@ -105,53 +123,31 @@ class MainScreenViewModel(
         navigationChannel.send(NavAction.NavigateTo(Profile.route))
     }
 
-    fun onNextMonthTap(nextMonth: YearMonth) {
+    fun onNextMonthTap(nextMonth: YearMonth) = viewModelScope.launch {
         Log.d("TAG", "onNextMonthTap: $nextMonth")
 
-        val currentUiState = uiState.value
-        if (currentUiState !is UiState.Normal<MainScreenUI>) return
-
         val nextMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = nextMonth)
-        val newMainScreenUI = currentUiState.data.copy(
-            calendarUI = nextMonthCalendarUI
-        )
-        updateMainScreenUI(newMainScreenUI)
+        calendarUIState.emit(nextMonthCalendarUI)
     }
 
-    fun onPreviousMonthTap(prevMonth: YearMonth) {
+    fun onPreviousMonthTap(prevMonth: YearMonth) = viewModelScope.launch {
         Log.d("TAG", "onPreviousMonthTap: $prevMonth")
 
-        val currentUiState = uiState.value
-        if (currentUiState !is UiState.Normal<MainScreenUI>) return
-
         val prevMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = prevMonth)
-        val newMainScreenUI = currentUiState.data.copy(
-            calendarUI = prevMonthCalendarUI
-        )
-        updateMainScreenUI(newMainScreenUI)
+        calendarUIState.emit(prevMonthCalendarUI)
     }
 
-    fun onDateTap(date: CalendarUI.Date) = viewModelScope.launch {
+    fun onDateTap(date: Date) = viewModelScope.launch {
         Log.d("TAG", "onDateTap: $date, updating game events")
 
-        val currentMainScreenUI = (uiState.value as? UiState.Normal<MainScreenUI>)?.data
-        if (currentMainScreenUI == null) {
-            Log.w("TAG", "current UI cannot be updated since of no data")
-            return@launch
-        }
+        val currentCalendar = calendarUIState.value
 
         val updatedCalendarUI = calendarUIProvider.updateCalendarBySelectedDate(
-            target = currentMainScreenUI.calendarUI,
+            target = currentCalendar,
             selectedDate = date,
         )
 
-        val gameEvents = eventProvider.provideEventsUIBy(date)
-        updateMainScreenUI(
-            updatedMainScreenUI = currentMainScreenUI.copy(
-                calendarUI = updatedCalendarUI,
-                gameEventsOnDate = gameEvents,
-            )
-        )
+        calendarUIState.emit(updatedCalendarUI)
     }
 
     fun dismissEventDialog() = viewModelScope.launch {
@@ -172,7 +168,7 @@ class MainScreenViewModel(
         val fromDateTime = LocalDateTime.of(year, month, day, timeFrom.hour, timeFrom.minute)
         val toDateTime = LocalDateTime.of(year, month, day, timeTo.hour, timeTo.minute)
 
-        val currentUser = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.user ?: run {
+        val currentUser = userInfoState.value ?: run {
             Log.w("TAG", "currentUser is null cannot save event")
             return@launch
         }
@@ -197,11 +193,7 @@ class MainScreenViewModel(
     fun onAddGameEventTap() = viewModelScope.launch {
         Log.d("TAG", "onAddGameEventTap show polling dialog state")
 
-        val calendarUi = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.calendarUI
-        if (calendarUi == null) {
-            Log.w("TAG", "calendar ui is null cannot add game event")
-            return@launch
-        }
+        val calendarUi = calendarUIState.value
         val selectedDate = calendarUi.dates.firstOrNull { it.enabled && it.isSelected }
 
         if (selectedDate == null) {
@@ -229,7 +221,7 @@ class MainScreenViewModel(
             Log.w("TAG", "groupId is null, cannot join group")
             return@launch
         }
-        val currentUser = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.user ?: run {
+        val currentUser = userInfoState.value ?: run {
             Log.w("TAG", "currentUser is null, cannot join group")
             return@launch
         }
