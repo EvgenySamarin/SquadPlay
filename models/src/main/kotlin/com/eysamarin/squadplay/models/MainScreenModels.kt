@@ -76,6 +76,9 @@ enum class DialPickerTarget {
 }
 
 data class EventData(
+    val creatorId: String,
+    val groupId: String,
+    val title: String,
     val fromDateTime: LocalDateTime,
     val toDateTime: LocalDateTime,
 )

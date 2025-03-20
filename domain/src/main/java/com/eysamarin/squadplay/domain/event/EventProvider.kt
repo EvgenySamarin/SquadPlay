@@ -5,10 +5,12 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.EventData
 import com.eysamarin.squadplay.models.GameEventUI
 import com.eysamarin.squadplay.models.PREVIEW_GAME_EVENTS
+import kotlinx.coroutines.flow.Flow
 
 interface EventProvider {
     fun provideEventsUIBy(date: CalendarUI.Date): List<GameEventUI>
     suspend fun saveEventData(event: EventData)
+    fun getEventsFlow(groupId: String): Flow<List<EventData>>
 }
 
 class EventProviderImpl(
@@ -21,5 +23,9 @@ class EventProviderImpl(
 
     override suspend fun saveEventData(event: EventData) {
         eventRepository.saveEventData(event)
+    }
+
+    override fun getEventsFlow(groupId: String): Flow<List<EventData>> {
+        return eventRepository.getEventsFlow(groupId)
     }
 }

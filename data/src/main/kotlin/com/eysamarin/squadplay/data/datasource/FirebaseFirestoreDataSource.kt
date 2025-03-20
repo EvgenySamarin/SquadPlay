@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.data.datasource
 
 import android.util.Log
+import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.EVENTS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
 import com.eysamarin.squadplay.models.EventData
@@ -27,11 +28,13 @@ interface FirebaseFirestoreDataSource {
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
-    suspend fun saveEvent(data: EventData)
+    suspend fun saveEvent(event: EventData)
+    fun getEventsFlow(groupId: String): Flow<List<EventData>>
 
     companion object {
         const val USERS_COLLECTION = "users"
         const val GROUPS_COLLECTION = "groups"
+        const val EVENTS_COLLECTION = "events"
     }
 }
 
@@ -39,8 +42,87 @@ class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
 ): FirebaseFirestoreDataSource {
 
-    override suspend fun saveEvent(data: EventData) {
-        Log.d("TAG", "saveEvent: $data")
+    override suspend fun saveEvent(event: EventData) {
+        Log.d("TAG", "saveEvent: $event")
+
+        val eventId = UUID.randomUUID().toString()
+        val eventDataMap = hashMapOf(
+            "creatorId" to event.creatorId,
+            "groupId" to event.groupId,
+            "title" to event.title,
+            "dateFrom" to event.fromDateTime,
+            "dateTo" to event.toDateTime,
+        )
+
+        firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId)
+            .set(eventDataMap)
+            .addOnSuccessListener {
+                Log.d("TAG", "Event saved successfully with id: $eventId")
+            }
+            .addOnFailureListener {
+                Log.e("TAG", "Error saving event: ${it.message}")
+            }
+            .await()
+    }
+
+    override fun getEventsFlow(groupId: String): Flow<List<EventData>> = callbackFlow {
+        val eventsCollectionRef = firebaseFirestore.collection(EVENTS_COLLECTION)
+
+        Log.d("TAG", "subscribe on events flow")
+        val listenerRegistration = eventsCollectionRef
+            .whereEqualTo("groupId", groupId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("TAG", "Error getting events: ${error.message}")
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot == null || snapshot.isEmpty) {
+                    Log.w("TAG", "Events snapshot is null or empty")
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val events = snapshot.documents.mapNotNull { document ->
+                    val creatorId = document.getString("creatorId") ?: run {
+                        Log.e("TAG", "creatorId is null for event: ${document.id}")
+                        return@mapNotNull null
+                    }
+                    val title = document.getString("title") ?: run {
+                        Log.e("TAG", "title is null for event: ${document.id}")
+                        return@mapNotNull null
+                    }
+                    val groupId = document.getString("groupId") ?: run {
+                        Log.e("TAG", "groupId is null for event: ${document.id}")
+                        return@mapNotNull null
+                    }
+                    val dateFrom = document.getDate("dateFrom") ?: run {
+                        Log.e("TAG", "dateFrom is null for event: ${document.id}")
+                        return@mapNotNull null
+                    }
+                    val dateTo = document.getDate("dateTo") ?: run {
+                        Log.e("TAG", "dateTo is null for event: ${document.id}")
+                        return@mapNotNull null
+                    }
+
+                    EventData(
+                        creatorId = creatorId,
+                        groupId = groupId,
+                        title = title,
+                        fromDateTime = dateFrom.toInstant().atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDateTime(),
+                        toDateTime = dateTo.toInstant().atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDateTime(),
+                    )
+                }
+                trySend(events)
+            }
+
+        awaitClose {
+            Log.d("TAG", "close getEventsFlow")
+            listenerRegistration.remove()
+        }
     }
 
     override suspend fun deleteUserProfile(userId: String) {

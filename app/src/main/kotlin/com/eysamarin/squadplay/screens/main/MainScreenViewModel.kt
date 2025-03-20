@@ -172,9 +172,24 @@ class MainScreenViewModel(
         val fromDateTime = LocalDateTime.of(year, month, day, timeFrom.hour, timeFrom.minute)
         val toDateTime = LocalDateTime.of(year, month, day, timeTo.hour, timeTo.minute)
 
-        val eventData = EventData(fromDateTime, toDateTime)
-        Log.d("TAG", "eventData to save: $eventData")
+        val currentUser = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.user ?: run {
+            Log.w("TAG", "currentUser is null cannot save event")
+            return@launch
+        }
 
+        if (currentUser.groups.isEmpty()) {
+            Log.d("TAG", "currentUser has no groups cannot save event")
+            snackbarChannel.send("You have no squads to save event, find your squad first")
+            return@launch
+        }
+
+        val eventData = EventData(
+            creatorId = currentUser.uid,
+            groupId = currentUser.groups.first().uid,
+            title = "New event",
+            fromDateTime = fromDateTime,
+            toDateTime = toDateTime,
+        )
         eventProvider.saveEventData(eventData)
     }
 

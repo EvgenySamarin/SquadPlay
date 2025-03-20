@@ -103,7 +103,7 @@ fun AddGameEvent(
         PrimaryButton(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             windowSize = windowSize,
-            text = "Start polling",
+            text = "Schedule event",
             onTap = {
                 val from = timeFrom ?: run {
                     errorText = "Time from not set"
