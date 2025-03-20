@@ -9,9 +9,8 @@ class EventRepositoryImpl(
     val firebaseFirestoreDataSource: FirebaseFirestoreDataSource,
 ) : EventRepository {
 
-    override suspend fun saveEventData(event: EventData) {
+    override suspend fun saveEventData(event: EventData): Boolean =
         firebaseFirestoreDataSource.saveEvent(event)
-    }
 
     override fun getEventsFlow(groupId: String): Flow<List<EventData>> {
         return firebaseFirestoreDataSource.getEventsFlow(groupId)

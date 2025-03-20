@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface EventProvider {
     fun provideEventsUIBy(date: CalendarUI.Date): List<GameEventUI>
-    suspend fun saveEventData(event: EventData)
+    suspend fun saveEventData(event: EventData): Boolean
     fun getEventsFlow(groupId: String): Flow<List<EventData>>
 }
 
@@ -21,9 +21,8 @@ class EventProviderImpl(
         return PREVIEW_GAME_EVENTS
     }
 
-    override suspend fun saveEventData(event: EventData) {
+    override suspend fun saveEventData(event: EventData): Boolean =
         eventRepository.saveEventData(event)
-    }
 
     override fun getEventsFlow(groupId: String): Flow<List<EventData>> {
         return eventRepository.getEventsFlow(groupId)

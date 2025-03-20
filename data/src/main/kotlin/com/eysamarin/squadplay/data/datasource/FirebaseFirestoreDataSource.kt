@@ -28,7 +28,7 @@ interface FirebaseFirestoreDataSource {
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
-    suspend fun saveEvent(event: EventData)
+    suspend fun saveEvent(event: EventData): Boolean
     fun getEventsFlow(groupId: String): Flow<List<EventData>>
 
     companion object {
@@ -42,7 +42,7 @@ class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
 ): FirebaseFirestoreDataSource {
 
-    override suspend fun saveEvent(event: EventData) {
+    override suspend fun saveEvent(event: EventData): Boolean {
         Log.d("TAG", "saveEvent: $event")
 
         val eventId = UUID.randomUUID().toString()
@@ -54,15 +54,31 @@ class FirebaseFirestoreDataSourceImpl(
             "dateTo" to event.toDateTime,
         )
 
-        firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId)
-            .set(eventDataMap)
-            .addOnSuccessListener {
-                Log.d("TAG", "Event saved successfully with id: $eventId")
-            }
-            .addOnFailureListener {
-                Log.e("TAG", "Error saving event: ${it.message}")
-            }
-            .await()
+        val groupsDocumentRef = firebaseFirestore.collection(GROUPS_COLLECTION)
+            .document(event.groupId)
+        val eventDocumentRef = firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId)
+
+        return try {
+            firebaseFirestore.runTransaction { transaction ->
+                transaction.set(eventDocumentRef, eventDataMap)
+
+                val groupDocumentSnapshot = transaction.get(groupsDocumentRef)
+                if (!groupDocumentSnapshot.exists()) {
+                    Log.e("TAG", "Group with id: ${event.groupId} not found")
+                    return@runTransaction false
+                }
+                val events = groupDocumentSnapshot["events"]?.let {
+                    val anyList = it as? List<*>
+                    anyList?.filterIsInstance<String>()
+                } ?: emptyList()
+
+                transaction.update(groupsDocumentRef, mapOf("events" to events.plus(eventId)))
+                true
+            }.await()
+        } catch (exception: Exception) {
+            Log.e("TAG", "error saving new event: ${exception.message}", exception)
+            false
+        }
     }
 
     override fun getEventsFlow(groupId: String): Flow<List<EventData>> = callbackFlow {
@@ -128,19 +144,19 @@ class FirebaseFirestoreDataSourceImpl(
     override suspend fun deleteUserProfile(userId: String) {
         Log.d("TAG", "Deleting user data for $userId")
         try {
-            val userRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
-            val groupsRef = userRef.collection(GROUPS_COLLECTION)
-            val groupDocs = getCollectionDocuments(groupsRef)
+            val userDocumentRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
+            val groupsCollectionRef = firebaseFirestore.collection(USERS_COLLECTION)
+            val groupsDocuments = getCollectionDocuments(groupsCollectionRef)
 
             firebaseFirestore.runTransaction { transaction ->
-                groupDocs.forEach {
+                groupsDocuments.forEach {
                     val members = it["members"]?.let {
                         val anyList = it as? List<*>
                         anyList?.filterIsInstance<String>()
                     } ?: emptyList()
                     transaction.update(it.reference, mapOf("members" to members.minus(userId)))
                 }
-                transaction.delete(userRef)
+                transaction.delete(userDocumentRef)
             }.await()
 
             Log.d("TAG", "User data deleted successfully for $userId")

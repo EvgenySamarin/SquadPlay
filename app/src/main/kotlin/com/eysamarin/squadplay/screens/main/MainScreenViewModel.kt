@@ -190,7 +190,8 @@ class MainScreenViewModel(
             fromDateTime = fromDateTime,
             toDateTime = toDateTime,
         )
-        eventProvider.saveEventData(eventData)
+        val isSuccess = eventProvider.saveEventData(eventData)
+        snackbarChannel.send(if (isSuccess) "Event saved successfully" else "Failed to save event")
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
@@ -236,13 +237,7 @@ class MainScreenViewModel(
         val isSuccess = profileProvider.joinGroup(
             userId = currentUser.uid, groupId = inviteGroupId,
         )
-        snackbarChannel.send(
-            if (isSuccess) {
-                "You joined the squad"
-            } else {
-                "You failed joining the squad"
-            }
-        )
+        snackbarChannel.send(if (isSuccess) "You joined the squad" else "You failed joining the squad")
     }
 
     fun onJoinGroupDialogDismiss() = viewModelScope.launch {
