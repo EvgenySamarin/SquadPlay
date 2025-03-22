@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,12 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.models.GameEventUI
+import com.eysamarin.squadplay.models.EventDialogUI
+import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
-import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
@@ -224,7 +226,7 @@ private fun MainScreenExpandedLayout(
 
 @Composable
 private fun EventLists(
-    events: List<GameEventUI>,
+    events: List<EventUI>,
     windowSize: WindowSizeClass,
 ) {
     if (events.isEmpty()) {
@@ -234,22 +236,18 @@ private fun EventLists(
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         items(items = events) { item ->
-            GameEvent(
+            Event(
                 windowSize = windowSize,
-                name = item.name,
-                players = item.players,
-                gameIconResId = item.gameIconResId ?: R.drawable.ic_question
+                ui = item,
             )
         }
     }
 }
 
 @Composable
-private fun GameEvent(
+private fun Event(
     windowSize: WindowSizeClass,
-    name: String,
-    players: Int,
-    gameIconResId: Int,
+    ui: EventUI,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -260,19 +258,32 @@ private fun GameEvent(
                 .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
                 .background(MaterialTheme.colorScheme.primary)
         ) {
-            Icon(
-                modifier = Modifier
-                    .padding(8.dp),
-                painter = painterResource(gameIconResId),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
+            if (ui.iconUrl != null) {
+                AsyncImage(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                    model = ui.iconUrl,
+                    contentDescription = null,
+                )
+            } else {
+                Icon(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                    painter = painterResource(R.drawable.ic_question),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
         }
         Column {
-            Text(text = "Game event", style = adaptiveTitleByHeight(windowSize))
-            Text(name, style = adaptiveBodyByHeight(windowSize))
+            Text(text = ui.title, style = adaptiveTitleByHeight(windowSize))
+            ui.subtitle?.let { Text(text = it, style = adaptiveBodyByHeight(windowSize)) }
         }
-        Text("players: $players")
+        if (ui.isYourEvent) {
+            Text(text = "Your event", style = adaptiveBodyByHeight(windowSize))
+        }
     }
 }
 

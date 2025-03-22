@@ -9,11 +9,11 @@ import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.CalendarUI.Date
-import com.eysamarin.squadplay.models.EventData
+import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.EventDialogUI
-import com.eysamarin.squadplay.models.GameEventUI
+import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
@@ -61,7 +62,7 @@ class MainScreenViewModel(
     val eventDialogState = _eventDialogState.asStateFlow()
 
     private val userInfoState = MutableStateFlow<User?>(null)
-    private val eventsState = MutableStateFlow<List<EventData>>(emptyList())
+    private val eventsState = MutableStateFlow<List<Event>>(emptyList())
     private val calendarUIState = MutableStateFlow<CalendarUI>(
         calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
     )
@@ -120,8 +121,19 @@ class MainScreenViewModel(
             val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(calendar, events)
 
             val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
-            val eventsBySelectedDate =  events.filter {
+            val eventsBySelectedDate = events.filter {
                 selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth
+            }.map {
+                EventUI(
+                    title = it.title,
+                    subtitle = "from ${it.fromDateTime.format(DEFAULT_TIME_FORMATTER)} to ${
+                        it.toDateTime.format(
+                            DEFAULT_TIME_FORMATTER
+                        )
+                    }",
+                    iconUrl = it.eventIconUrl,
+                    isYourEvent = it.creatorId == userInfo.uid
+                )
             }
             Triple(userInfo, eventBasedCalendar, eventsBySelectedDate)
         }
@@ -133,13 +145,8 @@ class MainScreenViewModel(
                         MainScreenUI(
                             user = userInfo,
                             calendarUI = calendar,
-                            gameEventsOnDate = eventsBySelectedDate.map {
-                                GameEventUI(
-                                    name = it.title,
-                                    players = 1,
-                                    gameIconResId = null
-                                )
-                            })
+                            gameEventsOnDate = eventsBySelectedDate
+                        )
                     )
                 )
             }
@@ -218,7 +225,7 @@ class MainScreenViewModel(
             return@launch
         }
 
-        val eventData = EventData(
+        val eventData = Event(
             creatorId = currentUser.uid,
             groupId = currentUser.groups.first().uid,
             title = "New event",
@@ -273,5 +280,9 @@ class MainScreenViewModel(
 
     fun onJoinGroupDialogDismiss() = viewModelScope.launch {
         _confirmInviteDialogState.emit(UiState.Empty)
+    }
+
+    companion object {
+        val DEFAULT_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }

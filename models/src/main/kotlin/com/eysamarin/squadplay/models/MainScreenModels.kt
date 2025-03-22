@@ -26,7 +26,7 @@ sealed interface MainScreenAction {
 data class MainScreenUI(
     val user: User,
     val calendarUI: CalendarUI,
-    val gameEventsOnDate: List<GameEventUI> = emptyList(),
+    val gameEventsOnDate: List<EventUI> = emptyList(),
 )
 
 data class CalendarUI(
@@ -46,12 +46,6 @@ data class CalendarUI(
         }
     }
 }
-
-data class GameEventUI(
-    val name: String,
-    val players: Int,
-    val gameIconResId: Int? = null,
-)
 
 data class EventDialogUI(
     val selectedDate: CalendarUI.Date,
@@ -75,12 +69,20 @@ enum class DialPickerTarget {
     TO
 }
 
-data class EventData(
+data class Event(
     val creatorId: String,
     val groupId: String,
     val title: String,
+    val eventIconUrl: String? = null,
     val fromDateTime: LocalDateTime,
     val toDateTime: LocalDateTime,
+)
+
+data class EventUI(
+    val title: String,
+    val subtitle: String? = null,
+    val iconUrl: String? = null,
+    val isYourEvent: Boolean = false,
 )
 
 val PREVIEW_TIME_PICKER_UI = TimePickerUI(
@@ -137,12 +139,47 @@ val PREVIEW_CALENDAR_UI = CalendarUI(
     ),
 )
 
-val PREVIEW_GAME_EVENTS = listOf(
-    GameEventUI(name = "Dark souls", players = 2),
-    GameEventUI(name = "Nino Kuni", players = 3),
-    GameEventUI(name = "Dota 2", players = 2),
-    GameEventUI(name = "Minecraft", players = 5),
-    GameEventUI(name = "Fortnight", players = 7),
+val PREVIEW_EVENTS = listOf(
+    Event(
+        title = "Dark souls",
+        groupId = "groupId",
+        eventIconUrl = null,
+        creatorId = "creatorId",
+        toDateTime = LocalDateTime.now(),
+        fromDateTime = LocalDateTime.now().plusHours(1)
+    ),
+    Event(
+        title = "Nino Kuni",
+        groupId = "groupId",
+        eventIconUrl = null,
+        creatorId = "creatorId",
+        toDateTime = LocalDateTime.now(),
+        fromDateTime = LocalDateTime.now().plusHours(1)
+    ),
+    Event(
+        title = "Dota 2",
+        groupId = "groupId",
+        eventIconUrl = null,
+        creatorId = "creatorId",
+        toDateTime = LocalDateTime.now(),
+        fromDateTime = LocalDateTime.now().plusHours(1)
+    ),
+    Event(
+        title = "Minecraft",
+        groupId = "groupId",
+        eventIconUrl = null,
+        creatorId = "creatorId",
+        toDateTime = LocalDateTime.now(),
+        fromDateTime = LocalDateTime.now().plusHours(1)
+    ),
+    Event(
+        title = "Fortnight",
+        groupId = "groupId",
+        eventIconUrl = null,
+        creatorId = "creatorId",
+        toDateTime = LocalDateTime.now(),
+        fromDateTime = LocalDateTime.now().plusHours(1)
+    ),
 )
 
 val PREVIEW_MAIN_SCREEN_UI = MainScreenUI(

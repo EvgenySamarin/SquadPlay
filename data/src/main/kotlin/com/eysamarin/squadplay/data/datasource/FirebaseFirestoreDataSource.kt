@@ -5,7 +5,7 @@ import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Compa
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
 import com.eysamarin.squadplay.data.toLocalDateTime
-import com.eysamarin.squadplay.models.EventData
+import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
@@ -31,8 +31,8 @@ interface FirebaseFirestoreDataSource {
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)
-    suspend fun saveEvent(event: EventData): Boolean
-    fun getEventsFlow(groupId: String): Flow<List<EventData>>
+    suspend fun saveEvent(event: Event): Boolean
+    fun getEventsFlow(groupId: String): Flow<List<Event>>
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -45,7 +45,7 @@ class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
 ): FirebaseFirestoreDataSource {
 
-    override suspend fun saveEvent(event: EventData): Boolean {
+    override suspend fun saveEvent(event: Event): Boolean {
         Log.d("TAG", "saveEvent: $event")
 
         val eventId = UUID.randomUUID().toString()
@@ -83,7 +83,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
     }
 
-    override fun getEventsFlow(groupId: String): Flow<List<EventData>> = callbackFlow {
+    override fun getEventsFlow(groupId: String): Flow<List<Event>> = callbackFlow {
         val eventsCollectionRef = firebaseFirestore.collection(EVENTS_COLLECTION)
 
         Log.d("TAG", "subscribe on events flow")
@@ -124,7 +124,7 @@ class FirebaseFirestoreDataSourceImpl(
                         return@mapNotNull null
                     }
 
-                    EventData(
+                    Event(
                         creatorId = creatorId,
                         groupId = groupId,
                         title = title,
