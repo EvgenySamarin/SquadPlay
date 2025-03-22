@@ -41,7 +41,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
                     val fromMonthOfYear = event.fromDateTime.month.value
 
                     val isSameDay = fromDayOfMonth == date.dayOfMonth
-                            && fromMonthOfYear == calendar.yearMonth.month.value
+                            && fromMonthOfYear == date.month?.value
                     isSameDay
                 },
             )
@@ -102,6 +102,7 @@ class CalendarDataSource {
                     } else {
                         date.dayOfMonth
                     },
+                    month = date.month,
                     isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue,
                     enabled = date.monthValue == yearMonth.monthValue,
                     countEvents = 0,

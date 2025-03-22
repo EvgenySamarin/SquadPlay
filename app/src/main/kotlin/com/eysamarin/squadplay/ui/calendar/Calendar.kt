@@ -163,8 +163,17 @@ fun ContentItem(
                 if (date.countEvents > 0) {
                     Badge(
                         modifier = Modifier.offset(x = 10.dp, y = (-8).dp),
-                        containerColor = if (date.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        contentColor = if (date.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                        containerColor = when {
+                            !date.enabled -> MaterialTheme.colorScheme.outlineVariant
+                            date.isSelected -> MaterialTheme.colorScheme.onPrimary
+                            else -> MaterialTheme.colorScheme.primary
+                        },
+                        contentColor = when {
+                            !date.enabled -> MaterialTheme.colorScheme.surface
+                            date.isSelected -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.onPrimary
+                        }
+
                     ) {
                         Text(
                             text = date.countEvents.toString(),
