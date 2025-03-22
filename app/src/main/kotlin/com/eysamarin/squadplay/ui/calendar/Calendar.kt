@@ -45,8 +45,9 @@ fun Calendar(
     onPreviousMonthTap: (YearMonth) -> Unit,
     onNextMonthTap: (YearMonth) -> Unit,
     onDateTap: (CalendarUI.Date) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Column {
+    Column(modifier = modifier) {
         Row {
             repeat(ui.daysOfWeek.size) {
                 val item = ui.daysOfWeek[it]
@@ -150,7 +151,7 @@ fun ContentItem(
         modifier = modifier
             .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
             .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-            .clickable(enabled = date.dayOfMonth.isNotBlank()) {
+            .clickable(enabled = date.enabled) {
                 onItemTap(date)
             }
     ) {
@@ -162,8 +163,17 @@ fun ContentItem(
                 if (date.countEvents > 0) {
                     Badge(
                         modifier = Modifier.offset(x = 10.dp, y = (-8).dp),
-                        containerColor = if (date.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        contentColor = if (date.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                        containerColor = when {
+                            !date.enabled -> MaterialTheme.colorScheme.outlineVariant
+                            date.isSelected -> MaterialTheme.colorScheme.onPrimary
+                            else -> MaterialTheme.colorScheme.primary
+                        },
+                        contentColor = when {
+                            !date.enabled -> MaterialTheme.colorScheme.surface
+                            date.isSelected -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.onPrimary
+                        }
+
                     ) {
                         Text(
                             text = date.countEvents.toString(),
@@ -173,10 +183,15 @@ fun ContentItem(
                 }
             },
         ) {
+            
             Text(
                 modifier = Modifier,
-                text = date.dayOfMonth,
-                color = if (date.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                text = date.dayOfMonth?.toString() ?: "",
+                color = when {
+                    !date.enabled -> MaterialTheme.colorScheme.outlineVariant
+                    date.isSelected -> MaterialTheme.colorScheme.onPrimary
+                    else -> MaterialTheme.colorScheme.onSurface
+                },
                 style = adaptiveBodyByHeight(windowSize),
             )
         }

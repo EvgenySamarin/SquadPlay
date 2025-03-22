@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.com.google.android.libraries.identity.googleid)
 
     implementation(platform(libs.com.google.firebase.bom))
-    implementation(libs.com.google.firebase.database)
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
 }

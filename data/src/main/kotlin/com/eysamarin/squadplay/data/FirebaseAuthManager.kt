@@ -17,7 +17,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.tasks.await
-import java.util.UUID
 
 interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): User?
@@ -93,17 +92,16 @@ class FirebaseAuthManagerImpl(
             firebaseAuth.signInWithCredential(credential).await()
 
             val firebaseUser = firebaseAuth.currentUser
-            if(firebaseUser == null) return null
+            if (firebaseUser == null) return null
 
             Log.d("TAG", "signInWithCredential:success")
 
             User(
                 uid = firebaseUser.uid,
-                inviteId = UUID.randomUUID().toString(),
                 username = firebaseUser.displayName ?: "User",
                 email = firebaseUser.email,
                 photoUrl = firebaseUser.photoUrl?.toString(),
-                friends = listOf()
+                groups = listOf(),
             )
         } catch (e: Exception) {
             Log.w("TAG", "signInWithCredential:failure", e)

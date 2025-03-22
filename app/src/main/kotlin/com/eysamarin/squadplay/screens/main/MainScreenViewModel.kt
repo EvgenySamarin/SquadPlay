@@ -5,32 +5,41 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
-import com.eysamarin.squadplay.domain.event.GameEventUIProvider
-import com.eysamarin.squadplay.domain.polling.PollingProvider
+import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.CalendarUI.Date
+import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.PollingDialogUI
-import com.eysamarin.squadplay.models.Routes.Auth
-import com.eysamarin.squadplay.models.Routes.Profile
+import com.eysamarin.squadplay.models.EventDialogUI
+import com.eysamarin.squadplay.models.EventUI
+import com.eysamarin.squadplay.models.Route.Auth
+import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.models.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
-    private val gameEventUIProvider: GameEventUIProvider,
-    private val pollingProvider: PollingProvider,
+    private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
     private val profileProvider: ProfileProvider,
 ) : ViewModel() {
@@ -46,49 +55,103 @@ class MainScreenViewModel(
     private val _confirmInviteDialogState = MutableStateFlow<UiState<String>>(UiState.Empty)
     val confirmInviteDialogState = _confirmInviteDialogState.asStateFlow()
 
-    private val _inviteLinkState = MutableStateFlow<String?>(null)
-    val inviteLinkState = _inviteLinkState.asStateFlow()
+    private val _inviteGroupIdState = MutableStateFlow<String?>(null)
+    val inviteGroupIdState = _inviteGroupIdState.asStateFlow()
 
-    private val _pollingDialogState = MutableStateFlow<UiState<PollingDialogUI>>(UiState.Empty)
-    val pollingDialogState = _pollingDialogState.asStateFlow()
+    private val _eventDialogState = MutableStateFlow<UiState<EventDialogUI>>(UiState.Empty)
+    val eventDialogState = _eventDialogState.asStateFlow()
+
+    private val userInfoState = MutableStateFlow<User?>(null)
+    private val eventsState = MutableStateFlow<List<Event>>(emptyList())
+    private val calendarUIState = MutableStateFlow<CalendarUI>(
+        calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
+    )
 
     init {
-        collectUserInfo()
+        collectUiStateData()
     }
 
-    private fun collectUserInfo() {
-        Log.d("TAG", "subscribe on user info flow")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun collectUiStateData() {
         profileProvider.getUserInfoFlow()
             .filterNotNull()
-            .onEach { userInfo ->
-                val calendarState =
-                    calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
-                updateMainScreenUI(MainScreenUI(user = userInfo, calendarUI = calendarState))
+            .onEach {
+                Log.d("TAG", "user info received: $it")
+                userInfoState.emit(it)
             }
-            .combine(inviteLinkState.filterNotNull()) { user, inviteId ->
-                user to inviteId
-            }
-            .onEach { (user, inviteId) ->
-                if (user.inviteId == inviteId) {
-                    snackbarChannel.send("You cannot invite yourself")
-                    Log.w("TAG", "You cannot invite yourself")
-                    return@onEach
-                }
-
-                val friendInfo = profileProvider.getFriendInfoByInviteId(inviteId)
-                if (friendInfo == null) {
-                    snackbarChannel.send("Friend with inviteId: $inviteId not found")
-                    Log.w("TAG", "Friend with inviteId: $inviteId not found")
-                    return@onEach
-                }
-                _confirmInviteDialogState.emit(UiState.Normal("Want to add ${friendInfo.username} as friend?"))
+            .map { it.groups.firstOrNull() }
+            .filterNotNull()
+            .flatMapLatest { eventProvider.getEventsFlow(it.uid) }
+            .onEach {
+                Log.d("TAG", "events received: $it")
+                eventsState.emit(it)
             }
             .launchIn(viewModelScope)
-    }
 
-    private fun updateMainScreenUI(updatedMainScreenUI: MainScreenUI) = viewModelScope.launch {
-        Log.d("TAG", "updateMainScreenUI by: $updatedMainScreenUI")
-        _uiState.emit(UiState.Normal(updatedMainScreenUI))
+
+        userInfoState
+            .filterNotNull()
+            .combine(inviteGroupIdState.filterNotNull()) { user, inviteGroupId ->
+                user to inviteGroupId
+            }
+            .onEach { (user, inviteGroupId) ->
+                if (user.groups.map { it.uid }.contains(inviteGroupId)) {
+                    snackbarChannel.send("You're already in this squad")
+                    Log.w("TAG", "You're already in this squad")
+                    return@onEach
+                }
+
+                val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
+                if (groupInfo == null) {
+                    snackbarChannel.send("Squad with uid: $inviteGroupId not found")
+                    Log.w("TAG", "Group with uid: $inviteGroupId not found")
+                    return@onEach
+                }
+                _confirmInviteDialogState.emit(UiState.Normal("Want to join ${groupInfo.title} squad?"))
+            }
+            .launchIn(viewModelScope)
+
+        combine(
+            userInfoState,
+            calendarUIState,
+            eventsState,
+        ) { userInfo, calendar, events ->
+            userInfo ?: return@combine null
+
+            val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(calendar, events)
+
+            val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
+            val eventsBySelectedDate = events.filter {
+                selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth
+            }.map {
+                EventUI(
+                    title = it.title,
+                    subtitle = "from ${it.fromDateTime.format(DEFAULT_TIME_FORMATTER)} to ${
+                        it.toDateTime.format(
+                            DEFAULT_TIME_FORMATTER
+                        )
+                    }",
+                    iconUrl = it.eventIconUrl,
+                    isYourEvent = it.creatorId == userInfo.uid
+                )
+            }
+            Triple(userInfo, eventBasedCalendar, eventsBySelectedDate)
+        }
+            .filterNotNull()
+            .onEach { (userInfo, calendar, eventsBySelectedDate) ->
+                Log.d("TAG", "updateMainScreenUI")
+                _uiState.emit(
+                    UiState.Normal(
+                        MainScreenUI(
+                            user = userInfo,
+                            calendarUI = calendar,
+                            gameEventsOnDate = eventsBySelectedDate
+                        )
+                    )
+                )
+            }
+            .flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
     }
 
     fun onLogOutTap() = viewModelScope.launch {
@@ -106,120 +169,120 @@ class MainScreenViewModel(
         navigationChannel.send(NavAction.NavigateTo(Profile.route))
     }
 
-    fun onNextMonthTap(nextMonth: YearMonth) {
+    fun onNextMonthTap(nextMonth: YearMonth) = viewModelScope.launch {
         Log.d("TAG", "onNextMonthTap: $nextMonth")
 
-        val currentUiState = uiState.value
-        if (currentUiState !is UiState.Normal<MainScreenUI>) return
-
         val nextMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = nextMonth)
-        val newMainScreenUI = currentUiState.data.copy(
-            calendarUI = nextMonthCalendarUI
-        )
-        updateMainScreenUI(newMainScreenUI)
+        calendarUIState.emit(nextMonthCalendarUI)
     }
 
-    fun onPreviousMonthTap(prevMonth: YearMonth) {
+    fun onPreviousMonthTap(prevMonth: YearMonth) = viewModelScope.launch {
         Log.d("TAG", "onPreviousMonthTap: $prevMonth")
 
-        val currentUiState = uiState.value
-        if (currentUiState !is UiState.Normal<MainScreenUI>) return
-
         val prevMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = prevMonth)
-        val newMainScreenUI = currentUiState.data.copy(
-            calendarUI = prevMonthCalendarUI
-        )
-        updateMainScreenUI(newMainScreenUI)
+        calendarUIState.emit(prevMonthCalendarUI)
     }
 
-    fun onDateTap(date: CalendarUI.Date) = viewModelScope.launch {
+    fun onDateTap(date: Date) = viewModelScope.launch {
         Log.d("TAG", "onDateTap: $date, updating game events")
 
-        val currentMainScreenUI = (uiState.value as? UiState.Normal<MainScreenUI>)?.data
-        if (currentMainScreenUI == null) {
-            Log.w("TAG", "current UI cannot be updated since of no data")
-            return@launch
-        }
+        val currentCalendar = calendarUIState.value
 
         val updatedCalendarUI = calendarUIProvider.updateCalendarBySelectedDate(
-            target = currentMainScreenUI.calendarUI,
+            target = currentCalendar,
             selectedDate = date,
         )
 
-        val gameEvents = gameEventUIProvider.provideGameEventUIBy(date)
-        updateMainScreenUI(
-            updatedMainScreenUI = currentMainScreenUI.copy(
-                calendarUI = updatedCalendarUI,
-                gameEventsOnDate = gameEvents,
-            )
+        calendarUIState.emit(updatedCalendarUI)
+    }
+
+    fun dismissEventDialog() = viewModelScope.launch {
+        Log.d("TAG", "dismissEventDialog")
+
+        _eventDialogState.emit(UiState.Empty)
+    }
+
+    fun onEventSaveTap(
+        year: Int,
+        month: Int,
+        day: Int,
+        timeFrom: TimeUnit,
+        timeTo: TimeUnit
+    ) = viewModelScope.launch {
+        Log.d("TAG", "onEventSaveTap")
+
+        val fromDateTime = LocalDateTime.of(year, month, day, timeFrom.hour, timeFrom.minute)
+        val toDateTime = LocalDateTime.of(year, month, day, timeTo.hour, timeTo.minute)
+
+        val currentUser = userInfoState.value ?: run {
+            Log.w("TAG", "currentUser is null cannot save event")
+            return@launch
+        }
+
+        if (currentUser.groups.isEmpty()) {
+            Log.d("TAG", "currentUser has no groups cannot save event")
+            snackbarChannel.send("You have no squads to save event, find your squad first")
+            return@launch
+        }
+
+        val eventData = Event(
+            creatorId = currentUser.uid,
+            groupId = currentUser.groups.first().uid,
+            title = "New event",
+            fromDateTime = fromDateTime,
+            toDateTime = toDateTime,
         )
-    }
-
-    fun dismissPolingDialog() = viewModelScope.launch {
-        Log.d("TAG", "dismissPolingDialog")
-
-        _pollingDialogState.emit(UiState.Empty)
-    }
-
-    fun onPollingStartTap(timeFrom: TimeUnit, timeTo: TimeUnit) {
-        val selectedDate = takeSelectedDate()
-
-        Log.d("TAG", "onPollingStartTap for date: $selectedDate, timeFrom: $timeFrom, timeTo: $timeTo")
-        pollingProvider.savePollingData("timeFrom: $timeFrom, timeTo: $timeTo")
+        val isSuccess = eventProvider.saveEventData(eventData)
+        snackbarChannel.send(if (isSuccess) "Event saved successfully" else "Failed to save event")
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
         Log.d("TAG", "onAddGameEventTap show polling dialog state")
 
-        val currentSelectedDate = takeSelectedDate()
+        val calendarUi = calendarUIState.value
+        val selectedDate = calendarUi.dates.firstOrNull { it.enabled && it.isSelected }
 
-        if (currentSelectedDate == null) {
+        if (selectedDate == null) {
             Log.w("TAG", "selected date is null cannot add game event")
             return@launch
         }
 
-        _pollingDialogState.emit(UiState.Normal(PollingDialogUI(selectedDate = currentSelectedDate)))
+        _eventDialogState.emit(UiState.Normal(EventDialogUI(
+            selectedDate = selectedDate,
+            yearMonth = calendarUi.yearMonth
+        )))
     }
 
-    private fun takeSelectedDate(): CalendarUI.Date? =
-        (uiState.value as? UiState.Normal<MainScreenUI>)
-            ?.data
-            ?.calendarUI
-            ?.dates
-            ?.firstOrNull { it.isSelected }
+    fun onJoinGroupDeepLinkRetrieved(inviteGroupId: String?) = viewModelScope.launch {
+        if (inviteGroupId == null) return@launch
 
-    fun onInviteDeepLinkRetrieved(inviteId: String?) = viewModelScope.launch {
-        if (inviteId == null) return@launch
-
-        Log.d("TAG", "onInviteDeepLinkRetrieved: $inviteId")
-        _inviteLinkState.emit(inviteId)
+        Log.d("TAG", "onInviteGroupDeepLinkRetrieved: $inviteGroupId")
+        _inviteGroupIdState.emit(inviteGroupId)
     }
 
-    fun onAddFriendDialogConfirm() = viewModelScope.launch {
-        Log.d("TAG", "onAddFriendDialogConfirm")
+    fun onJoinGroupDialogConfirm() = viewModelScope.launch {
+        Log.d("TAG", "onJoinGroupDialogConfirm")
 
-        val currentInviteId = inviteLinkState.value ?: run {
-            Log.w("TAG", "currentInviteId is null, cannot add friend")
+        val inviteGroupId = inviteGroupIdState.value ?: run {
+            Log.w("TAG", "groupId is null, cannot join group")
             return@launch
         }
-        val currentUser = (uiState.value as? UiState.Normal<MainScreenUI>)?.data?.user ?: run {
-            Log.w("TAG", "currentUser is null, cannot add friend")
+        val currentUser = userInfoState.value ?: run {
+            Log.w("TAG", "currentUser is null, cannot join group")
             return@launch
         }
 
-        val isSuccess = profileProvider.addFriend(
-            userId = currentUser.uid, inviteId = currentInviteId,
+        val isSuccess = profileProvider.joinGroup(
+            userId = currentUser.uid, groupId = inviteGroupId,
         )
-        snackbarChannel.send(
-            if (isSuccess) {
-                "Friend added successfully"
-            } else {
-                "Add friend failed"
-            }
-        )
+        snackbarChannel.send(if (isSuccess) "You joined the squad" else "You failed joining the squad")
     }
 
-    fun onAddFriendDialogDismiss() = viewModelScope.launch {
+    fun onJoinGroupDialogDismiss() = viewModelScope.launch {
         _confirmInviteDialogState.emit(UiState.Empty)
+    }
+
+    companion object {
+        val DEFAULT_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }

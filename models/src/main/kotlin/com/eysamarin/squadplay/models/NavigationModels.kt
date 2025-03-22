@@ -6,8 +6,8 @@ sealed class NavAction {
     object PopToStart : NavAction()
 }
 
-sealed class Routes(val route: String) {
-    data object Main : Routes(route = "Main")
-    data object Auth : Routes(route = "Auth")
-    data object Profile : Routes(route = "Profile")
+sealed class Route(val route: String) {
+    data object Main : Route(route = "Main")
+    data object Auth : Route(route = "Auth")
+    data object Profile : Route(route = "Profile")
 }

@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.domain.calendar
 
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.Event
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -10,6 +11,7 @@ import java.util.Locale
 interface CalendarUIProvider {
     fun provideCalendarUIBy(yearMonth: YearMonth): CalendarUI
     fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: CalendarUI.Date): CalendarUI
+    fun mergedCalendarWithEvents(calendar: CalendarUI, events: List<Event>): CalendarUI
 }
 
 class CalendarUIProviderImpl: CalendarUIProvider {
@@ -28,6 +30,24 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         daysOfWeek
     }
 
+    override fun mergedCalendarWithEvents(
+        calendar: CalendarUI,
+        events: List<Event>
+    ): CalendarUI = calendar.copy(
+        dates = calendar.dates.map { date ->
+            date.copy(
+                countEvents = events.count { event ->
+                    val fromDayOfMonth = event.fromDateTime.dayOfMonth
+                    val fromMonthOfYear = event.fromDateTime.month.value
+
+                    val isSameDay = fromDayOfMonth == date.dayOfMonth
+                            && fromMonthOfYear == date.month?.value
+                    isSameDay
+                },
+            )
+        },
+    )
+
     override fun provideCalendarUIBy(yearMonth: YearMonth): CalendarUI {
         val dates = dataSource.getDates(yearMonth)
 
@@ -45,7 +65,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         return target.copy(
             dates = target.dates.map { item ->
                 when {
-                    item.dayOfMonth == selectedDate.dayOfMonth -> item.copy(isSelected = true)
+                    item.dayOfMonth == selectedDate.dayOfMonth && item.enabled-> item.copy(isSelected = true)
                     item.isSelected == true -> item.copy(isSelected = false)
                     else -> item
                 }
@@ -63,6 +83,13 @@ class CalendarDataSource {
 
         return generateSequence(firstMondayOfMonth) { it.plusDays(1) }
             .takeWhile { it.isBefore(firstDayOfNextMonth) }
+            .toMutableList()
+            .apply {
+                val extraDaysCount = DayOfWeek.SUNDAY.value - last().dayOfWeek.value
+                repeat(extraDaysCount) {
+                    add(last().plusDays(1))
+                }
+            }
             .toList()
     }
 
@@ -71,11 +98,13 @@ class CalendarDataSource {
             .map { date ->
                 CalendarUI.Date(
                     dayOfMonth = if (date.monthValue == yearMonth.monthValue) {
-                        "${date.dayOfMonth}"
+                        date.dayOfMonth
                     } else {
-                        "" // Fill with empty string for days outside the current month
+                        date.dayOfMonth
                     },
+                    month = date.month,
                     isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue,
+                    enabled = date.monthValue == yearMonth.monthValue,
                     countEvents = 0,
                 )
             }

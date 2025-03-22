@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
-import com.eysamarin.squadplay.models.PollingDialogUI
+import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.TimePickerUI
 import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.ui.DialPicker
@@ -40,7 +40,7 @@ import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGameEvent(
-    ui: PollingDialogUI,
+    ui: EventDialogUI,
     windowSize: WindowSizeClass,
     onStartPollingTap: (timeFrom: TimeUnit, timeTo: TimeUnit) -> Unit
 ) {
@@ -68,7 +68,7 @@ fun AddGameEvent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "Create new game event polling for date: ${ui.selectedDate.dayOfMonth}",
+            text = "Create new game event polling for date: ${ui.yearMonth.year}.${ui.yearMonth.monthValue}.${ui.selectedDate.dayOfMonth}",
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -103,7 +103,7 @@ fun AddGameEvent(
         PrimaryButton(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             windowSize = windowSize,
-            text = "Start polling",
+            text = "Schedule event",
             onTap = {
                 val from = timeFrom ?: run {
                     errorText = "Time from not set"
@@ -135,7 +135,9 @@ fun AddGameEvent(
 @Composable
 private fun AddGameEventContentPreview() {
     SquadPlayTheme {
-        Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)) {
             Spacer(Modifier.padding(top = 24.dp))
             AddGameEvent(
                 ui = PREVIEW_POLLING_DIALOG_UI,

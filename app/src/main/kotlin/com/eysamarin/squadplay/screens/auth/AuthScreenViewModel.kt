@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.models.AuthScreenUI
 import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.Routes.Main
+import com.eysamarin.squadplay.models.Route.Main
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
