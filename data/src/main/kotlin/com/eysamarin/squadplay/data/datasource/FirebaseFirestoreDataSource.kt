@@ -5,11 +5,11 @@ import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Compa
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
 import com.eysamarin.squadplay.data.toLocalDateTime
+import com.eysamarin.squadplay.data.toTimestamp
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.time.ZoneOffset
 import java.util.UUID
 
 interface FirebaseFirestoreDataSource {
@@ -53,8 +52,8 @@ class FirebaseFirestoreDataSourceImpl(
             "creatorId" to event.creatorId,
             "groupId" to event.groupId,
             "title" to event.title,
-            "dateFrom" to Timestamp(event.fromDateTime.toInstant(ZoneOffset.UTC)),
-            "dateTo" to Timestamp(event.toDateTime.toInstant(ZoneOffset.UTC)),
+            "dateFrom" to event.fromDateTime.toTimestamp(),
+            "dateTo" to event.toDateTime.toTimestamp(),
         )
 
         val groupsDocumentRef = firebaseFirestore.collection(GROUPS_COLLECTION)
@@ -128,8 +127,8 @@ class FirebaseFirestoreDataSourceImpl(
                         creatorId = creatorId,
                         groupId = groupId,
                         title = title,
-                        fromDateTime = dateFrom.toInstant().toLocalDateTime(),
-                        toDateTime = dateTo.toInstant().toLocalDateTime(),
+                        fromDateTime = dateFrom.toLocalDateTime(),
+                        toDateTime = dateTo.toLocalDateTime(),
                     )
                 }
                 trySend(events)
