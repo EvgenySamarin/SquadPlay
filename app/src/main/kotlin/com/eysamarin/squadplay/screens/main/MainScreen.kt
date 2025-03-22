@@ -176,15 +176,31 @@ private fun MainScreenMediumLayout(
         GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
             onAction(MainScreenAction.OnAvatarTap)
         })
-        Calendar(
-            ui = state.data.calendarUI,
-            windowSize = windowSize,
-            onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
-            onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) },
-            onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
-        )
-        HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
-        EventLists(events = state.data.gameEventsOnDate, windowSize = windowSize)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            item {
+                Calendar(
+                    ui = state.data.calendarUI,
+                    windowSize = windowSize,
+                    onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
+                    onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) },
+                    onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
+                )
+            }
+            item {
+                HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+            }
+
+            if (state.data.gameEventsOnDate.isEmpty()) {
+                item { EmptyContent(windowSize, modifier = Modifier.fillMaxSize()) }
+            } else {
+                items(items = state.data.gameEventsOnDate) { item ->
+                    Event(
+                        windowSize = windowSize,
+                        ui = item,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -219,27 +235,15 @@ private fun MainScreenExpandedLayout(
                 onAction(MainScreenAction.OnAvatarTap)
             })
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
-            EventLists(events = state.data.gameEventsOnDate, windowSize = windowSize)
-        }
-    }
-}
 
-@Composable
-private fun EventLists(
-    events: List<EventUI>,
-    windowSize: WindowSizeClass,
-) {
-    if (events.isEmpty()) {
-        EmptyContent(windowSize, modifier = Modifier.fillMaxSize())
-        return
-    }
-
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(items = events) { item ->
-            Event(
-                windowSize = windowSize,
-                ui = item,
-            )
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(items = state.data.gameEventsOnDate) { item ->
+                    Event(
+                        windowSize = windowSize,
+                        ui = item,
+                    )
+                }
+            }
         }
     }
 }

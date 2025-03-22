@@ -37,6 +37,7 @@ import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun Calendar(
@@ -93,11 +94,12 @@ fun Header(
         IconButton(onClick = { onPreviousMonthTap(yearMonth.minusMonths(1)) }) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "previous"
+                contentDescription = "previous",
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
         Text(
-            text = yearMonth.toString(),
+            text = yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
             style = adaptiveTitleByHeight(windowSize),
@@ -108,7 +110,8 @@ fun Header(
         IconButton(onClick = { onNextMonthTap(yearMonth.plusMonths(1)) }) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "next"
+                contentDescription = "next",
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }
