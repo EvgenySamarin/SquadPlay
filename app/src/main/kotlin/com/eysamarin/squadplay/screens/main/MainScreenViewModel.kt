@@ -67,11 +67,11 @@ class MainScreenViewModel(
     )
 
     init {
-        collectUserInfo()
+        collectUiStateData()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun collectUserInfo() {
+    private fun collectUiStateData() {
         profileProvider.getUserInfoFlow()
             .filterNotNull()
             .onEach {
@@ -121,8 +121,7 @@ class MainScreenViewModel(
 
             val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
             val eventsBySelectedDate =  events.filter {
-                selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth &&
-                        selectedDate.dayOfMonth == it.toDateTime.dayOfMonth
+                selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth
             }
             Triple(userInfo, eventBasedCalendar, eventsBySelectedDate)
         }
