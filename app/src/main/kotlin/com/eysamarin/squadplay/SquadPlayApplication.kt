@@ -25,6 +25,7 @@ import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -46,6 +47,7 @@ class SquadPlayApplication : Application() {
         single<FirebaseFirestoreDataSource> {
             FirebaseFirestoreDataSourceImpl(
                 firebaseFirestore = FirebaseFirestore.getInstance(),
+                firebaseMessaging = FirebaseMessaging.getInstance(),
             )
         }
         //endregion
@@ -80,6 +82,7 @@ class SquadPlayApplication : Application() {
         //endregion
 
         //region presentation
+        viewModelOf(::LaunchApplicationViewModel)
         viewModelOf(::MainScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
         viewModelOf(::ProfileScreenViewModel)

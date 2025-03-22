@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.com.google.firebase.crashlytics)
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
+    implementation(libs.com.google.firebase.messaging)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.navigationCompose)

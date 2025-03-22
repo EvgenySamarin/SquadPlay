@@ -39,4 +39,5 @@ dependencies {
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
+    implementation(libs.com.google.firebase.messaging)
 }

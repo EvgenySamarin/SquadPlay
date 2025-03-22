@@ -12,7 +12,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
@@ -21,6 +20,7 @@ import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient1
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient2
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient3
+import com.eysamarin.squadplay.utils.DarkLightModePreview
 
 @Composable
 fun UserAvatar(
@@ -66,7 +66,7 @@ fun UserAvatar(
     }
 }
 
-@Preview
+@DarkLightModePreview
 @Composable
 private fun UserAvatarPreview() {
     UserAvatar()

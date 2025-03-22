@@ -13,6 +13,7 @@ import com.eysamarin.squadplay.models.User
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +33,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun deleteUserProfile(userId: String)
     suspend fun saveEvent(event: Event): Boolean
     fun getEventsFlow(groupId: String): Flow<List<Event>>
+    suspend fun subscribeToGroupTopic(groupId: String)
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -42,7 +44,26 @@ interface FirebaseFirestoreDataSource {
 
 class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
+    private val firebaseMessaging: FirebaseMessaging,
 ): FirebaseFirestoreDataSource {
+
+    override suspend fun subscribeToGroupTopic(groupId: String) {
+        try {
+            firebaseMessaging.subscribeToTopic(groupId).await()
+            Log.d("FCM", "Subscribed to topic: $groupId")
+        } catch (e: Exception) {
+            Log.e("FCM", "Error subscribing to topic: $groupId", e)
+        }
+    }
+
+    private suspend fun unsubscribeFromGroupTopic(groupId: String) {
+        try {
+            firebaseMessaging.unsubscribeFromTopic(groupId).await()
+            Log.d("FCM", "Unsubscribed from topic: $groupId")
+        } catch (e: Exception) {
+            Log.e("FCM", "Error unsubscribing from topic: $groupId", e)
+        }
+    }
 
     override suspend fun saveEvent(event: Event): Boolean {
         Log.d("TAG", "saveEvent: $event")
@@ -146,9 +167,12 @@ class FirebaseFirestoreDataSourceImpl(
             val userDocumentRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
             val groupsCollectionRef = firebaseFirestore.collection(USERS_COLLECTION)
             val groupsDocuments = getCollectionDocuments(groupsCollectionRef)
+                .also { it.forEach { unsubscribeFromGroupTopic(it.id) } }
 
             firebaseFirestore.runTransaction { transaction ->
                 groupsDocuments.forEach {
+                    if (!it.exists()) return@forEach
+
                     val members = it["members"]?.let {
                         val anyList = it as? List<*>
                         anyList?.filterIsInstance<String>()
