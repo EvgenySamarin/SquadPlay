@@ -4,10 +4,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.button.SecondaryButton
+import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
+import com.eysamarin.squadplay.utils.DarkLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 @Composable
@@ -39,14 +40,16 @@ fun ConfirmationDialog(
     )
 }
 
-@Preview
+@DarkLightModePreview
 @Composable
 private fun ConfirmationDialogPreview() {
-    ConfirmationDialog(
-        windowSize = WINDOWS_SIZE_MEDIUM,
-        title = "Title example",
-        text = "Dialog example",
-        onConfirmTap = {},
-        onDismiss = {},
-    )
+    SquadPlayTheme {
+        ConfirmationDialog(
+            windowSize = WINDOWS_SIZE_MEDIUM,
+            title = "Title example",
+            text = "Dialog example",
+            onConfirmTap = {},
+            onDismiss = {},
+        )
+    }
 }

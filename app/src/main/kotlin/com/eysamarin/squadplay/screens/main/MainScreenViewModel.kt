@@ -10,10 +10,10 @@ import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.CalendarUI.Date
 import com.eysamarin.squadplay.models.Event
-import com.eysamarin.squadplay.models.MainScreenUI
-import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.EventUI
+import com.eysamarin.squadplay.models.MainScreenUI
+import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.TimeUnit
@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 class MainScreenViewModel(
     private val calendarUIProvider: CalendarUIProvider,
@@ -83,7 +84,7 @@ class MainScreenViewModel(
             .filterNotNull()
             .flatMapLatest { eventProvider.getEventsFlow(it.uid) }
             .onEach {
-                Log.d("TAG", "events received: $it")
+                Log.d("TAG", "events received: [${it.firstOrNull()}]...")
                 eventsState.emit(it)
             }
             .launchIn(viewModelScope)
@@ -125,6 +126,7 @@ class MainScreenViewModel(
                 selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth
             }.map {
                 EventUI(
+                    eventId = it.uid,
                     title = it.title,
                     subtitle = "from ${it.fromDateTime.format(DEFAULT_TIME_FORMATTER)} to ${
                         it.toDateTime.format(
@@ -226,6 +228,7 @@ class MainScreenViewModel(
         }
 
         val eventData = Event(
+            uid = UUID.randomUUID().toString(),
             creatorId = currentUser.uid,
             groupId = currentUser.groups.first().uid,
             title = "New event",
@@ -280,6 +283,18 @@ class MainScreenViewModel(
 
     fun onJoinGroupDialogDismiss() = viewModelScope.launch {
         _confirmInviteDialogState.emit(UiState.Empty)
+    }
+
+    fun onDeleteEventTap(eventId: String) = viewModelScope.launch {
+        Log.d("TAG", "onDeleteEventTap: $eventId")
+
+        eventProvider.deleteEvent(eventId).also { isSuccess ->
+            if (isSuccess) {
+                Log.d("TAG", "event deleted successfully")
+            } else {
+                Log.w("TAG", "failed to delete event")
+            }
+        }
     }
 
     companion object {

@@ -10,9 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
+import com.eysamarin.squadplay.utils.DarkLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 @Composable
@@ -30,6 +30,8 @@ fun PrimaryButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.outline,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface,
         )
     ) {
         Text(
@@ -73,7 +75,7 @@ fun SecondaryButton(
     }
 }
 
-@Preview(showBackground = true)
+@DarkLightModePreview
 @Composable
 fun PrimaryButtonPreview() {
     Column {

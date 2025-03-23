@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.models
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.YearMonth
+import java.util.UUID
 
 sealed interface MainScreenAction {
     object OnDismissEventDialog : MainScreenAction
@@ -22,6 +23,7 @@ sealed interface MainScreenAction {
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnDateTap(val date: CalendarUI.Date) : MainScreenAction
+    class OnDeleteEventTap(val eventId: String): MainScreenAction
 }
 
 data class MainScreenUI(
@@ -77,6 +79,7 @@ enum class DialPickerTarget {
 }
 
 data class Event(
+    val uid: String,
     val creatorId: String,
     val groupId: String,
     val title: String,
@@ -86,6 +89,7 @@ data class Event(
 )
 
 data class EventUI(
+    val eventId: String,
     val title: String,
     val subtitle: String? = null,
     val iconUrl: String? = null,
@@ -151,45 +155,40 @@ val PREVIEW_CALENDAR_UI = CalendarUI(
 )
 
 val PREVIEW_EVENTS = listOf(
-    Event(
+    EventUI(
+        eventId = UUID.randomUUID().toString(),
         title = "Dark souls",
-        groupId = "groupId",
-        eventIconUrl = null,
-        creatorId = "creatorId",
-        toDateTime = LocalDateTime.now(),
-        fromDateTime = LocalDateTime.now().plusHours(1)
+        iconUrl = null,
+        subtitle = "from 12:00 to 14:00",
+        isYourEvent = false,
     ),
-    Event(
+    EventUI(
+        eventId = UUID.randomUUID().toString(),
         title = "Nino Kuni",
-        groupId = "groupId",
-        eventIconUrl = null,
-        creatorId = "creatorId",
-        toDateTime = LocalDateTime.now(),
-        fromDateTime = LocalDateTime.now().plusHours(1)
+        iconUrl = null,
+        subtitle = "from 12:00 to 14:00",
+        isYourEvent = false,
     ),
-    Event(
+    EventUI(
+        eventId = UUID.randomUUID().toString(),
         title = "Dota 2",
-        groupId = "groupId",
-        eventIconUrl = null,
-        creatorId = "creatorId",
-        toDateTime = LocalDateTime.now(),
-        fromDateTime = LocalDateTime.now().plusHours(1)
+        iconUrl = null,
+        subtitle = "from 12:00 to 14:00",
+        isYourEvent = true,
     ),
-    Event(
+    EventUI(
+        eventId = UUID.randomUUID().toString(),
         title = "Minecraft",
-        groupId = "groupId",
-        eventIconUrl = null,
-        creatorId = "creatorId",
-        toDateTime = LocalDateTime.now(),
-        fromDateTime = LocalDateTime.now().plusHours(1)
+        iconUrl = null,
+        subtitle = "from 12:00 to 14:00",
+        isYourEvent = false,
     ),
-    Event(
+    EventUI(
+        eventId = UUID.randomUUID().toString(),
         title = "Fortnight",
-        groupId = "groupId",
-        eventIconUrl = null,
-        creatorId = "creatorId",
-        toDateTime = LocalDateTime.now(),
-        fromDateTime = LocalDateTime.now().plusHours(1)
+        iconUrl = null,
+        subtitle = "from 12:00 to 14:00",
+        isYourEvent = true,
     ),
 )
 

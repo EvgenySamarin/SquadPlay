@@ -232,4 +232,5 @@ private fun handleMainScreenAction(
     }
 
     MainScreenAction.OnJoinGroupDialogDismiss -> viewModel.onJoinGroupDialogDismiss()
+    is MainScreenAction.OnDeleteEventTap ->  viewModel.onDeleteEventTap(action.eventId)
 }

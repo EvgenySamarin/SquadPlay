@@ -11,8 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.eysamarin.squadplay.models.DialPickerTarget
+import com.eysamarin.squadplay.utils.DarkLightModePreview
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +49,7 @@ fun DialPicker(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
+@DarkLightModePreview
 @Composable
 private fun DialPickerPreview() {
     DialPicker(

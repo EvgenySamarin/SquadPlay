@@ -35,6 +35,11 @@ class ProfileRepositoryImpl(
 
     override suspend fun joinGroup(userId: String, groupId: String): Boolean = firestoreDataSource
         .joinGroup(userId = userId, groupId = groupId)
+        .also { isSuccess ->
+            if (isSuccess) {
+                firestoreDataSource.subscribeToGroupTopic(groupId)
+            }
+        }
 
     override suspend fun getGroupInfo(groupId: String): Group? = firestoreDataSource
         .getGroupInfo(groupId)
