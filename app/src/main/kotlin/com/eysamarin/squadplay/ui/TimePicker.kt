@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_TIME_PICKER_UI
 import com.eysamarin.squadplay.models.TimePickerUI
+import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
@@ -127,17 +128,19 @@ private fun TimeUnit(
 @DarkLightModePreview
 @Composable
 fun TimePickerPreview() {
-    Column {
-        Spacer(Modifier.padding(top = 24.dp))
-        SquadPlayTimePicker(
-            ui = PREVIEW_TIME_PICKER_UI,
-            windowSize = WINDOWS_SIZE_MEDIUM,
-            modifier = Modifier.fillMaxWidth()
-        )
-        SquadPlayTimePicker(
-            ui = PREVIEW_TIME_PICKER_UI.copy(errorText = "Time from cannot be more then time to"),
-            windowSize = WINDOWS_SIZE_MEDIUM,
-            modifier = Modifier.fillMaxWidth()
-        )
+    SquadPlayTheme {
+        Column {
+            Spacer(Modifier.padding(top = 24.dp))
+            SquadPlayTimePicker(
+                ui = PREVIEW_TIME_PICKER_UI,
+                windowSize = WINDOWS_SIZE_MEDIUM,
+                modifier = Modifier.fillMaxWidth()
+            )
+            SquadPlayTimePicker(
+                ui = PREVIEW_TIME_PICKER_UI.copy(errorText = "Time from cannot be more then time to"),
+                windowSize = WINDOWS_SIZE_MEDIUM,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }

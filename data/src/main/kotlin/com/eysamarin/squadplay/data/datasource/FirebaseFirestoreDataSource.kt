@@ -34,6 +34,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun saveEvent(event: Event): Boolean
     fun getEventsFlow(groupId: String): Flow<List<Event>>
     suspend fun subscribeToGroupTopic(groupId: String)
+    suspend fun deleteEvent(eventId: String): Boolean
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -68,7 +69,6 @@ class FirebaseFirestoreDataSourceImpl(
     override suspend fun saveEvent(event: Event): Boolean {
         Log.d("TAG", "saveEvent: $event")
 
-        val eventId = UUID.randomUUID().toString()
         val eventDataMap = hashMapOf(
             "creatorId" to event.creatorId,
             "groupId" to event.groupId,
@@ -79,7 +79,7 @@ class FirebaseFirestoreDataSourceImpl(
 
         val groupsDocumentRef = firebaseFirestore.collection(GROUPS_COLLECTION)
             .document(event.groupId)
-        val eventDocumentRef = firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId)
+        val eventDocumentRef = firebaseFirestore.collection(EVENTS_COLLECTION).document(event.uid)
 
         return try {
             firebaseFirestore.runTransaction { transaction ->
@@ -94,13 +94,43 @@ class FirebaseFirestoreDataSourceImpl(
                 } ?: emptyList()
 
                 transaction.set(eventDocumentRef, eventDataMap)
-                transaction.update(groupsDocumentRef, mapOf("events" to events.plus(eventId)))
+                transaction.update(groupsDocumentRef, mapOf("events" to events.plus(event.uid)))
                 true
             }.await()
         } catch (exception: Exception) {
             Log.e("TAG", "error saving new event: ${exception.message}", exception)
             false
         }
+    }
+
+    override suspend fun deleteEvent(eventId: String): Boolean = try {
+        Log.d("TAG", "Deleting event data for $eventId")
+
+        val eventDocumentRef = firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId)
+        val groupsCollectionRef = firebaseFirestore.collection(GROUPS_COLLECTION)
+
+        firebaseFirestore.runTransaction { transaction ->
+            val eventDocumentSnapshot = transaction.get(eventDocumentRef)
+
+            val relatedGroupId = eventDocumentSnapshot.getString("groupId")
+                ?: return@runTransaction false
+            val groupDocumentRef = groupsCollectionRef.document(relatedGroupId)
+            val groupDocumentSnapshot = transaction.get(groupDocumentRef)
+
+            val groupEvents = groupDocumentSnapshot["events"]?.let {
+                val anyList = it as? List<*>
+                anyList?.filterIsInstance<String>()
+            } ?: emptyList()
+
+            transaction.update(groupDocumentRef, mapOf("events" to groupEvents.minus(eventId)))
+            transaction.delete(eventDocumentRef)
+        }.await()
+
+        Log.d("TAG", "Event data deleted successfully for $eventId")
+        true
+    } catch (e: Exception) {
+        println("Error deleting event data for $eventId: ${e.message}")
+        false
     }
 
     override fun getEventsFlow(groupId: String): Flow<List<Event>> = callbackFlow {
@@ -145,6 +175,7 @@ class FirebaseFirestoreDataSourceImpl(
                     }
 
                     Event(
+                        uid = document.id,
                         creatorId = creatorId,
                         groupId = groupId,
                         title = title,

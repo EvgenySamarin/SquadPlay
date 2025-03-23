@@ -1,6 +1,5 @@
 package com.eysamarin.squadplay.screens.main
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -31,27 +29,21 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.EventDialogUI
-import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
+import com.eysamarin.squadplay.ui.Event
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
-import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
-import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
@@ -197,6 +189,7 @@ private fun MainScreenMediumLayout(
                     Event(
                         windowSize = windowSize,
                         ui = item,
+                        onDeleteEventTap = { onAction(MainScreenAction.OnDeleteEventTap(item.eventId)) },
                     )
                 }
             }
@@ -241,52 +234,10 @@ private fun MainScreenExpandedLayout(
                     Event(
                         windowSize = windowSize,
                         ui = item,
+                        onDeleteEventTap = { onAction(MainScreenAction.OnDeleteEventTap(item.eventId)) },
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun Event(
-    windowSize: WindowSizeClass,
-    ui: EventUI,
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
-                .background(MaterialTheme.colorScheme.primary)
-        ) {
-            if (ui.iconUrl != null) {
-                AsyncImage(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
-                    model = ui.iconUrl,
-                    contentDescription = null,
-                )
-            } else {
-                Icon(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
-                    painter = painterResource(R.drawable.ic_question),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-        }
-        Column {
-            Text(text = ui.title, style = adaptiveTitleByHeight(windowSize))
-            ui.subtitle?.let { Text(text = it, style = adaptiveBodyByHeight(windowSize)) }
-        }
-        if (ui.isYourEvent) {
-            Text(text = "Your event", style = adaptiveBodyByHeight(windowSize))
         }
     }
 }

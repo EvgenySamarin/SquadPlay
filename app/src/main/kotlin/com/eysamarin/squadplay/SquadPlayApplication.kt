@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay
 
 import android.app.Application
+import android.util.Log
 import androidx.credentials.CredentialManager
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.EventRepository
@@ -23,6 +24,7 @@ import com.eysamarin.squadplay.domain.profile.ProfileProviderImpl
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
+import com.eysamarin.squadplay.utils.hideSensitiveInLogs
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
@@ -97,5 +99,18 @@ class SquadPlayApplication : Application() {
             androidContext(this@SquadPlayApplication)
             modules(appModule)
         }
+
+        FirebaseMessaging.getInstance().token
+            .addOnFailureListener { exception ->
+                Log.e("TAG", "Failed to retrieve Firebase Messaging token", exception)
+            }
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    Log.d("TAG", "Token was successfully retrieved: ${token.hideSensitiveInLogs()}")
+                } else {
+                    Log.e("TAG", "Failed to retrieve Firebase Messaging token", task.exception)
+                }
+            }
     }
 }

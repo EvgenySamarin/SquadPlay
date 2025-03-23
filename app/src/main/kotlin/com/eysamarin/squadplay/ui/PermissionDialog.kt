@@ -10,12 +10,13 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.ui.button.PrimaryButton
+import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
+import com.eysamarin.squadplay.utils.DarkLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 @Composable
@@ -63,15 +64,17 @@ fun PermissionDialog(
 }
 
 
-@Preview
+@DarkLightModePreview
 @Composable
 private fun PermissionDialogPreview() {
-    PermissionDialog(
-        windowSize = WINDOWS_SIZE_MEDIUM,
-        descriptionText = LoremIpsum(25).values.joinToString(" "),
-        isPermanentlyDeclined = false,
-        onDismiss = { },
-        onConfirmTap = { },
-        onGoToAppSettingsTap = { }
-    )
+    SquadPlayTheme {
+        PermissionDialog(
+            windowSize = WINDOWS_SIZE_MEDIUM,
+            descriptionText = LoremIpsum(25).values.joinToString(" "),
+            isPermanentlyDeclined = false,
+            onDismiss = { },
+            onConfirmTap = { },
+            onGoToAppSettingsTap = { }
+        )
+    }
 }

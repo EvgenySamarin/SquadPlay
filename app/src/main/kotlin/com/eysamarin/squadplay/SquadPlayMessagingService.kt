@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -14,16 +15,11 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
+/**
+ * Without cloud functions or any BE we no need to store newToken.
+ */
+@SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class SquadPlayMessagingService: FirebaseMessagingService() {
-
-    override fun onNewToken(token: String) {
-        Log.d("FCM", "Refreshed token: $token")
-        sendRegistrationToServer(token)
-    }
-
-    private fun sendRegistrationToServer(token: String) {
-        // TODO: send token to Firebase cloud Functions
-    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d("FCM", "From: ${remoteMessage.from}")
