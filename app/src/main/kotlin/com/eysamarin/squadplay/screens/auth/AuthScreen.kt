@@ -1,5 +1,7 @@
 package com.eysamarin.squadplay.screens.auth
 
+import android.util.Patterns
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,21 +9,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -77,43 +83,35 @@ private fun AuthScreenMediumLayout(
 ) {
     if (state !is UiState.Normal) return
 
-    Column(
+    LazyColumn(
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_launcher_foreground),
-            contentDescription = null
-        )
-        Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
-        Spacer(modifier = Modifier.height(24.dp))
-
-        var email by remember { mutableStateOf("") }
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            label = { Text("Email") },
-        )
-        var password by remember { mutableStateOf("") }
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            label = { Text("Password") },
-        )
-        PrimaryButton(
-            windowSize = windowSize,
-            text = "Sign in",
-            onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
-        )
-
-        if (state.data.isSignButtonVisible) {
-            GoogleButton(
-                onTap = { onAction(AuthScreenAction.OnSignUpTap) },
+        item {
+            Icon(
+                painter = painterResource(R.drawable.ic_launcher_foreground),
+                contentDescription = null,
+                tint = if (isSystemInDarkTheme()) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    Color.Unspecified
+                },
             )
+            Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        item {
+            EmailPasswordSignIn(windowSize, onAction)
+        }
+        item {
+            if (state.data.isSignButtonVisible) {
+                Spacer(modifier = Modifier.height(24.dp))
+                GoogleButton(
+                    onTap = { onAction(AuthScreenAction.OnSignInWithGoogleTap) },
+                )
+            }
         }
     }
 }
@@ -131,10 +129,59 @@ private fun AuthScreenExpandedLayout(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
-        PrimaryButton(windowSize, text = "Sign UP with Google", onTap = {
-            onAction(AuthScreenAction.OnSignUpTap)
-        })
+        EmailPasswordSignIn(windowSize, onAction)
+        GoogleButton(
+            onTap = { onAction(AuthScreenAction.OnSignInWithGoogleTap) },
+        )
     }
+}
+
+@Composable
+private fun EmailPasswordSignIn(
+    windowSize: WindowSizeClass,
+    onAction: (AuthScreenAction) -> Unit
+) {
+    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    val emailHasErrors by remember {
+        derivedStateOf {
+            if (email.isNotEmpty()) {
+                !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+            } else {
+                false
+            }
+        }
+    }
+
+    OutlinedTextField(
+        value = email,
+        isError = emailHasErrors,
+        onValueChange = { email = it },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        label = { Text("Email") },
+        supportingText = {
+            if (emailHasErrors) {
+                Text("Incorrect email format.")
+            }
+        }
+    )
+
+    OutlinedTextField(
+        value = password,
+        onValueChange = { password = it },
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        label = { Text("Password") },
+    )
+    Spacer(Modifier.height(16.dp))
+
+    val isEmailValid = email.isNotEmpty() && !emailHasErrors
+    PrimaryButton(
+        enabled = isEmailValid && password.isNotEmpty(),
+        windowSize = windowSize,
+        text = "Sign in",
+        onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
+    )
 }
 
 //region screen preview

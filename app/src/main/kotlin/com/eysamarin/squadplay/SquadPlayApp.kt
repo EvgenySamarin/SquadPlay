@@ -196,10 +196,8 @@ private fun handleAuthScreenAction(
     action: AuthScreenAction,
     viewModel: AuthScreenViewModel,
 ) = when (action) {
-    AuthScreenAction.OnSignUpTap -> viewModel.onSignUpTap()
-    is AuthScreenAction.OnSignInTap -> {
-        viewModel.onSignInTap(action.email, action.password)
-    }
+    AuthScreenAction.OnSignInWithGoogleTap -> viewModel.onSignInWithGoogleTap()
+    is AuthScreenAction.OnSignInTap -> viewModel.onSignInTap(action.email, action.password)
 }
 
 private fun handleProfileScreenAction(

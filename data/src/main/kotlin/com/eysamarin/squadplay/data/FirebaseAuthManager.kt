@@ -14,12 +14,14 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.tasks.await
 
 interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): User?
+    suspend fun signInWithEmailPassword(email: String, password: String): User?
     suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
     fun getCurrentUserId(): String
@@ -40,6 +42,25 @@ class FirebaseAuthManagerImpl(
 
     override fun getCurrentUserId(): String = firebaseAuth.currentUser?.uid
         ?: throw IllegalStateException("User is not signed in")
+
+    override suspend fun signInWithEmailPassword(
+        email: String,
+        password: String
+    ): User? {
+        return try {
+            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+
+            val firebaseUser = result.user
+            if (firebaseUser == null) return null
+
+            Log.d("TAG", "signInWithEmailPassword:success")
+
+            firebaseUser.toAppUser()
+        } catch (e: Exception) {
+            Log.w("TAG", "signInWithEmailPassword:failure", e)
+            null
+        }
+    }
 
     override suspend fun signInWithGoogle(): User? {
         val credential = getUserCredential(filterByAuthorizedAccounts = true)
@@ -89,24 +110,28 @@ class FirebaseAuthManagerImpl(
     private suspend fun firebaseAuthWithGoogle(idToken: String): User? {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         return try {
-            firebaseAuth.signInWithCredential(credential).await()
+            val result = firebaseAuth.signInWithCredential(credential).await()
 
-            val firebaseUser = firebaseAuth.currentUser
+            val firebaseUser = result.user
             if (firebaseUser == null) return null
 
             Log.d("TAG", "signInWithCredential:success")
 
-            User(
-                uid = firebaseUser.uid,
-                username = firebaseUser.displayName ?: "User",
-                email = firebaseUser.email,
-                photoUrl = firebaseUser.photoUrl?.toString(),
-                groups = listOf(),
-            )
+            firebaseUser.toAppUser()
         } catch (e: Exception) {
             Log.w("TAG", "signInWithCredential:failure", e)
             null
         }
+    }
+
+    private fun FirebaseUser.toAppUser(): User {
+        return User(
+            uid = uid,
+            username = displayName ?: "User",
+            email = email,
+            photoUrl = photoUrl?.toString(),
+            groups = listOf(),
+        )
     }
 
     override suspend fun signOut(): Boolean {

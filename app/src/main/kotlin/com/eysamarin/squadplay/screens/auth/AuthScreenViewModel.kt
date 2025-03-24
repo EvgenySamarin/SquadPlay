@@ -36,7 +36,7 @@ class AuthScreenViewModel(
         }
     }
 
-    fun onSignUpTap() = viewModelScope.launch {
+    fun onSignInWithGoogleTap() = viewModelScope.launch {
         Log.d("TAG", "onSignUpTap")
         val isSuccess = authProvider.signInWithGoogle()
         if (isSuccess) {
@@ -48,5 +48,12 @@ class AuthScreenViewModel(
 
     fun onSignInTap(email: String, password: String) = viewModelScope.launch {
         Log.d("TAG", "onSignInTap: $email, $password")
+
+        val isSuccess = authProvider.signInWithEmailPassword(email, password)
+        if (isSuccess) {
+            navigationChannel.send(NavAction.NavigateTo(Main.route))
+        } else {
+            Log.d("TAG", "cannot sign in")
+        }
     }
 }
