@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.models.AuthScreenUI
 import com.eysamarin.squadplay.models.NavAction
+import com.eysamarin.squadplay.models.Route
 import com.eysamarin.squadplay.models.Route.Main
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
@@ -65,5 +66,11 @@ class AuthScreenViewModel(
 
             is UiState.Normal<*> -> navigationChannel.send(NavAction.NavigateTo(Main.route))
         }
+    }
+
+    fun onSignUpTap() = viewModelScope.launch {
+        Log.d("TAG", "onSignUpTap")
+
+        navigationChannel.send(NavAction.NavigateTo(Route.Registration.route))
     }
 }

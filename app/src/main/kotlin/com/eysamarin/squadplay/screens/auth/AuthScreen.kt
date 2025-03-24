@@ -5,16 +5,19 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -39,6 +42,7 @@ import com.eysamarin.squadplay.models.PREVIEW_AUTH_SCREEN_UI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.button.GoogleButton
 import com.eysamarin.squadplay.ui.button.PrimaryButton
+import com.eysamarin.squadplay.ui.button.SecondaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
@@ -178,12 +182,23 @@ private fun EmailPasswordSignIn(
     Spacer(Modifier.height(16.dp))
 
     val isEmailValid = email.isNotEmpty() && !emailHasErrors
-    PrimaryButton(
-        enabled = isEmailValid && password.isNotEmpty(),
-        windowSize = windowSize,
-        text = "Sign in",
-        onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
-    )
+    Row(
+        modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        PrimaryButton(
+            modifier = Modifier.weight(1f),
+            enabled = isEmailValid && password.isNotEmpty(),
+            windowSize = windowSize,
+            text = "Sign in",
+            onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
+        )
+        SecondaryButton(
+            windowSize = windowSize,
+            text = "Sign Up",
+            onTap = { onAction(AuthScreenAction.OnSignUpTap) },
+        )
+    }
 }
 
 //region screen preview

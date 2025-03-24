@@ -9,5 +9,6 @@ sealed class NavAction {
 sealed class Route(val route: String) {
     data object Main : Route(route = "Main")
     data object Auth : Route(route = "Auth")
+    data object Registration : Route(route = "Registration")
     data object Profile : Route(route = "Profile")
 }
