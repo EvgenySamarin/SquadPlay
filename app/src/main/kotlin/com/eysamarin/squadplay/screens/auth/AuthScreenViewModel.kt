@@ -45,4 +45,8 @@ class AuthScreenViewModel(
             Log.d("TAG", "cannot sign in")
         }
     }
+
+    fun onSignInTap(email: String, password: String) = viewModelScope.launch {
+        Log.d("TAG", "onSignInTap: $email, $password")
+    }
 }

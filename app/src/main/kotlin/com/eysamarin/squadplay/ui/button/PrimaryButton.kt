@@ -1,7 +1,10 @@
 package com.eysamarin.squadplay.ui.button
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -10,10 +13,48 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.DarkLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+
+/**
+ * @see <a href="https://developers.google.com/identity/branding-guidelines">
+ *     Google Identity Guidelines</a>
+ */
+@Composable
+fun GoogleButton(
+    onTap: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    Button(
+        enabled = enabled,
+        onClick = onTap,
+        modifier = modifier,
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (enabled) {
+                MaterialTheme.colorScheme.inverseSurface
+            } else {
+                MaterialTheme.colorScheme.outline
+            }
+        ),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_google_20),
+            contentDescription = ""
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(text = "Sign in with Google")
+    }
+}
 
 @Composable
 fun PrimaryButton(
@@ -93,5 +134,6 @@ fun PrimaryButtonPreview() {
             enabled = false,
             onTap = {},
         )
+        GoogleButton({})
     }
 }

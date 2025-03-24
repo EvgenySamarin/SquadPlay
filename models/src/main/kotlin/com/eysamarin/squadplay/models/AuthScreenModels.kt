@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.models
 
 sealed interface AuthScreenAction {
     object OnSignUpTap : AuthScreenAction
+    class OnSignInTap(val email: String, val password: String) : AuthScreenAction
 }
 
 data class AuthScreenUI(
