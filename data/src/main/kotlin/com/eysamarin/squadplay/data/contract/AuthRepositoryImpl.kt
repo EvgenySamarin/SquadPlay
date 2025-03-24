@@ -16,7 +16,7 @@ class AuthRepositoryImpl(
     override suspend fun signUpWithEmailPassword(
         email: String,
         password: String,
-    ): User? = firebaseAuthManager.signUpWithEmailPassword(email, password)
+    ): UiState<User> = firebaseAuthManager.signUpWithEmailPassword(email, password)
 
     override suspend fun signInWithEmailPassword(
         email: String,

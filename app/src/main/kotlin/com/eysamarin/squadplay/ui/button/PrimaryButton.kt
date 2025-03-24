@@ -91,6 +91,7 @@ fun SecondaryButton(
     enabled: Boolean = true,
 ) {
     OutlinedButton(
+        enabled = enabled,
         modifier = modifier,
         onClick = onTap,
         border = BorderStroke(

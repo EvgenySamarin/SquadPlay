@@ -5,7 +5,7 @@ import com.eysamarin.squadplay.models.User
 
 interface AuthRepository {
     suspend fun signInWithGoogle(): User?
-    suspend fun signUpWithEmailPassword(email: String, password: String): User?
+    suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signOut(): Boolean
     fun getCurrentUserId(): String

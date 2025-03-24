@@ -87,6 +87,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
 
             RegistrationScreen(
                 state = uiState,
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
                 windowSize = windowSize,
                 onAction = {
                     handleRegistrationScreenAction(action = it, viewModel = viewModel)
@@ -241,7 +242,7 @@ private fun handleRegistrationScreenAction(
     action: RegistrationScreenAction,
     viewModel: RegistrationScreenViewModel,
 ) = when (action) {
-    RegistrationScreenAction.OnConfirmTap -> viewModel.onConfirmTap()
+    is RegistrationScreenAction.OnConfirmTap -> viewModel.onConfirmTap(action.email, action.password)
     RegistrationScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
 }
 

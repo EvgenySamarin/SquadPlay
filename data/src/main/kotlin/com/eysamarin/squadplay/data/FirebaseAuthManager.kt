@@ -16,6 +16,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,7 +25,7 @@ import kotlinx.coroutines.tasks.await
 interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): User?
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
-    suspend fun signUpWithEmailPassword(email: String, password: String): User?
+    suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
     fun getCurrentUserId(): String
@@ -49,17 +50,23 @@ class FirebaseAuthManagerImpl(
     override suspend fun signUpWithEmailPassword(
         email: String,
         password: String
-    ): User? {
+    ): UiState<User> {
         return try {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
 
             val firebaseUser = result.user
-            if (firebaseUser == null) return null
+            if (firebaseUser == null) return UiState.Error("User does not exist")
 
-            result.user?.toAppUser()
-        } catch (exception: Exception) {
-            Log.w("TAG", "signInWithEmailPassword:failure", exception)
-            null
+            Log.d("TAG", "signUpWithEmailPassword:success")
+
+            UiState.Normal(firebaseUser.toAppUser())
+        } catch (exception: FirebaseAuthWeakPasswordException){
+            Log.w("TAG", "signUpWithEmailPassword:failure", exception)
+            UiState.Error(exception.message ?: "Password is too weak")
+        }
+        catch (exception: Exception) {
+            Log.w("TAG", "signUpWithEmailPassword:failure", exception)
+            UiState.Error("Unexpected exception occurred")
         }
     }
 

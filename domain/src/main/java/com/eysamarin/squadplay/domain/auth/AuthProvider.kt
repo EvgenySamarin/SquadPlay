@@ -8,7 +8,7 @@ import com.eysamarin.squadplay.models.suspendMap
 
 interface AuthProvider {
     suspend fun signInWithGoogle(): Boolean
-    suspend fun signUpWithEmailPassword(email: String, password: String): User?
+    suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
@@ -24,8 +24,9 @@ class AuthProviderImpl(
     override suspend fun signUpWithEmailPassword(
         email: String,
         password: String,
-    ): User? = authRepository.signUpWithEmailPassword(email, password)
-        ?.also { profileRepository.saveUserProfile(it) }
+    ): UiState<Boolean> = authRepository
+        .signUpWithEmailPassword(email, password)
+        .suspendMap { it.handleSignIn() == true }
 
     override suspend fun signInWithEmailPassword(
         email: String,

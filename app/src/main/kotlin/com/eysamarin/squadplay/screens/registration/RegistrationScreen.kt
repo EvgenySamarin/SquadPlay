@@ -46,6 +46,7 @@ import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 @Composable
 fun RegistrationScreen(
     state: UiState<RegistrationScreenUI>,
+    snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (RegistrationScreenAction) -> Unit,
 ) {
@@ -84,6 +85,7 @@ fun RegistrationScreen(
                 }
             }
         },
+        snackbarHost = snackbarHost,
     )
 }
 
@@ -96,6 +98,16 @@ private fun RegistrationMediumLayout(
     if (state !is UiState.Normal) return
 
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    val confirmPasswordHasErrors by remember {
+        derivedStateOf {
+            if (password.isNotEmpty() || confirmPassword.isNotEmpty()) {
+                password != confirmPassword
+            } else {
+                false
+            }
+        }
+    }
     var email by remember { mutableStateOf("") }
     val emailHasErrors by remember {
         derivedStateOf {
@@ -137,20 +149,30 @@ private fun RegistrationMediumLayout(
         }
         item {
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = confirmPassword,
+                isError = confirmPasswordHasErrors,
+                onValueChange = { confirmPassword = it },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 label = { Text("Confirm password") },
+                supportingText = {
+                    if (confirmPasswordHasErrors) {
+                        Text("Password does not match")
+                    }
+                }
             )
         }
         item {
             Spacer(Modifier.width(24.dp))
             SecondaryButton(
+                enabled = password.isNotEmpty()
+                        && !confirmPasswordHasErrors
+                        && email.isNotEmpty()
+                        && !emailHasErrors,
                 modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
                 windowSize = windowSize,
                 text = "Confirm",
-                onTap = { onAction(RegistrationScreenAction.OnConfirmTap) },
+                onTap = { onAction(RegistrationScreenAction.OnConfirmTap(email, password)) },
             )
         }
     }
