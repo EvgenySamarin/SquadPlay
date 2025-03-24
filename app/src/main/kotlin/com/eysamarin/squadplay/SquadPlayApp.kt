@@ -28,6 +28,7 @@ import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.ProfileScreenAction
+import com.eysamarin.squadplay.models.RegistrationScreenAction
 import com.eysamarin.squadplay.models.Route
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
@@ -36,6 +37,8 @@ import com.eysamarin.squadplay.screens.main.MainScreen
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreen
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
+import com.eysamarin.squadplay.screens.registration.RegistrationScreen
+import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.utils.findActivity
 import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.koinViewModel
@@ -54,6 +57,16 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
         composable(Route.Auth.route) {
             val viewModel: AuthScreenViewModel = koinViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            AuthScreen(
+                state = uiState,
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
+                windowSize = windowSize,
+                onAction = {
+                    handleAuthScreenAction(action = it, viewModel = viewModel)
+                }
+            )
 
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
@@ -61,13 +74,37 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 startDestination = Route.Auth,
             )
 
-            AuthScreen(
+            LaunchedEffect(Unit) {
+                viewModel.snackbarFlow.collect {
+                    snackbarHostState.showSnackbar(message = it)
+                }
+            }
+        }
+        composable(Route.Registration.route) {
+            val viewModel: RegistrationScreenViewModel = koinViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            RegistrationScreen(
                 state = uiState,
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
                 windowSize = windowSize,
                 onAction = {
-                    handleAuthScreenAction(action = it, viewModel = viewModel)
+                    handleRegistrationScreenAction(action = it, viewModel = viewModel)
                 }
             )
+
+            NavigationEffect(
+                navigationFlow = viewModel.navigationFlow,
+                navController = navController,
+                startDestination = Route.Auth,
+            )
+
+            LaunchedEffect(Unit) {
+                viewModel.snackbarFlow.collect {
+                    snackbarHostState.showSnackbar(message = it)
+                }
+            }
         }
         composable(
             route = Route.Main.route,
@@ -125,18 +162,18 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val inviteLinkState by viewModel.inviteLinkState.collectAsStateWithLifecycle()
 
-            NavigationEffect(
-                navigationFlow = viewModel.navigationFlow,
-                navController = navController,
-                startDestination = Route.Main,
-            )
-
             ProfileScreen(
                 state = uiState,
                 windowSize = windowSize,
                 onAction = {
                     handleProfileScreenAction(action = it, viewModel = viewModel)
                 }
+            )
+
+            NavigationEffect(
+                navigationFlow = viewModel.navigationFlow,
+                navController = navController,
+                startDestination = Route.Main,
             )
 
             if (inviteLinkState is UiState.Normal<String>) {
@@ -196,7 +233,17 @@ private fun handleAuthScreenAction(
     action: AuthScreenAction,
     viewModel: AuthScreenViewModel,
 ) = when (action) {
+    AuthScreenAction.OnSignInWithGoogleTap -> viewModel.onSignInWithGoogleTap()
+    is AuthScreenAction.OnSignInTap -> viewModel.onSignInTap(action.email, action.password)
     AuthScreenAction.OnSignUpTap -> viewModel.onSignUpTap()
+}
+
+private fun handleRegistrationScreenAction(
+    action: RegistrationScreenAction,
+    viewModel: RegistrationScreenViewModel,
+) = when (action) {
+    is RegistrationScreenAction.OnConfirmTap -> viewModel.onConfirmTap(action.email, action.password)
+    RegistrationScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
 }
 
 private fun handleProfileScreenAction(
