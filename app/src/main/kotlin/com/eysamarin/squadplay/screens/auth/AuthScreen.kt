@@ -49,8 +49,9 @@ import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 @Composable
 fun AuthScreen(
     state: UiState<AuthScreenUI>,
+    snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
-    onAction: (AuthScreenAction) -> Unit
+    onAction: (AuthScreenAction) -> Unit,
 ) {
     Scaffold(
         content = { innerPadding ->
@@ -71,7 +72,8 @@ fun AuthScreen(
                     )
                 }
             }
-        }
+        },
+        snackbarHost = snackbarHost,
     )
 }
 

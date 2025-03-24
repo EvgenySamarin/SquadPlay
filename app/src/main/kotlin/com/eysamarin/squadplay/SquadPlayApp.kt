@@ -54,6 +54,7 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
         composable(Route.Auth.route) {
             val viewModel: AuthScreenViewModel = koinViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val snackbarHostState = remember { SnackbarHostState() }
 
             NavigationEffect(
                 navigationFlow = viewModel.navigationFlow,
@@ -61,8 +62,15 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
                 startDestination = Route.Auth,
             )
 
+            LaunchedEffect(Unit) {
+                viewModel.snackbarFlow.collect {
+                    snackbarHostState.showSnackbar(message = it)
+                }
+            }
+
             AuthScreen(
                 state = uiState,
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
                 windowSize = windowSize,
                 onAction = {
                     handleAuthScreenAction(action = it, viewModel = viewModel)

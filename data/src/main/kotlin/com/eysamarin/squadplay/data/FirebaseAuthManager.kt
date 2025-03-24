@@ -9,11 +9,13 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
+import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,7 +23,8 @@ import kotlinx.coroutines.tasks.await
 
 interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): User?
-    suspend fun signInWithEmailPassword(email: String, password: String): User?
+    suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
+    suspend fun signUpWithEmailPassword(email: String, password: String): User?
     suspend fun signOut(): Boolean
     fun isUserSigned(): Boolean
     fun getCurrentUserId(): String
@@ -43,22 +46,42 @@ class FirebaseAuthManagerImpl(
     override fun getCurrentUserId(): String = firebaseAuth.currentUser?.uid
         ?: throw IllegalStateException("User is not signed in")
 
-    override suspend fun signInWithEmailPassword(
+    override suspend fun signUpWithEmailPassword(
         email: String,
         password: String
     ): User? {
         return try {
-            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
 
             val firebaseUser = result.user
             if (firebaseUser == null) return null
 
+            result.user?.toAppUser()
+        } catch (exception: Exception) {
+            Log.w("TAG", "signInWithEmailPassword:failure", exception)
+            null
+        }
+    }
+
+    override suspend fun signInWithEmailPassword(
+        email: String,
+        password: String
+    ): UiState<User> {
+        return try {
+            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+
+            val firebaseUser = result.user
+            if (firebaseUser == null) return UiState.Error("User does not exist")
+
             Log.d("TAG", "signInWithEmailPassword:success")
 
-            firebaseUser.toAppUser()
-        } catch (e: Exception) {
-            Log.w("TAG", "signInWithEmailPassword:failure", e)
-            null
+            UiState.Normal(firebaseUser.toAppUser())
+        } catch (exception: FirebaseAuthInvalidCredentialsException) {
+            Log.w("TAG", "signInWithEmailPassword:failure", exception)
+            UiState.Error("Cannot login, please check your email or password")
+        } catch (exception: Exception) {
+            Log.w("TAG", "signInWithEmailPassword:failure", exception)
+            UiState.Error("Unexpected exception occurred")
         }
     }
 

@@ -23,6 +23,9 @@ class AuthScreenViewModel(
     private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
     val navigationFlow = navigationChannel.receiveAsFlow()
 
+    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
+    val snackbarFlow = snackbarChannel.receiveAsFlow()
+
     init {
         checkUserSignedIn()
     }
@@ -49,11 +52,18 @@ class AuthScreenViewModel(
     fun onSignInTap(email: String, password: String) = viewModelScope.launch {
         Log.d("TAG", "onSignInTap: $email, $password")
 
-        val isSuccess = authProvider.signInWithEmailPassword(email, password)
-        if (isSuccess) {
-            navigationChannel.send(NavAction.NavigateTo(Main.route))
-        } else {
-            Log.d("TAG", "cannot sign in")
+        val signInState = authProvider.signInWithEmailPassword(email, password)
+
+        when (signInState) {
+            UiState.Empty,
+            UiState.Loading -> Unit
+
+            is UiState.Error -> {
+                Log.w("TAG", signInState.description)
+                snackbarChannel.send(signInState.description)
+            }
+
+            is UiState.Normal<*> -> navigationChannel.send(NavAction.NavigateTo(Main.route))
         }
     }
 }
