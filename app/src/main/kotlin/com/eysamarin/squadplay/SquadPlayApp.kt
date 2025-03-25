@@ -252,6 +252,7 @@ private fun handleProfileScreenAction(
 ) = when (action) {
     ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
     ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteGroupLinkTap()
+    ProfileScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
 }
 
 private fun handleMainScreenAction(

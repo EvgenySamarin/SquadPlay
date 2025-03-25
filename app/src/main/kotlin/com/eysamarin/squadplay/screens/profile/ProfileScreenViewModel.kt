@@ -3,10 +3,12 @@ package com.eysamarin.squadplay.screens.profile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
+import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 
 class ProfileScreenViewModel(
     private val profileProvider: ProfileProvider,
+    private val authProvider: AuthProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -81,7 +84,7 @@ class ProfileScreenViewModel(
     fun onCreateInviteGroupLinkTap() = viewModelScope.launch {
         Log.d("TAG", "onCreateInviteLinkTap")
         val currentUiState = uiState.value
-        if(currentUiState !is UiState.Normal) return@launch
+        if (currentUiState !is UiState.Normal) return@launch
 
         val user = currentUiState.data.user
         val groupId = if (user.groups.isEmpty()) {
@@ -98,5 +101,15 @@ class ProfileScreenViewModel(
     fun hideShareLink() = viewModelScope.launch {
         Log.d("TAG", "hideShareLink")
         _inviteLinkState.emit(UiState.Empty)
+    }
+
+    fun onLogOutTap() = viewModelScope.launch {
+        Log.d("TAG", "onLogOutTap")
+        val isSuccess = authProvider.signOut()
+        if (isSuccess) {
+            navigationChannel.send(NavAction.NavigateTo(Auth.route))
+        } else {
+            Log.d("TAG", "cannot log out")
+        }
     }
 }

@@ -335,6 +335,13 @@ class FirebaseFirestoreDataSourceImpl(
     ): Flow<List<Friend>> = callbackFlow {
         val members = groups.map { group -> group.members }.flatten().distinct()
 
+        if (members.isEmpty()) {
+            Log.d("TAG", "Members list is empty")
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
+
         val friendsQuery = firebaseFirestore.collection(USERS_COLLECTION).whereIn("uid", members)
         Log.d("TAG", "subscribe on user friends flow")
         val listenerRegistration = friendsQuery.addSnapshotListener { snapshot, exception ->
