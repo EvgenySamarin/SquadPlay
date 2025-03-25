@@ -32,8 +32,9 @@ class AuthScreenViewModel(
     }
 
     private fun checkUserSignedIn() = viewModelScope.launch {
-        val isUserSigned = authProvider.isUserSigned()
-        if (isUserSigned) {
+        val isUserExists = authProvider.isUserExists()
+
+        if (isUserExists) {
             navigationChannel.send(NavAction.NavigateTo(Main.route))
         } else {
             _uiState.emit(UiState.Normal(AuthScreenUI(isSignButtonVisible = true)))

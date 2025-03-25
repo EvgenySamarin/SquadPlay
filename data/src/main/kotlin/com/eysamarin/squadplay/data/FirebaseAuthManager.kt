@@ -27,7 +27,7 @@ interface FirebaseAuthManager {
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signOut(): Boolean
-    fun isUserSigned(): Boolean
+    fun getUserUid(): String?
     fun getCurrentUserId(): String
 }
 
@@ -38,10 +38,10 @@ class FirebaseAuthManagerImpl(
     private val appContext: Context,
 ) : FirebaseAuthManager {
 
-    override fun isUserSigned(): Boolean {
+    override fun getUserUid(): String? {
         val currentUser = firebaseAuth.currentUser
         Log.d("TAG", "currentUser: $currentUser")
-        return currentUser != null
+        return currentUser?.uid
     }
 
     override fun getCurrentUserId(): String = firebaseAuth.currentUser?.uid
@@ -169,7 +169,7 @@ class FirebaseAuthManagerImpl(
         return try {
             val clearRequest = ClearCredentialStateRequest()
             credentialManager.clearCredentialState(clearRequest)
-            Log.e("TAG", "User credentials cleared")
+            Log.w("TAG", "User credentials cleared")
             true
         } catch (e: ClearCredentialException) {
             Log.e("TAG", "Couldn't clear user credentials: ${e.localizedMessage}")

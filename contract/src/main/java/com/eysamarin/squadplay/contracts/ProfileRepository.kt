@@ -6,6 +6,7 @@ import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
+    suspend fun isUserProfileExists(userId: String): Boolean
     fun getUserInfoFlow(userId: String): Flow<User?>
     suspend fun saveUserProfile(user: User)
     suspend fun deleteUserProfile(userId: String)

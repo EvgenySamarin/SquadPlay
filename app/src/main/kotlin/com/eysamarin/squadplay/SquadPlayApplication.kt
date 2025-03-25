@@ -59,6 +59,7 @@ class SquadPlayApplication : Application() {
         single<AuthRepository> {
             AuthRepositoryImpl(
                 firebaseAuthManager = get(),
+                profileRepository = get(),
             )
         }
         single<EventRepository> { EventRepositoryImpl(firebaseFirestoreDataSource = get()) }

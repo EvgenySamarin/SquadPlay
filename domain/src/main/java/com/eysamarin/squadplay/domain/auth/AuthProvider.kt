@@ -11,7 +11,7 @@ interface AuthProvider {
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signOut(): Boolean
-    fun isUserSigned(): Boolean
+    suspend fun isUserExists(): Boolean
 }
 
 class AuthProviderImpl(
@@ -19,7 +19,7 @@ class AuthProviderImpl(
     private val profileRepository: ProfileRepository,
 ) : AuthProvider {
 
-    override fun isUserSigned(): Boolean = authRepository.isUserSigned()
+    override suspend fun isUserExists(): Boolean = authRepository.isUserExists()
 
     override suspend fun signUpWithEmailPassword(
         email: String,

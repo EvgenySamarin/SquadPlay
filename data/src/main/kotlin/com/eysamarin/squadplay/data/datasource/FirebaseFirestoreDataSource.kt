@@ -30,6 +30,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun joinGroup(userId: String, groupId: String): Boolean
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
     suspend fun saveUserProfile(user: User)
+    suspend fun isUserProfileExists(userId: String): Boolean
     suspend fun deleteUserProfile(userId: String)
     suspend fun saveEvent(event: Event): Boolean
     fun getEventsFlow(groupId: String): Flow<List<Event>>
@@ -248,6 +249,12 @@ class FirebaseFirestoreDataSourceImpl(
                 Log.e("TAG", "Error saving user profile: ${it.message}")
             }
             .await()
+    }
+
+    override suspend fun isUserProfileExists(userId: String): Boolean {
+        val userDocumentSnapshot = firebaseFirestore.collection(USERS_COLLECTION)
+            .document(userId).get().await()
+        return userDocumentSnapshot.exists()
     }
 
     override fun getUserInfoFlow(userId: String): Flow<User?> = callbackFlow {

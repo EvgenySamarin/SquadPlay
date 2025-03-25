@@ -35,7 +35,6 @@ class ProfileScreenViewModel(
     private val _inviteLinkState = MutableStateFlow<UiState<String>>(UiState.Empty)
     val inviteLinkState = _inviteLinkState.asStateFlow()
 
-
     private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
     val navigationFlow = navigationChannel.receiveAsFlow()
 
@@ -49,6 +48,11 @@ class ProfileScreenViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUserInfo() {
         profileProvider.getUserInfoFlow()
+            .onEach {
+                if (it == null) {
+                    navigationChannel.send(NavAction.NavigateTo(Auth.route))
+                }
+            }
             .filterNotNull()
             .onEach {
                 Log.d("TAG", "user info received: $it")

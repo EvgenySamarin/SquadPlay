@@ -12,6 +12,9 @@ class ProfileRepositoryImpl(
     val firestoreDataSource: FirebaseFirestoreDataSource,
 ) : ProfileRepository {
 
+    override suspend fun isUserProfileExists(userId: String): Boolean =
+        firestoreDataSource.isUserProfileExists(userId)
+
     override fun getUserInfoFlow(userId: String): Flow<User?> = combine(
         firestoreDataSource.getUserInfoFlow(userId),
         firestoreDataSource.getUserGroupsFlow(userId),

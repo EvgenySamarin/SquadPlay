@@ -75,6 +75,11 @@ class MainScreenViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
         profileProvider.getUserInfoFlow()
+            .onEach {
+                if (it == null) {
+                    navigationChannel.send(NavAction.NavigateTo(Auth.route))
+                }
+            }
             .filterNotNull()
             .onEach {
                 Log.d("TAG", "user info received: $it")
