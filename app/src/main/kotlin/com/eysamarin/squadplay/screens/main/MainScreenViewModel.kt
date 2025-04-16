@@ -212,7 +212,7 @@ class MainScreenViewModel(
         dateTimeFrom: LocalDateTime,
         dateTimeTo: LocalDateTime,
     ) = viewModelScope.launch {
-        Log.d("TAG", "onEventSaveTap")
+        Log.d("TAG", "onEventSaveTap for dates: $dateTimeFrom - $dateTimeTo")
         val currentUser = userInfoState.value ?: run {
             Log.w("TAG", "currentUser is null cannot save event")
             return@launch

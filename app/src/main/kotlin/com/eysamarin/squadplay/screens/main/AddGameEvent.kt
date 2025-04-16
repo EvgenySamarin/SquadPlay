@@ -70,6 +70,19 @@ fun AddGameEvent(
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface,
         )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceTint)
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(8.dp),
+                text = "If time 'To' less then time 'From', event will be scheduled on next day",
+                style = adaptiveBodyByHeight(windowSize),
+                color = MaterialTheme.colorScheme.inverseOnSurface,
+            )
+        }
         SquadPlayTimePicker(
             ui = timePickerUI,
             windowSize = windowSize,
@@ -129,16 +142,14 @@ fun AddGameEvent(
                     return@PrimaryButton
                 }
 
-                val hoursInvalid = from.hour > to.hour
-                val minutesInvalid = from.hour == to.hour
+                val isHoursNextDay = from.hour > to.hour
+                val isMinutesNextDay = from.hour == to.hour
                         && from.minute > (to.minute)
 
-                if (hoursInvalid || minutesInvalid) {
-                    errorText = "Time from cannot be more then time to"
-                    return@PrimaryButton
-                }
-
-                onStartPollingTap(from, to)
+                onStartPollingTap(
+                    from,
+                    if (isHoursNextDay || isMinutesNextDay) to.plusDays(1) else to
+                )
             },
         )
     }
