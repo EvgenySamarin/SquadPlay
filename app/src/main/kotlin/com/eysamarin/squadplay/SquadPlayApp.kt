@@ -264,11 +264,8 @@ private fun handleMainScreenAction(
     is MainScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
     MainScreenAction.OnDismissEventDialog -> viewModel.dismissEventDialog()
     is MainScreenAction.OnEventSaveTap -> viewModel.onEventSaveTap(
-        year = action.year,
-        month = action.month,
-        day = action.day,
-        timeFrom = action.timeFrom,
-        timeTo = action.timeTo,
+        dateTimeFrom = action.dateTimeFrom,
+        dateTimeTo = action.dateTimeTo,
     )
 
     MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()

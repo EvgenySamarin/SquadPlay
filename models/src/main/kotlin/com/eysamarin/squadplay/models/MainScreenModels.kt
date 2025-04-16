@@ -14,11 +14,8 @@ sealed interface MainScreenAction {
     object OnJoinGroupDialogConfirm : MainScreenAction
 
     class OnEventSaveTap(
-        val year: Int,
-        val month: Int,
-        val day: Int,
-        val timeFrom: TimeUnit,
-        val timeTo: TimeUnit,
+        val dateTimeFrom: LocalDateTime,
+        val dateTimeTo: LocalDateTime,
     ) : MainScreenAction
     class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
     class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
@@ -63,14 +60,9 @@ data class EventDialogUI(
 
 data class TimePickerUI(
     val currentTarget: DialPickerTarget = DialPickerTarget.FROM,
-    val timeFrom: TimeUnit? = null,
-    val timeTo: TimeUnit? = null,
+    val timeFrom: LocalDateTime? = null,
+    val timeTo: LocalDateTime? = null,
     val errorText: String? = null,
-)
-
-data class TimeUnit(
-    val hour: Int,
-    val minute: Int,
 )
 
 enum class DialPickerTarget {
@@ -98,8 +90,8 @@ data class EventUI(
 
 val PREVIEW_TIME_PICKER_UI = TimePickerUI(
     currentTarget = DialPickerTarget.FROM,
-    timeFrom = TimeUnit(hour = 12, minute = 0),
-    timeTo = TimeUnit(hour = 14, minute = 15),
+    timeFrom = LocalDateTime.of(2025, 4, 1, 12, 0),
+    timeTo = LocalDateTime.of(2025, 4, 1, 14, 15),
 )
 
 val PREVIEW_POLLING_DIALOG_UI = EventDialogUI(

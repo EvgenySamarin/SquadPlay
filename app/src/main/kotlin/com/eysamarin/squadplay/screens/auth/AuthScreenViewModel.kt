@@ -47,6 +47,7 @@ class AuthScreenViewModel(
         if (isSuccess) {
             navigationChannel.send(NavAction.NavigateTo(Main.route))
         } else {
+            snackbarChannel.send("Cannot sign in, please login your google account first")
             Log.d("TAG", "cannot sign in")
         }
     }

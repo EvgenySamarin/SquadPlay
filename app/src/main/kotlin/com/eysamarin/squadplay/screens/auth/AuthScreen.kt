@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -61,6 +62,7 @@ fun AuthScreen(
         content = { innerPadding ->
             Box(
                 modifier = Modifier
+                    .imePadding()
                     .fillMaxSize()
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center,
@@ -90,7 +92,9 @@ private fun AuthScreenMediumLayout(
     if (state !is UiState.Normal) return
 
     LazyColumn(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -131,7 +135,9 @@ private fun AuthScreenExpandedLayout(
     if (state !is UiState.Normal) return
 
     Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
@@ -163,6 +169,7 @@ private fun EmailPasswordSignIn(
         value = email,
         isError = emailHasErrors,
         onValueChange = { email = it },
+        maxLines = 1,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         label = { Text("Email") },
         supportingText = {
@@ -174,6 +181,7 @@ private fun EmailPasswordSignIn(
 
     OutlinedTextField(
         value = password,
+        maxLines = 1,
         onValueChange = { password = it },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

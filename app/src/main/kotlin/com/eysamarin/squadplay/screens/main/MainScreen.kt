@@ -122,15 +122,7 @@ fun MainScreen(
                 ui = eventDialogState.data,
                 windowSize = windowSize,
                 onStartPollingTap = { from, to ->
-                    onAction(
-                        MainScreenAction.OnEventSaveTap(
-                            year = eventDialogState.data.yearMonth.year,
-                            month = eventDialogState.data.yearMonth.monthValue,
-                            day = eventDialogState.data.selectedDate.dayOfMonth ?: 0,
-                            timeFrom = from,
-                            timeTo = to
-                        )
-                    )
+                    onAction(MainScreenAction.OnEventSaveTap(dateTimeFrom = from, dateTimeTo = to))
                     onAction(MainScreenAction.OnDismissEventDialog)
                 }
             )

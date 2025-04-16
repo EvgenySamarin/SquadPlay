@@ -16,7 +16,6 @@ import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
-import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.Dispatchers
@@ -210,17 +209,10 @@ class MainScreenViewModel(
     }
 
     fun onEventSaveTap(
-        year: Int,
-        month: Int,
-        day: Int,
-        timeFrom: TimeUnit,
-        timeTo: TimeUnit
+        dateTimeFrom: LocalDateTime,
+        dateTimeTo: LocalDateTime,
     ) = viewModelScope.launch {
         Log.d("TAG", "onEventSaveTap")
-
-        val fromDateTime = LocalDateTime.of(year, month, day, timeFrom.hour, timeFrom.minute)
-        val toDateTime = LocalDateTime.of(year, month, day, timeTo.hour, timeTo.minute)
-
         val currentUser = userInfoState.value ?: run {
             Log.w("TAG", "currentUser is null cannot save event")
             return@launch
@@ -237,8 +229,8 @@ class MainScreenViewModel(
             creatorId = currentUser.uid,
             groupId = currentUser.groups.first().uid,
             title = "New event",
-            fromDateTime = fromDateTime,
-            toDateTime = toDateTime,
+            fromDateTime = dateTimeFrom,
+            toDateTime = dateTimeTo,
         )
         val isSuccess = eventProvider.saveEventData(eventData)
         snackbarChannel.send(if (isSuccess) "Event saved successfully" else "Failed to save event")

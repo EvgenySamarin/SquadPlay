@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,19 +16,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.models.DialPickerTarget
-import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
 import com.eysamarin.squadplay.models.EventDialogUI
+import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
 import com.eysamarin.squadplay.models.TimePickerUI
-import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.ui.DialPicker
 import com.eysamarin.squadplay.ui.SquadPlayTimePicker
 import com.eysamarin.squadplay.ui.button.PrimaryButton
@@ -36,29 +36,24 @@ import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import java.text.DecimalFormat
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGameEvent(
     ui: EventDialogUI,
     windowSize: WindowSizeClass,
-    onStartPollingTap: (timeFrom: TimeUnit, timeTo: TimeUnit) -> Unit
+    onStartPollingTap: (timeFrom: LocalDateTime, timeTo: LocalDateTime) -> Unit
 ) {
-    var timeFrom by remember { mutableStateOf<TimeUnit?>(null) }
-    var timeTo by remember { mutableStateOf<TimeUnit?>(null) }
+    var dateTimeFrom by remember { mutableStateOf<LocalDateTime?>(null) }
+    var dateTimeTo by remember { mutableStateOf<LocalDateTime?>(null) }
     var dialPickerTarget by remember { mutableStateOf(DialPickerTarget.FROM) }
-    var errorText by remember {
-        derivedStateOf {
-            if ((timeFrom?.hour ?: 0) > (timeTo?.hour ?: 0)) {
-                "Time from cannot be more then time to"
-            } else null
-        }
-        mutableStateOf<String?>(null)
-    }
+    var errorText by remember { mutableStateOf<String?>(null) }
     val timePickerUI = TimePickerUI(
         currentTarget = dialPickerTarget,
-        timeFrom = timeFrom,
-        timeTo = timeTo,
+        timeFrom = dateTimeFrom,
+        timeTo = dateTimeTo,
         errorText = errorText,
     )
 
@@ -67,8 +62,11 @@ fun AddGameEvent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        val format = DecimalFormat("00")
         Text(
-            text = "Create new game event polling for date: ${ui.yearMonth.year}.${ui.yearMonth.monthValue}.${ui.selectedDate.dayOfMonth}",
+            text = "Create new game event for date: ${ui.yearMonth.year}" +
+                    ".${format.format(ui.yearMonth.monthValue)}" +
+                    ".${format.format(ui.selectedDate.dayOfMonth)}",
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -94,8 +92,25 @@ fun AddGameEvent(
                 onTimeChange = { timeState, target ->
                     errorText = null
                     when (target) {
-                        DialPickerTarget.FROM -> timeFrom = TimeUnit(timeState.hour, timeState.minute)
-                        DialPickerTarget.TO -> timeTo = TimeUnit(timeState.hour, timeState.minute)
+                        DialPickerTarget.FROM -> {
+                            dateTimeFrom = LocalDateTime.of(
+                                /* year = */ ui.yearMonth.year,
+                                /* month = */ ui.yearMonth.month,
+                                /* dayOfMonth = */ ui.selectedDate.dayOfMonth ?: 1,
+                                /* hour = */ timeState.hour,
+                                /* minute = */ timeState.minute
+                            )
+                        }
+
+                        DialPickerTarget.TO -> {
+                            dateTimeTo = LocalDateTime.of(
+                                /* year = */ ui.yearMonth.year,
+                                /* month = */ ui.yearMonth.month,
+                                /* dayOfMonth = */ ui.selectedDate.dayOfMonth ?: 1,
+                                /* hour = */ timeState.hour,
+                                /* minute = */ timeState.minute
+                            )
+                        }
                     }
                 },
             )
@@ -105,11 +120,11 @@ fun AddGameEvent(
             windowSize = windowSize,
             text = "Schedule event",
             onTap = {
-                val from = timeFrom ?: run {
+                val from = dateTimeFrom ?: run {
                     errorText = "Time from not set"
                     return@PrimaryButton
                 }
-                val to = timeTo ?: run {
+                val to = dateTimeTo ?: run {
                     errorText = "Time to not set"
                     return@PrimaryButton
                 }
