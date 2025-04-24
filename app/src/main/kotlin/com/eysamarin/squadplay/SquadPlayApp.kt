@@ -56,11 +56,9 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
     NavHost(navController = navController, startDestination = Route.Auth.route) {
         composable(Route.Auth.route) {
             val viewModel: AuthScreenViewModel = koinViewModel()
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val snackbarHostState = remember { SnackbarHostState() }
 
             AuthScreen(
-                state = uiState,
                 snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
                 windowSize = windowSize,
                 onAction = {
@@ -82,11 +80,9 @@ fun SquadPlayApp(windowSize: WindowSizeClass) {
         }
         composable(Route.Registration.route) {
             val viewModel: RegistrationScreenViewModel = koinViewModel()
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val snackbarHostState = remember { SnackbarHostState() }
 
             RegistrationScreen(
-                state = uiState,
                 snackbarHost = { SnackbarHost(hostState = snackbarHostState)},
                 windowSize = windowSize,
                 onAction = {

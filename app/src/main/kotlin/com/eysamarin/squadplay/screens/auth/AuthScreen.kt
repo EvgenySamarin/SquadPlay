@@ -5,9 +5,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -33,14 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.AuthScreenAction
-import com.eysamarin.squadplay.models.AuthScreenUI
-import com.eysamarin.squadplay.models.PREVIEW_AUTH_SCREEN_UI
-import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.button.GoogleButton
 import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.button.SecondaryButton
@@ -49,11 +47,11 @@ import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import com.eysamarin.squadplay.data.R as DataR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
-    state: UiState<AuthScreenUI>,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (AuthScreenAction) -> Unit,
@@ -70,11 +68,11 @@ fun AuthScreen(
                 when (windowSize.widthSizeClass) {
                     WindowWidthSizeClass.Compact,
                     WindowWidthSizeClass.Medium -> AuthScreenMediumLayout(
-                        state, windowSize, onAction
+                        windowSize = windowSize, onAction = onAction
                     )
 
                     WindowWidthSizeClass.Expanded -> AuthScreenExpandedLayout(
-                        state, windowSize, onAction
+                        windowSize = windowSize, onAction = onAction
                     )
                 }
             }
@@ -85,12 +83,9 @@ fun AuthScreen(
 
 @Composable
 private fun AuthScreenMediumLayout(
-    state: UiState<AuthScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit
 ) {
-    if (state !is UiState.Normal) return
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -108,43 +103,29 @@ private fun AuthScreenMediumLayout(
                     Color.Unspecified
                 },
             )
-            Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
+            Text(text = stringResource(DataR.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
             Spacer(modifier = Modifier.height(24.dp))
         }
 
         item {
-            EmailPasswordSignIn(windowSize, onAction)
-        }
-        item {
-            if (state.data.isSignButtonVisible) {
-                Spacer(modifier = Modifier.height(24.dp))
-                GoogleButton(
-                    onTap = { onAction(AuthScreenAction.OnSignInWithGoogleTap) },
-                )
-            }
+            EmailPasswordSignIn(windowSize = windowSize, onAction = onAction)
         }
     }
 }
 
 @Composable
 private fun AuthScreenExpandedLayout(
-    state: UiState<AuthScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit
 ) {
-    if (state !is UiState.Normal) return
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = state.data.title, style = adaptiveHeadlineByHeight(windowSize))
-        EmailPasswordSignIn(windowSize, onAction)
-        GoogleButton(
-            onTap = { onAction(AuthScreenAction.OnSignInWithGoogleTap) },
-        )
+        Text(text = stringResource(DataR.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
+        EmailPasswordSignIn(windowSize = windowSize, onAction = onAction)
     }
 }
 
@@ -171,10 +152,10 @@ private fun EmailPasswordSignIn(
         onValueChange = { email = it },
         maxLines = 1,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        label = { Text("Email") },
+        label = { Text(stringResource(DataR.string.label_email)) },
         supportingText = {
             if (emailHasErrors) {
-                Text("Incorrect email format.")
+                Text(stringResource(DataR.string.incorrect_email))
             }
         }
     )
@@ -185,26 +166,33 @@ private fun EmailPasswordSignIn(
         onValueChange = { password = it },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        label = { Text("Password") },
+        label = { Text(stringResource(DataR.string.label_password)) },
     )
     Spacer(Modifier.height(16.dp))
 
     val isEmailValid = email.isNotEmpty() && !emailHasErrors
-    Row(
+    Column(
         modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         PrimaryButton(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             enabled = isEmailValid && password.isNotEmpty(),
             windowSize = windowSize,
-            text = "Sign in",
+            text = stringResource(DataR.string.sign_in),
             onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
         )
         SecondaryButton(
+            modifier = Modifier.fillMaxWidth(),
             windowSize = windowSize,
-            text = "Sign Up",
+            text = stringResource(DataR.string.sign_up),
             onTap = { onAction(AuthScreenAction.OnSignUpTap) },
+        )
+        GoogleButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(DataR.string.sign_in_with_google),
+            onTap = { onAction(AuthScreenAction.OnSignInWithGoogleTap) },
         )
     }
 }
@@ -215,10 +203,7 @@ private fun EmailPasswordSignIn(
 @Composable
 fun MainScreenPhonePreview() {
     SquadPlayTheme {
-        AuthScreen(
-            state = UiState.Normal(PREVIEW_AUTH_SCREEN_UI),
-            onAction = {},
-        )
+        AuthScreen(onAction = {})
     }
 }
 //endregion

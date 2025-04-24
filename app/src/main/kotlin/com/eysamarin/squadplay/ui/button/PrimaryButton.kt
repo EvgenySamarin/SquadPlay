@@ -26,6 +26,7 @@ import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
  */
 @Composable
 fun GoogleButton(
+    text: String,
     onTap: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -49,10 +50,10 @@ fun GoogleButton(
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_google_20),
-            contentDescription = ""
+            contentDescription = null
         )
         Spacer(modifier = Modifier.width(10.dp))
-        Text(text = "Sign in with Google")
+        Text(text = text)
     }
 }
 
@@ -135,6 +136,6 @@ fun PrimaryButtonPreview() {
             enabled = false,
             onTap = {},
         )
-        GoogleButton({})
+        GoogleButton(text = "Sign in with Google", {})
     }
 }

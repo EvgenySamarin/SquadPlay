@@ -4,23 +4,19 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
-import com.eysamarin.squadplay.models.AuthScreenUI
+import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.Route
 import com.eysamarin.squadplay.models.Route.Main
 import com.eysamarin.squadplay.models.UiState
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class AuthScreenViewModel(
     private val authProvider: AuthProvider,
+    private val stringProvider: StringProvider,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<AuthScreenUI>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
     private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
     val navigationFlow = navigationChannel.receiveAsFlow()
 
@@ -36,8 +32,6 @@ class AuthScreenViewModel(
 
         if (isUserExists) {
             navigationChannel.send(NavAction.NavigateTo(Main.route))
-        } else {
-            _uiState.emit(UiState.Normal(AuthScreenUI(isSignButtonVisible = true)))
         }
     }
 
@@ -47,7 +41,7 @@ class AuthScreenViewModel(
         if (isSuccess) {
             navigationChannel.send(NavAction.NavigateTo(Main.route))
         } else {
-            snackbarChannel.send("Cannot sign in, please login your google account first")
+            snackbarChannel.send(stringProvider.cannotSignText)
             Log.d("TAG", "cannot sign in")
         }
     }

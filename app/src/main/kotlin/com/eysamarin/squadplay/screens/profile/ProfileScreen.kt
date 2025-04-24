@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
@@ -50,6 +51,7 @@ import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import com.eysamarin.squadplay.data.R as DataR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +70,7 @@ fun ProfileScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back",
+                            contentDescription = stringResource(DataR.string.content_description_back),
                         )
                     }
                 },
@@ -76,7 +78,7 @@ fun ProfileScreen(
                     IconButton(onClick = { onAction(ProfileScreenAction.OnLogOutTap) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "log out",
+                            contentDescription = stringResource(DataR.string.content_description_log_out),
                         )
                     }
                 }
@@ -149,15 +151,18 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            PrimaryButton(windowSize, text = "Share invite link", onTap = {
-                onAction(ProfileScreenAction.OnCreateInviteLinkTap)
-            })
+            PrimaryButton(
+                windowSize,
+                text = stringResource(DataR.string.share_invite_link),
+                onTap = {
+                    onAction(ProfileScreenAction.OnCreateInviteLinkTap)
+                })
         }
         Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f, false),
-            text = "Friends list:",
+            text = stringResource(DataR.string.friends_list),
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -209,7 +214,7 @@ private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = "Group: ${friend.groupTitleFrom}",
+                        text = stringResource(DataR.string.group, friend.groupTitleFrom),
                         style = adaptiveLabelByHeight(windowSize),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

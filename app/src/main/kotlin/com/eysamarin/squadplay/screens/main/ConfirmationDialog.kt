@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.eysamarin.squadplay.data.R
 import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.button.SecondaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
@@ -32,10 +34,10 @@ fun ConfirmationDialog(
         text = textComposable,
         onDismissRequest = onDismiss,
         confirmButton = {
-            PrimaryButton(windowSize, "Yes", onTap = onConfirmTap)
+            PrimaryButton(windowSize, stringResource(R.string.yes), onTap = onConfirmTap)
         },
         dismissButton = {
-            SecondaryButton(windowSize, "No", onTap = onDismiss)
+            SecondaryButton(windowSize, stringResource(R.string.no), onTap = onDismiss)
         },
     )
 }

@@ -47,6 +47,7 @@ annotation class TabletDarkModePreview
     showSystemUi = true,
     device = "spec:width=411dp,height=891dp",
     name = "Phone preview light",
+    locale = "ru",
     uiMode = Configuration.UI_MODE_NIGHT_NO
 )
 @Retention(AnnotationRetention.SOURCE)

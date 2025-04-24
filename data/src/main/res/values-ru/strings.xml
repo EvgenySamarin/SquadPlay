@@ -1,0 +1,64 @@
+<resources>
+    <!-- region common -->
+    <string name="label_email">Электронная почта</string>
+    <string name="incorrect_email">Неверный формат электронной почты.</string>
+    <string name="label_password">Пароль</string>
+
+    <string name="no_data_yet">Нечего показывать</string>
+
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
+    <string name="select_time">Укажите время</string>
+    <string name="from">Стартуем</string>
+    <string name="to">Расходимся</string>
+    <!-- endregion -->
+
+    <!-- region auth screen -->
+    <string name="auth_screen_title">SquadPlay</string>
+    <string name="cannot_sign_in">Не удается войти, пожалуйста, сначала войдите в свой аккаунт Google</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="sign_in_with_google">Войти с помощью Google</string>
+    <!-- endregion -->
+
+    <!-- region registration screen -->
+    <string name="registration_screen_title">Регистрация</string>
+    <string name="confirm_password">Подтвердите пароль</string>
+    <string name="password_does_not_match">Пароли не совпадают</string>
+    <string name="confirm">Подтвердить</string>
+    <!-- endregion -->
+
+    <!-- region main screen -->
+    <string name="already_in_squad">Вы уже состоите в этом отряде</string>
+    <string name="squad_not_found">Отряд с uid: %s не найден</string>
+    <string name="want_to_join_squad">Хотите вступить в отряд %s?</string>
+    <string name="join_squad_success">Вы вступили в отряд</string>
+    <string name="join_squad_failed">Не удалось вступить в отряд</string>
+    <string name="from_to_date">с %s по %s</string>
+    <string name="you_have_no_squad">Вас нет ни в одном отряде, сначала соберите свою группу</string>
+    <string name="event_saved">Событие успешно сохранено</string>
+    <string name="event_save_failed">Не удалось сохранить событие</string>
+    <string name="new_game_event">Новое игровое событие</string>
+    <string name="greeting_text">С возвращением, %1$s!</string>
+    <string name="create_new_event">Создать игровое событие на дату: %1$s.%2$s.%3$s</string>
+    <string name="from_to_time_warning">Если время \'До\' меньше, чем время \'С\', событие будет учитывать следующий день</string>
+    <string name="schedule_event">Запланировать событие</string>
+    <string name="time_from_not_set">Время начала не указано</string>
+    <string name="time_to_not_set">Время окончания не указано</string>
+    <string name="invite_new_friend">Пригласить приятеля</string>
+    <!-- endregion -->
+
+    <!-- region profile screen -->
+    <string name="share_invite_link">Создать приглашение</string>
+    <string name="friends_list">Список друзей:</string>
+    <string name="group">Группа: %s</string>
+    <!-- endregion -->
+
+    <!-- region content description -->
+    <string name="content_description_log_out">Выйти из аккаунта</string>
+    <string name="content_description_add_game">Добавить игровое событие</string>
+    <string name="content_description_back">Назад</string>
+    <string name="content_desctiption_next">Далее</string>
+    <!-- endregion -->
+</resources>
