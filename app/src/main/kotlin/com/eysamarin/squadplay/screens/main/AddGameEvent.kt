@@ -23,7 +23,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.data.R
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
@@ -64,9 +66,12 @@ fun AddGameEvent(
     ) {
         val format = DecimalFormat("00")
         Text(
-            text = "Create new game event for date: ${ui.yearMonth.year}" +
-                    ".${format.format(ui.yearMonth.monthValue)}" +
-                    ".${format.format(ui.selectedDate.dayOfMonth)}",
+            text = stringResource(
+                R.string.create_new_event,
+                ui.yearMonth.year,
+                format.format(ui.yearMonth.monthValue),
+                format.format(ui.selectedDate.dayOfMonth),
+            ),
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -76,9 +81,8 @@ fun AddGameEvent(
                 .background(MaterialTheme.colorScheme.surfaceTint)
         ) {
             Text(
-                modifier = Modifier
-                    .padding(8.dp),
-                text = "If time 'To' less then time 'From', event will be scheduled on next day",
+                modifier = Modifier.padding(8.dp),
+                text = stringResource(R.string.from_to_time_warning),
                 style = adaptiveBodyByHeight(windowSize),
                 color = MaterialTheme.colorScheme.inverseOnSurface,
             )
@@ -128,17 +132,20 @@ fun AddGameEvent(
                 },
             )
         }
+
+        val fromNotSetErrorText = stringResource(R.string.time_from_not_set)
+        val toNotSetErrorText = stringResource(R.string.time_to_not_set)
         PrimaryButton(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             windowSize = windowSize,
-            text = "Schedule event",
+            text = stringResource(R.string.schedule_event),
             onTap = {
                 val from = dateTimeFrom ?: run {
-                    errorText = "Time from not set"
+                    errorText = fromNotSetErrorText
                     return@PrimaryButton
                 }
                 val to = dateTimeTo ?: run {
-                    errorText = "Time to not set"
+                    errorText = toNotSetErrorText
                     return@PrimaryButton
                 }
 

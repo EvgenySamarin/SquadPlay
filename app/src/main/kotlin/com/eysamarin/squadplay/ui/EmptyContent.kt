@@ -11,12 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.DarkLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import com.eysamarin.squadplay.data.R as DataR
 
 @Composable
 fun EmptyContent(
@@ -35,7 +37,7 @@ fun EmptyContent(
                 tint = MaterialTheme.colorScheme.outline
             )
             Text(
-                text = "No data yet",
+                text = stringResource(DataR.string.no_data_yet),
                 style = adaptiveBodyByHeight(windowSize),
                 color = MaterialTheme.colorScheme.outline,
             )

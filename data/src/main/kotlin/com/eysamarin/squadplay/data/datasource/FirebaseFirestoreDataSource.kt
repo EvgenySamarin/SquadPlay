@@ -13,6 +13,7 @@ import com.eysamarin.squadplay.models.User
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -251,10 +252,12 @@ class FirebaseFirestoreDataSourceImpl(
             .await()
     }
 
-    override suspend fun isUserProfileExists(userId: String): Boolean {
+    override suspend fun isUserProfileExists(userId: String): Boolean = try {
         val userDocumentSnapshot = firebaseFirestore.collection(USERS_COLLECTION)
             .document(userId).get().await()
-        return userDocumentSnapshot.exists()
+        userDocumentSnapshot.exists()
+    } catch (_: FirebaseFirestoreException) {
+        false
     }
 
     override fun getUserInfoFlow(userId: String): Flow<User?> = callbackFlow {

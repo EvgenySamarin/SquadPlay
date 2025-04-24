@@ -20,7 +20,9 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.data.R
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_TIME_PICKER_UI
 import com.eysamarin.squadplay.models.TimePickerUI
@@ -41,7 +43,11 @@ fun SquadPlayTimePicker(
     onToTap: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
-        Text(text = "Select time", style = adaptiveBodyByHeight(windowSize), color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = stringResource(R.string.select_time),
+            style = adaptiveBodyByHeight(windowSize),
+            color = MaterialTheme.colorScheme.onSurface
+        )
         Card(
             modifier = Modifier.padding(top = 16.dp),
             shape = RoundedCornerShape(16.dp),
@@ -57,7 +63,7 @@ fun SquadPlayTimePicker(
             ) {
                 TimeUnit(
                     windowSize = windowSize,
-                    label = "From",
+                    label = stringResource(R.string.from),
                     timeString = ui.timeFrom?.let { buildTimeString(it.hour, it.minute) }
                         ?: "--:--",
                     selected = ui.currentTarget == DialPickerTarget.FROM,
@@ -65,12 +71,12 @@ fun SquadPlayTimePicker(
                 )
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "next",
+                    contentDescription = stringResource(R.string.content_desctiption_next),
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
                 TimeUnit(
                     windowSize = windowSize,
-                    label = "To",
+                    label = stringResource(R.string.to),
                     timeString = ui.timeTo?.let { buildTimeString(it.hour, it.minute) }
                         ?: "--:--",
                     selected = ui.currentTarget == DialPickerTarget.TO,

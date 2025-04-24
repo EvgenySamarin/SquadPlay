@@ -29,7 +29,9 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.data.R
 import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
@@ -72,7 +74,7 @@ fun MainScreen(
                     IconButton(onClick = { onAction(MainScreenAction.OnLogOutTap) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "log out",
+                            contentDescription = stringResource(R.string.content_description_log_out),
                         )
                     }
                 })
@@ -105,8 +107,11 @@ fun MainScreen(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onSecondary,
             ) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add game event")
-                Text(text = "New game event")
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.content_description_add_game),
+                )
+                Text(text = stringResource(R.string.new_game_event))
             }
         }
     )
@@ -132,7 +137,7 @@ fun MainScreen(
     if (confirmInviteDialogState is UiState.Normal<String>) {
         ConfirmationDialog(
             windowSize = windowSize,
-            title = "Invite new friend",
+            title = stringResource(R.string.invite_new_friend),
             text = confirmInviteDialogState.data,
             onDismiss = {
                 onAction(MainScreenAction.OnJoinGroupDialogDismiss)
@@ -249,7 +254,7 @@ private fun GreetingBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f, false),
-            text = "Welcome back, ${user.username}!",
+            text = stringResource(R.string.greeting_text, user.username),
             style = adaptiveHeadlineByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface
         )
