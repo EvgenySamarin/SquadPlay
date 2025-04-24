@@ -6,11 +6,13 @@ import androidx.credentials.CredentialManager
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.EventRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
+import com.eysamarin.squadplay.contracts.StringRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
 import com.eysamarin.squadplay.data.FirebaseAuthManagerImpl
 import com.eysamarin.squadplay.data.contract.AuthRepositoryImpl
 import com.eysamarin.squadplay.data.contract.EventRepositoryImpl
 import com.eysamarin.squadplay.data.contract.ProfileRepositoryImpl
+import com.eysamarin.squadplay.data.contract.StringRepositoryImpl
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
 import com.eysamarin.squadplay.domain.auth.AuthProvider
@@ -21,6 +23,8 @@ import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.event.EventProviderImpl
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProviderImpl
+import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.domain.resource.StringProviderImpl
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
@@ -63,9 +67,8 @@ class SquadPlayApplication : Application() {
             )
         }
         single<EventRepository> { EventRepositoryImpl(firebaseFirestoreDataSource = get()) }
-        single<ProfileRepository> { ProfileRepositoryImpl(
-            firestoreDataSource = get()
-        ) }
+        single<ProfileRepository> { ProfileRepositoryImpl(firestoreDataSource = get()) }
+        single<StringRepository> { StringRepositoryImpl(appContext = get()) }
         //endregion
 
         //region domain
@@ -83,6 +86,7 @@ class SquadPlayApplication : Application() {
                 authRepository = get(),
             )
         }
+        single<StringProvider> { StringProviderImpl(stringRepository = get()) }
         //endregion
 
         //region presentation

@@ -7,6 +7,7 @@ import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
+import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.CalendarUI.Date
 import com.eysamarin.squadplay.models.Event
@@ -16,7 +17,6 @@ import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.NavAction
 import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.Route.Profile
-import com.eysamarin.squadplay.models.TimeUnit
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +43,7 @@ class MainScreenViewModel(
     private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
     private val profileProvider: ProfileProvider,
+    private val stringProvider: StringProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -102,18 +103,18 @@ class MainScreenViewModel(
             }
             .onEach { (user, inviteGroupId) ->
                 if (user.groups.map { it.uid }.contains(inviteGroupId)) {
-                    snackbarChannel.send("You're already in this squad")
+                    snackbarChannel.send(stringProvider.alreadyInSquad)
                     Log.w("TAG", "You're already in this squad")
                     return@onEach
                 }
 
                 val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
                 if (groupInfo == null) {
-                    snackbarChannel.send("Squad with uid: $inviteGroupId not found")
+                    snackbarChannel.send(stringProvider.squadNotFound(inviteGroupId))
                     Log.w("TAG", "Group with uid: $inviteGroupId not found")
                     return@onEach
                 }
-                _confirmInviteDialogState.emit(UiState.Normal("Want to join ${groupInfo.title} squad?"))
+                _confirmInviteDialogState.emit(UiState.Normal(stringProvider.wantToJoinSquad(groupInfo.title)))
             }
             .launchIn(viewModelScope)
 
@@ -133,11 +134,10 @@ class MainScreenViewModel(
                 EventUI(
                     eventId = it.uid,
                     title = it.title,
-                    subtitle = "from ${it.fromDateTime.format(DEFAULT_TIME_FORMATTER)} to ${
-                        it.toDateTime.format(
-                            DEFAULT_TIME_FORMATTER
-                        )
-                    }",
+                    subtitle = stringProvider.fromToDate(
+                        fromDate = it.fromDateTime.format(DEFAULT_TIME_FORMATTER),
+                        toDate = it.toDateTime.format(DEFAULT_TIME_FORMATTER),
+                    ),
                     iconUrl = it.eventIconUrl,
                     isYourEvent = it.creatorId == userInfo.uid
                 )
@@ -210,17 +210,10 @@ class MainScreenViewModel(
     }
 
     fun onEventSaveTap(
-        year: Int,
-        month: Int,
-        day: Int,
-        timeFrom: TimeUnit,
-        timeTo: TimeUnit
+        dateTimeFrom: LocalDateTime,
+        dateTimeTo: LocalDateTime,
     ) = viewModelScope.launch {
-        Log.d("TAG", "onEventSaveTap")
-
-        val fromDateTime = LocalDateTime.of(year, month, day, timeFrom.hour, timeFrom.minute)
-        val toDateTime = LocalDateTime.of(year, month, day, timeTo.hour, timeTo.minute)
-
+        Log.d("TAG", "onEventSaveTap for dates: $dateTimeFrom - $dateTimeTo")
         val currentUser = userInfoState.value ?: run {
             Log.w("TAG", "currentUser is null cannot save event")
             return@launch
@@ -228,7 +221,7 @@ class MainScreenViewModel(
 
         if (currentUser.groups.isEmpty()) {
             Log.d("TAG", "currentUser has no groups cannot save event")
-            snackbarChannel.send("You have no squads to save event, find your squad first")
+            snackbarChannel.send(stringProvider.youHaveNoSquad)
             return@launch
         }
 
@@ -237,11 +230,17 @@ class MainScreenViewModel(
             creatorId = currentUser.uid,
             groupId = currentUser.groups.first().uid,
             title = "New event",
-            fromDateTime = fromDateTime,
-            toDateTime = toDateTime,
+            fromDateTime = dateTimeFrom,
+            toDateTime = dateTimeTo,
         )
         val isSuccess = eventProvider.saveEventData(eventData)
-        snackbarChannel.send(if (isSuccess) "Event saved successfully" else "Failed to save event")
+        snackbarChannel.send(
+            if (isSuccess) {
+                stringProvider.eventSaved
+            } else {
+                stringProvider.eventSaveFailed
+            }
+        )
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
@@ -283,7 +282,13 @@ class MainScreenViewModel(
         val isSuccess = profileProvider.joinGroup(
             userId = currentUser.uid, groupId = inviteGroupId,
         )
-        snackbarChannel.send(if (isSuccess) "You joined the squad" else "You failed joining the squad")
+        snackbarChannel.send(
+            if (isSuccess) {
+                stringProvider.joinedSquad
+            } else {
+                stringProvider.joinSquadFailed
+            }
+        )
     }
 
     fun onJoinGroupDialogDismiss() = viewModelScope.launch {

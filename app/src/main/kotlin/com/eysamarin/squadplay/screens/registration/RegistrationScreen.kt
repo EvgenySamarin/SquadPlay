@@ -29,13 +29,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.models.PREVIEW_REGISTRATION_SCREEN_UI
+import com.eysamarin.squadplay.data.R
 import com.eysamarin.squadplay.models.RegistrationScreenAction
-import com.eysamarin.squadplay.models.RegistrationScreenUI
-import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.button.SecondaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
@@ -45,13 +44,10 @@ import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(
-    state: UiState<RegistrationScreenUI>,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (RegistrationScreenAction) -> Unit,
 ) {
-    if (state !is UiState.Normal) return
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -61,13 +57,14 @@ fun RegistrationScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back",
+                            contentDescription = stringResource(R.string.content_description_back),
                         )
                     }
                 },
                 title = {
-                Text(state.data.title)
-            })
+                    Text(stringResource(R.string.registration_screen_title))
+                }
+            )
         },
         content = { innerPadding ->
             Box(
@@ -80,7 +77,7 @@ fun RegistrationScreen(
                     WindowWidthSizeClass.Compact,
                     WindowWidthSizeClass.Medium,
                     WindowWidthSizeClass.Expanded -> RegistrationMediumLayout(
-                        state, windowSize, onAction
+                        windowSize = windowSize, onAction = onAction
                     )
                 }
             }
@@ -91,12 +88,9 @@ fun RegistrationScreen(
 
 @Composable
 private fun RegistrationMediumLayout(
-    state: UiState<RegistrationScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (RegistrationScreenAction) -> Unit,
 ) {
-    if (state !is UiState.Normal) return
-
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val confirmPasswordHasErrors by remember {
@@ -130,10 +124,10 @@ private fun RegistrationMediumLayout(
                 isError = emailHasErrors,
                 onValueChange = { email = it },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.label_email)) },
                 supportingText = {
                     if (emailHasErrors) {
-                        Text("Incorrect email format.")
+                        Text(stringResource(R.string.incorrect_email))
                     }
                 }
             )
@@ -144,7 +138,7 @@ private fun RegistrationMediumLayout(
                 onValueChange = { password = it },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.label_password)) },
             )
         }
         item {
@@ -154,10 +148,10 @@ private fun RegistrationMediumLayout(
                 onValueChange = { confirmPassword = it },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                label = { Text("Confirm password") },
+                label = { Text(stringResource(R.string.confirm_password)) },
                 supportingText = {
                     if (confirmPasswordHasErrors) {
-                        Text("Password does not match")
+                        Text(stringResource(R.string.password_does_not_match))
                     }
                 }
             )
@@ -171,7 +165,7 @@ private fun RegistrationMediumLayout(
                         && !emailHasErrors,
                 modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
                 windowSize = windowSize,
-                text = "Confirm",
+                text = stringResource(R.string.confirm),
                 onTap = { onAction(RegistrationScreenAction.OnConfirmTap(email, password)) },
             )
         }
@@ -184,10 +178,7 @@ private fun RegistrationMediumLayout(
 @Composable
 fun RegistrationScreenPhonePreview() {
     SquadPlayTheme {
-        RegistrationScreen(
-            state = UiState.Normal(PREVIEW_REGISTRATION_SCREEN_UI),
-            onAction = {},
-        )
+        RegistrationScreen(onAction = {})
     }
 }
 //endregion
