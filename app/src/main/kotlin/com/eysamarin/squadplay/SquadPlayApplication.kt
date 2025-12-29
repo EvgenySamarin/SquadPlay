@@ -37,6 +37,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.option.viewModelScopeFactory
 import org.koin.dsl.module
 
 class SquadPlayApplication : Application() {
@@ -102,6 +103,7 @@ class SquadPlayApplication : Application() {
         super.onCreate()
 
         startKoin {
+            viewModelScopeFactory()
             androidLogger()
             androidContext(this@SquadPlayApplication)
             modules(appModule)
