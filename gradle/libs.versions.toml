@@ -1,23 +1,30 @@
 [versions]
-agp = "8.9.0"
-kotlin = "2.0.21"
-orgJetbrainsKotlinxCoroutinesCore = "1.10.1"
-coreKtx = "1.15.0"
+#noinspection UnusedVersionCatalogEntry
+android-compileSdk = "36"
+#noinspection UnusedVersionCatalogEntry
+android-minSdk = "28"
+#noinspection UnusedVersionCatalogEntry
+android-targetSdk = "36"
+
+agp = "8.13.2"
+kotlin = "2.3.0"
+orgJetbrainsKotlinxCoroutinesCore = "1.10.2"
+coreKtx = "1.17.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.1"
-navigationCompose = "2.8.9"
-composeBom = "2025.03.00"
-jetbrainsKotlinJvm = "2.0.21"
-koin = "4.0.2"
-firebaseBom = "33.11.0"
-googleGmsGoogleServices = "4.4.2"
-googleFirebaseCrashlytics = "3.0.3"
+junitVersion = "1.3.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.12.2"
+navigationCompose = "2.9.6"
+composeBom = "2025.12.01"
+jetbrainsKotlinJvm = "2.3.0"
+koin = "4.1.1"
+firebaseBom = "34.7.0"
+googleGmsGoogleServices = "4.4.4"
+googleFirebaseCrashlytics = "3.0.6"
 credentials = "1.5.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
-ioCoilKtCoil3Compose = "3.1.0"
-ioCoilKtCoil3NetworkOkHttp = "3.0.4"
+ioCoilKtCoil3Compose = "3.3.0"
+ioCoilKtCoil3NetworkOkHttp = "3.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

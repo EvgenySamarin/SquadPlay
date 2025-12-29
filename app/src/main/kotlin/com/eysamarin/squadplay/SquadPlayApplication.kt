@@ -9,10 +9,10 @@ import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.contracts.StringRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
 import com.eysamarin.squadplay.data.FirebaseAuthManagerImpl
+import com.eysamarin.squadplay.data.StringRepositoryImpl
 import com.eysamarin.squadplay.data.contract.AuthRepositoryImpl
 import com.eysamarin.squadplay.data.contract.EventRepositoryImpl
 import com.eysamarin.squadplay.data.contract.ProfileRepositoryImpl
-import com.eysamarin.squadplay.data.contract.StringRepositoryImpl
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
 import com.eysamarin.squadplay.domain.auth.AuthProvider
@@ -37,6 +37,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.option.viewModelScopeFactory
 import org.koin.dsl.module
 
 class SquadPlayApplication : Application() {
@@ -102,6 +103,7 @@ class SquadPlayApplication : Application() {
         super.onCreate()
 
         startKoin {
+            viewModelScopeFactory()
             androidLogger()
             androidContext(this@SquadPlayApplication)
             modules(appModule)

@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.data.R
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI

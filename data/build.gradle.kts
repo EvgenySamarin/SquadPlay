@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "com.eysamarin.squadplay.data"
-    compileSdk = 35
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = 28
+        minSdk = libs.versions.android.minSdk.get().toInt()
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -21,13 +21,10 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+}
+
+kotlin {
+    jvmToolchain(jdkVersion = 17)
 }
 
 dependencies {
