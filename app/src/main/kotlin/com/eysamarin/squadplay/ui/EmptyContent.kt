@@ -18,7 +18,6 @@ import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.DarkLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.data.R as DataR
 
 @Composable
 fun EmptyContent(
@@ -37,7 +36,7 @@ fun EmptyContent(
                 tint = MaterialTheme.colorScheme.outline
             )
             Text(
-                text = stringResource(DataR.string.no_data_yet),
+                text = stringResource(R.string.no_data_yet),
                 style = adaptiveBodyByHeight(windowSize),
                 color = MaterialTheme.colorScheme.outline,
             )

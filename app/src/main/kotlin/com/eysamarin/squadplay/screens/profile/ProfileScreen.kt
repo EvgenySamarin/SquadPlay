@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,7 +48,6 @@ import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.data.R as DataR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,16 +65,16 @@ fun ProfileScreen(
                         onClick = { onAction(ProfileScreenAction.OnBackButtonTap) }
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(DataR.string.content_description_back),
+                            painter = painterResource(R.drawable.ic_arrow_back_24),
+                            contentDescription = stringResource(R.string.content_description_back),
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onAction(ProfileScreenAction.OnLogOutTap) }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = stringResource(DataR.string.content_description_log_out),
+                            painter = painterResource(R.drawable.ic_exit_to_app_24),
+                            contentDescription = stringResource(R.string.content_description_log_out),
                         )
                     }
                 }
@@ -153,7 +149,7 @@ private fun ProfileScreenMediumLayout(
         ) {
             PrimaryButton(
                 windowSize,
-                text = stringResource(DataR.string.share_invite_link),
+                text = stringResource(R.string.share_invite_link),
                 onTap = {
                     onAction(ProfileScreenAction.OnCreateInviteLinkTap)
                 })
@@ -162,7 +158,7 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f, false),
-            text = stringResource(DataR.string.friends_list),
+            text = stringResource(R.string.friends_list),
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -214,7 +210,7 @@ private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(DataR.string.group, friend.groupTitleFrom),
+                        text = stringResource(R.string.group, friend.groupTitleFrom),
                         style = adaptiveLabelByHeight(windowSize),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

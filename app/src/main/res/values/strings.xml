@@ -1,3 +1,66 @@
 <resources>
     <string name="app_name" translatable="false">SquadPlay</string>
+
+    <!-- region common -->
+    <string name="label_email">Email</string>
+    <string name="incorrect_email">Incorrect email format.</string>
+    <string name="label_password">Password</string>
+
+    <string name="no_data_yet">No data yet</string>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="select_time">Select time</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <!-- endregion -->
+
+    <!-- region auth screen -->
+    <string name="auth_screen_title">SquadPlay</string>
+    <string name="cannot_sign_in">Cannot sign in, please login your google account first</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <!-- endregion -->
+
+    <!-- region registration screen -->
+    <string name="registration_screen_title">Registration</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="password_does_not_match">Password does not match</string>
+    <string name="confirm">Confirm</string>
+    <!-- endregion -->
+
+    <!-- region main screen -->
+    <string name="already_in_squad">You\'re already in this squad</string>
+    <string name="squad_not_found">Squad with uid: %s not found</string>
+    <string name="want_to_join_squad">Want to join %s squad?</string>
+    <string name="join_squad_success">You joined the squad</string>
+    <string name="join_squad_failed">You failed joining the squad</string>
+    <string name="from_to_date">from %s to %s</string>
+    <string name="you_have_no_squad">You have no squads to save event, find your squad first</string>
+    <string name="event_saved">Event saved successfully</string>
+    <string name="event_save_failed">Failed to save event</string>
+    <string name="new_game_event">New game event</string>
+    <string name="greeting_text">Welcome back, %s!</string>
+    <string name="create_new_event">Create new game event for date: $1%s.$2%s.$3%s</string>
+    <string name="from_to_time_warning">If time \'To\' less then time \'From\', event will be scheduled on next day</string>
+    <string name="schedule_event">Schedule event</string>
+    <string name="time_from_not_set">Time from not set</string>
+    <string name="time_to_not_set">Time to not set</string>
+    <string name="invite_new_friend">Invite new friend</string>
+    <!-- endregion -->
+
+    <!-- region profile screen -->
+    <string name="share_invite_link">Share invite link</string>
+    <string name="friends_list">Friends list:</string>
+    <string name="group">Group: %s</string>
+    <!-- endregion -->
+
+    <!-- region content description -->
+    <string name="content_description_log_out">log out</string>
+    <string name="content_description_add_game">Add game event</string>
+    <string name="content_description_back">Back</string>
+    <string name="content_desctiption_next">Next</string>
+    <!-- endregion -->
 </resources>

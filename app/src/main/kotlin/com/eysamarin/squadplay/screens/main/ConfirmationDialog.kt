@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.eysamarin.squadplay.data.R
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.button.SecondaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme

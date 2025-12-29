@@ -47,7 +47,6 @@ import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.data.R as DataR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,7 +102,7 @@ private fun AuthScreenMediumLayout(
                     Color.Unspecified
                 },
             )
-            Text(text = stringResource(DataR.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
+            Text(text = stringResource(R.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
             Spacer(modifier = Modifier.height(24.dp))
         }
 
@@ -124,7 +123,7 @@ private fun AuthScreenExpandedLayout(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = stringResource(DataR.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
+        Text(text = stringResource(R.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
         EmailPasswordSignIn(windowSize = windowSize, onAction = onAction)
     }
 }
@@ -152,10 +151,10 @@ private fun EmailPasswordSignIn(
         onValueChange = { email = it },
         maxLines = 1,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        label = { Text(stringResource(DataR.string.label_email)) },
+        label = { Text(stringResource(R.string.label_email)) },
         supportingText = {
             if (emailHasErrors) {
-                Text(stringResource(DataR.string.incorrect_email))
+                Text(stringResource(R.string.incorrect_email))
             }
         }
     )
@@ -166,7 +165,7 @@ private fun EmailPasswordSignIn(
         onValueChange = { password = it },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        label = { Text(stringResource(DataR.string.label_password)) },
+        label = { Text(stringResource(R.string.label_password)) },
     )
     Spacer(Modifier.height(16.dp))
 
@@ -180,18 +179,18 @@ private fun EmailPasswordSignIn(
             modifier = Modifier.fillMaxWidth(),
             enabled = isEmailValid && password.isNotEmpty(),
             windowSize = windowSize,
-            text = stringResource(DataR.string.sign_in),
+            text = stringResource(R.string.sign_in),
             onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
         )
         SecondaryButton(
             modifier = Modifier.fillMaxWidth(),
             windowSize = windowSize,
-            text = stringResource(DataR.string.sign_up),
+            text = stringResource(R.string.sign_up),
             onTap = { onAction(AuthScreenAction.OnSignUpTap) },
         )
         GoogleButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(DataR.string.sign_in_with_google),
+            text = stringResource(R.string.sign_in_with_google),
             onTap = { onAction(AuthScreenAction.OnSignInWithGoogleTap) },
         )
     }
