@@ -11,15 +11,15 @@ plugins {
 
 android {
     namespace = "com.eysamarin.squadplay"
-    compileSdk = 35
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     val properties = Properties()
         .also { it.load(project.rootProject.file("local.properties").inputStream()) }
 
     defaultConfig {
         applicationId = "com.eysamarin.squadplay"
-        minSdk = 28
-        targetSdk = 35
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 6
         versionName = "0.6"
 

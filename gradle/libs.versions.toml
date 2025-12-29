@@ -1,4 +1,8 @@
 [versions]
+android-compileSdk = "36"
+android-minSdk = "28"
+android-targetSdk = "35"
+
 agp = "8.9.3"
 kotlin = "2.3.0"
 orgJetbrainsKotlinxCoroutinesCore = "1.10.2"
