@@ -1,6 +1,6 @@
 [versions]
 agp = "8.9.0"
-kotlin = "2.0.21"
+kotlin = "2.2.0"
 orgJetbrainsKotlinxCoroutinesCore = "1.10.1"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -16,8 +16,8 @@ googleGmsGoogleServices = "4.4.2"
 googleFirebaseCrashlytics = "3.0.3"
 credentials = "1.5.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
-ioCoilKtCoil3Compose = "3.1.0"
-ioCoilKtCoil3NetworkOkHttp = "3.0.4"
+ioCoilKtCoil3Compose = "3.3.0"
+ioCoilKtCoil3NetworkOkHttp = "3.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
