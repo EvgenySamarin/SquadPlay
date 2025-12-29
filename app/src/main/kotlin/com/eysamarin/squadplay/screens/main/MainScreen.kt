@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -29,9 +26,10 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.data.R
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
@@ -73,7 +71,7 @@ fun MainScreen(
                 actions = {
                     IconButton(onClick = { onAction(MainScreenAction.OnLogOutTap) }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            painter = painterResource(id = R.drawable.ic_exit_to_app_24),
                             contentDescription = stringResource(R.string.content_description_log_out),
                         )
                     }
@@ -108,7 +106,7 @@ fun MainScreen(
                 contentColor = MaterialTheme.colorScheme.onSecondary,
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Add,
+                    painter = painterResource(id = R.drawable.ic_add_24),
                     contentDescription = stringResource(R.string.content_description_add_game),
                 )
                 Text(text = stringResource(R.string.new_game_event))

@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -23,8 +20,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.PREVIEW_CALENDAR_UI
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
@@ -93,7 +92,7 @@ fun Header(
     Row {
         IconButton(onClick = { onPreviousMonthTap(yearMonth.minusMonths(1)) }) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                painter = painterResource(R.drawable.ic_keyboard_arrow_left_24),
                 contentDescription = "previous",
                 tint = MaterialTheme.colorScheme.onSurface
             )
@@ -109,7 +108,7 @@ fun Header(
         )
         IconButton(onClick = { onNextMonthTap(yearMonth.plusMonths(1)) }) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                painter = painterResource(R.drawable.ic_keyboard_arrow_right_24),
                 contentDescription = "next",
                 tint = MaterialTheme.colorScheme.onSurface
             )

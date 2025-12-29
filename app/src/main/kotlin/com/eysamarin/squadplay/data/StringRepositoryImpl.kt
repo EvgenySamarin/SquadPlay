@@ -1,8 +1,8 @@
-package com.eysamarin.squadplay.data.contract
+package com.eysamarin.squadplay.data
 
 import android.content.Context
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.contracts.StringRepository
-import com.eysamarin.squadplay.data.R
 
 class StringRepositoryImpl(
     val appContext: Context
