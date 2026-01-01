@@ -1,7 +1,10 @@
 package com.eysamarin.squadplay.ui.calendar
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,12 +19,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.CalendarUI
@@ -35,8 +44,10 @@ import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 @Composable
 fun Calendar(
@@ -47,24 +58,66 @@ fun Calendar(
     onDateTap: (CalendarUI.Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    val coroutineScope = rememberCoroutineScope()
+    val horizontalDragOffset = remember { Animatable(0f) }
+    val swipeThresholdPx = with(LocalDensity.current) { 100.dp.toPx() }
+    val dragLimitPx = swipeThresholdPx * 1.5f
+
+    LaunchedEffect(ui.yearMonth) {
+        horizontalDragOffset.snapTo(0f)
+    }
+
+    Column(
+        modifier = modifier.pointerInput(ui.yearMonth) {
+            detectHorizontalDragGestures(
+                onHorizontalDrag = { _, dragAmount ->
+                    coroutineScope.launch {
+                        val newOffset = horizontalDragOffset.value + dragAmount
+                        val clampedOffset = newOffset.coerceIn(-dragLimitPx, dragLimitPx)
+                        horizontalDragOffset.snapTo(clampedOffset)
+                    }
+                },
+                onDragEnd = {
+                    coroutineScope.launch {
+                        val offset = horizontalDragOffset.value
+                        if (offset < -swipeThresholdPx) {
+                            onNextMonthTap(ui.yearMonth.plusMonths(1))
+                        } else if (offset > swipeThresholdPx) {
+                            onPreviousMonthTap(ui.yearMonth.minusMonths(1))
+                        } else {
+                            horizontalDragOffset.animateTo(0f, animationSpec = tween(300))
+                        }
+                    }
+                },
+                onDragCancel = {
+                    coroutineScope.launch {
+                        horizontalDragOffset.animateTo(0f, animationSpec = tween(300))
+                    }
+                }
+            )
+        }
+    ) {
         Row {
             repeat(ui.daysOfWeek.size) {
                 val item = ui.daysOfWeek[it]
                 WeekDayItem(day = item, modifier = Modifier.weight(1f), windowSize = windowSize)
             }
         }
-        Header(
-            windowSize = windowSize,
-            yearMonth = ui.yearMonth,
-            onPreviousMonthTap = onPreviousMonthTap,
-            onNextMonthTap = onNextMonthTap
-        )
-        CalendarContent(
-            windowSize = windowSize,
-            dates = ui.dates,
-            onDateTap = onDateTap
-        )
+        Column(
+            modifier = Modifier.offset { IntOffset(horizontalDragOffset.value.roundToInt(), 0) }
+        ) {
+            Header(
+                windowSize = windowSize,
+                yearMonth = ui.yearMonth,
+                onPreviousMonthTap = onPreviousMonthTap,
+                onNextMonthTap = onNextMonthTap
+            )
+            CalendarContent(
+                windowSize = windowSize,
+                dates = ui.dates,
+                onDateTap = onDateTap
+            )
+        }
     }
 }
 
