@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.navigation.SquadPlayNavigation
 import com.eysamarin.squadplay.ui.PermissionDialog
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import org.koin.androidx.compose.koinViewModel
@@ -77,7 +78,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                SquadPlayApp(windowSize)
+                SquadPlayNavigation(windowSize)
             }
         }
     }
@@ -101,8 +102,8 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(showBackground = true)
 @Composable
-fun FinanceStocksAppPreview() {
+fun FinanceStocksNavigationPreview() {
     SquadPlayTheme {
-        SquadPlayApp(WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)))
+        SquadPlayNavigation(WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)))
     }
 }

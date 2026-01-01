@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.PREVIEW_CALENDAR_UI
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
@@ -55,7 +56,7 @@ fun Calendar(
     windowSize: WindowSizeClass,
     onPreviousMonthTap: (YearMonth) -> Unit,
     onNextMonthTap: (YearMonth) -> Unit,
-    onDateTap: (CalendarUI.Date) -> Unit,
+    onDateTap: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -172,8 +173,8 @@ fun Header(
 @Composable
 fun CalendarContent(
     windowSize: WindowSizeClass,
-    dates: List<CalendarUI.Date>,
-    onDateTap: (CalendarUI.Date) -> Unit,
+    dates: List<Date>,
+    onDateTap: (Date) -> Unit,
 ) {
     Column {
         var index = 0
@@ -181,7 +182,7 @@ fun CalendarContent(
             if (index >= dates.size) return@repeat
             Row {
                 repeat(7) {
-                    val item = if (index < dates.size) dates[index] else CalendarUI.Date.Empty
+                    val item = if (index < dates.size) dates[index] else Date.Empty
                     ContentItem(
                         windowSize = windowSize,
                         date = item,
@@ -198,8 +199,8 @@ fun CalendarContent(
 @Composable
 fun ContentItem(
     windowSize: WindowSizeClass,
-    date: CalendarUI.Date,
-    onItemTap: (CalendarUI.Date) -> Unit,
+    date: Date,
+    onItemTap: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(

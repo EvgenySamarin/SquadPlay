@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.domain.calendar
 
 import com.eysamarin.squadplay.models.CalendarUI
+import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -10,7 +11,7 @@ import java.util.Locale
 
 interface CalendarUIProvider {
     fun provideCalendarUIBy(yearMonth: YearMonth): CalendarUI
-    fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: CalendarUI.Date): CalendarUI
+    fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI
     fun mergedCalendarWithEvents(calendar: CalendarUI, events: List<Event>): CalendarUI
 }
 
@@ -41,7 +42,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
                     val fromMonthOfYear = event.fromDateTime.month.value
 
                     val isSameDay = fromDayOfMonth == date.dayOfMonth
-                            && fromMonthOfYear == date.month?.value
+                            && fromMonthOfYear == date.monthNumber
                     isSameDay
                 },
             )
@@ -60,7 +61,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
 
     override fun updateCalendarBySelectedDate(
         target: CalendarUI,
-        selectedDate: CalendarUI.Date
+        selectedDate: Date
     ): CalendarUI {
         return target.copy(
             dates = target.dates.map { item ->
@@ -93,16 +94,16 @@ class CalendarDataSource {
             .toList()
     }
 
-    fun getDates(yearMonth: YearMonth): List<CalendarUI.Date> {
+    fun getDates(yearMonth: YearMonth): List<Date> {
         return yearMonth.getDayOfMonthStartingFromMonday()
             .map { date ->
-                CalendarUI.Date(
+                Date(
                     dayOfMonth = if (date.monthValue == yearMonth.monthValue) {
                         date.dayOfMonth
                     } else {
                         date.dayOfMonth
                     },
-                    month = date.month,
+                    monthNumber = date.month.value,
                     isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue,
                     enabled = date.monthValue == yearMonth.monthValue,
                     countEvents = 0,

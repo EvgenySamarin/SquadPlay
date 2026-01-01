@@ -4,19 +4,17 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
-import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.Route
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.navigation.Destination
+import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class RegistrationScreenViewModel(
+    private val navigator: Navigator,
     private val authProvider: AuthProvider,
 ) : ViewModel() {
-    private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
-    val navigationFlow = navigationChannel.receiveAsFlow()
-
     private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
     val snackbarFlow = snackbarChannel.receiveAsFlow()
 
@@ -33,12 +31,12 @@ class RegistrationScreenViewModel(
                 snackbarChannel.send(signUpState.description)
             }
 
-            is UiState.Normal<*> -> navigationChannel.send(NavAction.NavigateTo(Route.Auth.route))
+            is UiState.Normal<*> -> navigator.navigate(Destination.AuthScreen)
         }
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
         Log.d("TAG", "onBackButtonTap")
-        navigationChannel.send(NavAction.NavigateBack)
+        navigator.navigateUp()
     }
 }

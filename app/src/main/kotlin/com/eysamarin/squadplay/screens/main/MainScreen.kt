@@ -16,11 +16,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -30,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.MainScreenAction
 import com.eysamarin.squadplay.models.MainScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
@@ -58,7 +55,6 @@ import com.eysamarin.squadplay.utils.WearLightModePreview
 @Composable
 fun MainScreen(
     state: UiState<MainScreenUI>,
-    eventDialogState: UiState<EventDialogUI> = UiState.Empty,
     confirmInviteDialogState: UiState<String> = UiState.Empty,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
@@ -113,24 +109,6 @@ fun MainScreen(
             }
         }
     )
-
-
-    if (eventDialogState is UiState.Normal<EventDialogUI>) {
-        ModalBottomSheet(
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            onDismissRequest = { onAction(MainScreenAction.OnDismissEventDialog) },
-            containerColor = MaterialTheme.colorScheme.surface,
-        ) {
-            AddGameEvent(
-                ui = eventDialogState.data,
-                windowSize = windowSize,
-                onStartPollingTap = { from, to ->
-                    onAction(MainScreenAction.OnEventSaveTap(dateTimeFrom = from, dateTimeTo = to))
-                    onAction(MainScreenAction.OnDismissEventDialog)
-                }
-            )
-        }
-    }
 
     if (confirmInviteDialogState is UiState.Normal<String>) {
         ConfirmationDialog(

@@ -43,7 +43,7 @@
     <string name="event_save_failed">Failed to save event</string>
     <string name="new_game_event">New game event</string>
     <string name="greeting_text">Welcome back, %s!</string>
-    <string name="create_new_event">Create new game event for date: $1%s.$2%s.$3%s</string>
+    <string name="create_new_event">Create new game event for date: %s</string>
     <string name="from_to_time_warning">If time \'To\' less then time \'From\', event will be scheduled on next day</string>
     <string name="schedule_event">Schedule event</string>
     <string name="time_from_not_set">Time from not set</string>

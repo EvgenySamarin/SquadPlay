@@ -9,16 +9,14 @@ import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.models.CalendarUI
-import com.eysamarin.squadplay.models.CalendarUI.Date
+import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
-import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.MainScreenUI
-import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.Route.Auth
-import com.eysamarin.squadplay.models.Route.Profile
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.navigation.Destination
+import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -33,12 +31,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 class MainScreenViewModel(
+    private val navigator: Navigator,
     private val calendarUIProvider: CalendarUIProvider,
     private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
@@ -48,9 +45,6 @@ class MainScreenViewModel(
     private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
-    val navigationFlow = navigationChannel.receiveAsFlow()
-
     private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
     val snackbarFlow = snackbarChannel.receiveAsFlow()
 
@@ -59,9 +53,6 @@ class MainScreenViewModel(
 
     private val _inviteGroupIdState = MutableStateFlow<String?>(null)
     val inviteGroupIdState = _inviteGroupIdState.asStateFlow()
-
-    private val _eventDialogState = MutableStateFlow<UiState<EventDialogUI>>(UiState.Empty)
-    val eventDialogState = _eventDialogState.asStateFlow()
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
@@ -78,7 +69,7 @@ class MainScreenViewModel(
         profileProvider.getUserInfoFlow()
             .onEach {
                 if (it == null) {
-                    navigationChannel.send(NavAction.NavigateTo(Auth.route))
+                    navigator.navigate(Destination.AuthScreen)
                 }
             }
             .filterNotNull()
@@ -165,7 +156,7 @@ class MainScreenViewModel(
         Log.d("TAG", "onLogOutTap")
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
-            navigationChannel.send(NavAction.NavigateTo(Auth.route))
+            navigator.navigate(Destination.AuthScreen)
         } else {
             Log.d("TAG", "cannot log out")
         }
@@ -173,7 +164,7 @@ class MainScreenViewModel(
 
     fun onAvatarTap() = viewModelScope.launch {
         Log.d("TAG", "onAvatarTap")
-        navigationChannel.send(NavAction.NavigateTo(Profile.route))
+        navigator.navigate(Destination.ProfileScreen)
     }
 
     fun onNextMonthTap(nextMonth: YearMonth) = viewModelScope.launch {
@@ -203,46 +194,6 @@ class MainScreenViewModel(
         calendarUIState.emit(updatedCalendarUI)
     }
 
-    fun dismissEventDialog() = viewModelScope.launch {
-        Log.d("TAG", "dismissEventDialog")
-
-        _eventDialogState.emit(UiState.Empty)
-    }
-
-    fun onEventSaveTap(
-        dateTimeFrom: LocalDateTime,
-        dateTimeTo: LocalDateTime,
-    ) = viewModelScope.launch {
-        Log.d("TAG", "onEventSaveTap for dates: $dateTimeFrom - $dateTimeTo")
-        val currentUser = userInfoState.value ?: run {
-            Log.w("TAG", "currentUser is null cannot save event")
-            return@launch
-        }
-
-        if (currentUser.groups.isEmpty()) {
-            Log.d("TAG", "currentUser has no groups cannot save event")
-            snackbarChannel.send(stringProvider.youHaveNoSquad)
-            return@launch
-        }
-
-        val eventData = Event(
-            uid = UUID.randomUUID().toString(),
-            creatorId = currentUser.uid,
-            groupId = currentUser.groups.first().uid,
-            title = "New event",
-            fromDateTime = dateTimeFrom,
-            toDateTime = dateTimeTo,
-        )
-        val isSuccess = eventProvider.saveEventData(eventData)
-        snackbarChannel.send(
-            if (isSuccess) {
-                stringProvider.eventSaved
-            } else {
-                stringProvider.eventSaveFailed
-            }
-        )
-    }
-
     fun onAddGameEventTap() = viewModelScope.launch {
         Log.d("TAG", "onAddGameEventTap show polling dialog state")
 
@@ -254,10 +205,10 @@ class MainScreenViewModel(
             return@launch
         }
 
-        _eventDialogState.emit(UiState.Normal(EventDialogUI(
+        navigator.navigate(Destination.NewEventScreen(
             selectedDate = selectedDate,
-            yearMonth = calendarUi.yearMonth
-        )))
+//            yearMonth = calendarUi.yearMonth,
+        ))
     }
 
     fun onJoinGroupDeepLinkRetrieved(inviteGroupId: String?) = viewModelScope.launch {

@@ -25,7 +25,11 @@ import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProviderImpl
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.domain.resource.StringProviderImpl
+import com.eysamarin.squadplay.navigation.DefaultNavigator
+import com.eysamarin.squadplay.navigation.Destination
+import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
+import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
 import com.eysamarin.squadplay.screens.main.MainScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
@@ -91,8 +95,10 @@ class SquadPlayApplication : Application() {
         //endregion
 
         //region presentation
+        single<Navigator> { DefaultNavigator(startDestination = Destination.AuthGraph) }
         viewModelOf(::LaunchApplicationViewModel)
         viewModelOf(::MainScreenViewModel)
+        viewModelOf(::NewEventScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
         viewModelOf(::RegistrationScreenViewModel)
         viewModelOf(::ProfileScreenViewModel)
