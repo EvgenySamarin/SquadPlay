@@ -28,8 +28,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.models.MainScreenAction
-import com.eysamarin.squadplay.models.MainScreenUI
+import com.eysamarin.squadplay.models.HomeScreenAction
+import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
@@ -53,19 +53,19 @@ import com.eysamarin.squadplay.utils.WearLightModePreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
-    state: UiState<MainScreenUI>,
+fun HomeScreen(
+    state: UiState<HomeScreenUI>,
     confirmInviteDialogState: UiState<String> = UiState.Empty,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
-    onAction: (MainScreenAction) -> Unit,
+    onAction: (HomeScreenAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { },
                 actions = {
-                    IconButton(onClick = { onAction(MainScreenAction.OnLogOutTap) }) {
+                    IconButton(onClick = { onAction(HomeScreenAction.OnLogOutTap) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_exit_to_app_24),
                             contentDescription = stringResource(R.string.content_description_log_out),
@@ -81,7 +81,7 @@ fun MainScreen(
             ) {
                 when (windowSize.widthSizeClass) {
                     WindowWidthSizeClass.Compact,
-                    WindowWidthSizeClass.Medium -> MainScreenMediumLayout(
+                    WindowWidthSizeClass.Medium -> HomeScreenMediumLayout(
                         state, windowSize, onAction
                     )
 
@@ -95,7 +95,7 @@ fun MainScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    onAction(MainScreenAction.OnAddGameEventTap)
+                    onAction(HomeScreenAction.OnAddGameEventTap)
                 },
                 shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
                 containerColor = MaterialTheme.colorScheme.secondary,
@@ -116,20 +116,20 @@ fun MainScreen(
             title = stringResource(R.string.invite_new_friend),
             text = confirmInviteDialogState.data,
             onDismiss = {
-                onAction(MainScreenAction.OnJoinGroupDialogDismiss)
+                onAction(HomeScreenAction.OnJoinGroupDialogDismiss)
             },
             onConfirmTap = {
-                onAction(MainScreenAction.OnJoinGroupDialogConfirm)
+                onAction(HomeScreenAction.OnJoinGroupDialogConfirm)
             }
         )
     }
 }
 
 @Composable
-private fun MainScreenMediumLayout(
-    state: UiState<MainScreenUI>,
+private fun HomeScreenMediumLayout(
+    state: UiState<HomeScreenUI>,
     windowSize: WindowSizeClass,
-    onAction: (MainScreenAction) -> Unit = {},
+    onAction: (HomeScreenAction) -> Unit = {},
 ) {
     if (state !is UiState.Normal) return
 
@@ -139,16 +139,16 @@ private fun MainScreenMediumLayout(
             .fillMaxSize()
     ) {
         GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
-            onAction(MainScreenAction.OnAvatarTap)
+            onAction(HomeScreenAction.OnAvatarTap)
         })
         LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item {
                 Calendar(
                     ui = state.data.calendarUI,
                     windowSize = windowSize,
-                    onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
-                    onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) },
-                    onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
+                    onPreviousMonthTap = { onAction(HomeScreenAction.OnPrevMonthTap(it)) },
+                    onNextMonthTap = { onAction(HomeScreenAction.OnNextMonthTap(it)) },
+                    onDateTap = { onAction(HomeScreenAction.OnDateTap(it)) }
                 )
             }
             item {
@@ -162,7 +162,7 @@ private fun MainScreenMediumLayout(
                     Event(
                         windowSize = windowSize,
                         ui = item,
-                        onDeleteEventTap = { onAction(MainScreenAction.OnDeleteEventTap(item.eventId)) },
+                        onDeleteEventTap = { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) },
                     )
                 }
             }
@@ -172,9 +172,9 @@ private fun MainScreenMediumLayout(
 
 @Composable
 private fun MainScreenExpandedLayout(
-    state: UiState<MainScreenUI>,
+    state: UiState<HomeScreenUI>,
     windowSize: WindowSizeClass,
-    onAction: (MainScreenAction) -> Unit = {},
+    onAction: (HomeScreenAction) -> Unit = {},
 ) {
     if (state !is UiState.Normal) return
 
@@ -189,16 +189,16 @@ private fun MainScreenExpandedLayout(
                 Calendar(
                     ui = state.data.calendarUI,
                     windowSize = windowSize,
-                    onPreviousMonthTap = { onAction(MainScreenAction.OnPrevMonthTap(it)) },
-                    onNextMonthTap = { onAction(MainScreenAction.OnNextMonthTap(it)) },
-                    onDateTap = { onAction(MainScreenAction.OnDateTap(it)) }
+                    onPreviousMonthTap = { onAction(HomeScreenAction.OnPrevMonthTap(it)) },
+                    onNextMonthTap = { onAction(HomeScreenAction.OnNextMonthTap(it)) },
+                    onDateTap = { onAction(HomeScreenAction.OnDateTap(it)) }
                 )
             }
 
         }
         Column(modifier = Modifier.weight(1f)) {
             GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
-                onAction(MainScreenAction.OnAvatarTap)
+                onAction(HomeScreenAction.OnAvatarTap)
             })
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
 
@@ -207,7 +207,7 @@ private fun MainScreenExpandedLayout(
                     Event(
                         windowSize = windowSize,
                         ui = item,
-                        onDeleteEventTap = { onAction(MainScreenAction.OnDeleteEventTap(item.eventId)) },
+                        onDeleteEventTap = { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) },
                     )
                 }
             }
@@ -250,9 +250,9 @@ private fun GreetingBar(
 @PhoneDarkModePreview
 @PhoneLightModePreview
 @Composable
-fun MainScreenPhonePreview() {
+fun HomeScreenPhonePreview() {
     SquadPlayTheme {
-        MainScreen(
+        HomeScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             onAction = {},
         )
@@ -262,9 +262,9 @@ fun MainScreenPhonePreview() {
 @TabletDarkModePreview
 @TabletLightModePreview
 @Composable
-fun MainScreenTabletPreview() {
+fun HomeScreenTabletPreview() {
     SquadPlayTheme {
-        MainScreen(
+        HomeScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_EXPANDED,
             onAction = {},
@@ -275,9 +275,9 @@ fun MainScreenTabletPreview() {
 @WearDarkModePreview
 @WearLightModePreview
 @Composable
-fun MainScreenWearPreview() {
+fun HomeScreenWearPreview() {
     SquadPlayTheme {
-        MainScreen(
+        HomeScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_COMPACT,
             onAction = {},

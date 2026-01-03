@@ -12,6 +12,7 @@
     <string name="select_time">Укажите время</string>
     <string name="from">Стартуем</string>
     <string name="to">Расходимся</string>
+    <string name="press_again_to_exit">Нажмите еще раз для выхода</string>
     <!-- endregion -->
 
     <!-- region auth screen -->

@@ -107,7 +107,7 @@ class ProfileScreenViewModel(
         Log.d("TAG", "onLogOutTap")
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
-            navigator.navigate(Destination.AuthScreen)
+            navigator.navigateToAuthGraph()
         } else {
             Log.d("TAG", "cannot log out")
         }

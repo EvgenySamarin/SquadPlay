@@ -29,7 +29,7 @@ class AuthScreenViewModel(
         val isUserExists = authProvider.isUserExists()
 
         if (isUserExists) {
-            navigator.navigate(destination = Destination.HomeScreen())
+            navigator.navigateToHomeGraph()
         }
     }
 
@@ -37,7 +37,7 @@ class AuthScreenViewModel(
         Log.d("TAG", "onSignUpTap")
         val isSuccess = authProvider.signInWithGoogle()
         if (isSuccess) {
-            navigator.navigate(destination = Destination.HomeScreen())
+            navigator.navigateToHomeGraph()
         } else {
             snackbarChannel.send(stringProvider.cannotSignText)
             Log.d("TAG", "cannot sign in")
@@ -58,7 +58,7 @@ class AuthScreenViewModel(
                 snackbarChannel.send(signInState.description)
             }
 
-            is UiState.Normal<*> -> navigator.navigate(Destination.HomeScreen())
+            is UiState.Normal<*> -> navigator.navigateToHomeGraph()
         }
     }
 

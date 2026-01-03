@@ -2,16 +2,22 @@
 
 package com.eysamarin.squadplay.navigation
 
+import android.app.Activity
 import android.content.Intent
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,9 +28,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.Date
-import com.eysamarin.squadplay.models.MainScreenAction
+import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.RegistrationScreenAction
@@ -33,14 +40,15 @@ import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreen
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
-import com.eysamarin.squadplay.screens.main.MainScreen
-import com.eysamarin.squadplay.screens.main.MainScreenViewModel
+import com.eysamarin.squadplay.screens.main.HomeScreen
+import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreen
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreen
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -76,6 +84,8 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
             composable<Destination.AuthScreen> {
                 val viewModel: AuthScreenViewModel = koinViewModel()
                 val snackbarHostState = remember { SnackbarHostState() }
+
+                RootScreenBackHandler(snackbarHostState = snackbarHostState)
 
                 AuthScreen(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -134,7 +144,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                     }
                 ),
             ) { entry ->
-                val viewModel: MainScreenViewModel = koinViewModel()
+                val viewModel: HomeScreenViewModel = koinViewModel()
 
                 val groupId = remember { entry.arguments?.getString("inviteGroupID") }
                 LaunchedEffect(groupId) {
@@ -145,26 +155,28 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
                 val snackbarHostState = remember { SnackbarHostState() }
 
-                MainScreen(
+                RootScreenBackHandler(snackbarHostState = snackbarHostState)
+
+                HomeScreen(
                     state = uiState,
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     confirmInviteDialogState = confirmInviteDialogState,
                     windowSize = windowSize,
                     onAction = { action ->
                         when (action) {
-                            is MainScreenAction.OnDateTap -> viewModel.onDateTap(action.date)
-                            is MainScreenAction.OnNextMonthTap -> viewModel.onNextMonthTap(action.yearMonth)
-                            is MainScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
-                            MainScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
-                            MainScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
-                            MainScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
-                            MainScreenAction.OnJoinGroupDialogConfirm -> {
+                            is HomeScreenAction.OnDateTap -> viewModel.onDateTap(action.date)
+                            is HomeScreenAction.OnNextMonthTap -> viewModel.onNextMonthTap(action.yearMonth)
+                            is HomeScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
+                            HomeScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
+                            HomeScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
+                            HomeScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
+                            HomeScreenAction.OnJoinGroupDialogConfirm -> {
                                 viewModel.onJoinGroupDialogConfirm()
                                 viewModel.onJoinGroupDialogDismiss()
                             }
 
-                            MainScreenAction.OnJoinGroupDialogDismiss -> viewModel.onJoinGroupDialogDismiss()
-                            is MainScreenAction.OnDeleteEventTap -> viewModel.onDeleteEventTap(action.eventId)
+                            HomeScreenAction.OnJoinGroupDialogDismiss -> viewModel.onJoinGroupDialogDismiss()
+                            is HomeScreenAction.OnDeleteEventTap -> viewModel.onDeleteEventTap(action.eventId)
                         }
                     }
                 )
@@ -237,6 +249,28 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                     viewModel.hideShareLink()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RootScreenBackHandler(
+    snackbarHostState: SnackbarHostState,
+) {
+    val message = stringResource(R.string.press_again_to_exit)
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var backPressedTime by remember { mutableLongStateOf(0L) }
+
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime > 2000L) {
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+            }
+        } else {
+            (context as? Activity)?.finish()
         }
     }
 }

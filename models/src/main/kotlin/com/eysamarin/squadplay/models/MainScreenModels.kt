@@ -5,19 +5,19 @@ import java.time.LocalDateTime
 import java.time.YearMonth
 import java.util.UUID
 
-sealed interface MainScreenAction {
-    object OnAddGameEventTap : MainScreenAction
-    object OnLogOutTap : MainScreenAction
-    object OnAvatarTap : MainScreenAction
-    object OnJoinGroupDialogDismiss : MainScreenAction
-    object OnJoinGroupDialogConfirm : MainScreenAction
-    class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
-    class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
-    class OnDateTap(val date: Date) : MainScreenAction
-    class OnDeleteEventTap(val eventId: String): MainScreenAction
+sealed interface HomeScreenAction {
+    object OnAddGameEventTap : HomeScreenAction
+    object OnLogOutTap : HomeScreenAction
+    object OnAvatarTap : HomeScreenAction
+    object OnJoinGroupDialogDismiss : HomeScreenAction
+    object OnJoinGroupDialogConfirm : HomeScreenAction
+    class OnPrevMonthTap(val yearMonth: YearMonth) : HomeScreenAction
+    class OnNextMonthTap(val yearMonth: YearMonth) : HomeScreenAction
+    class OnDateTap(val date: Date) : HomeScreenAction
+    class OnDeleteEventTap(val eventId: String): HomeScreenAction
 }
 
-data class MainScreenUI(
+data class HomeScreenUI(
     val user: User,
     val calendarUI: CalendarUI,
     val gameEventsOnDate: List<EventUI> = emptyList(),
@@ -158,7 +158,7 @@ val PREVIEW_EVENTS = listOf(
     ),
 )
 
-val PREVIEW_MAIN_SCREEN_UI = MainScreenUI(
+val PREVIEW_MAIN_SCREEN_UI = HomeScreenUI(
     user = PREVIEW_USER,
     calendarUI = PREVIEW_CALENDAR_UI
 )

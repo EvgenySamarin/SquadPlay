@@ -30,7 +30,7 @@ import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
-import com.eysamarin.squadplay.screens.main.MainScreenViewModel
+import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.utils.hideSensitiveInLogs
@@ -97,7 +97,7 @@ class SquadPlayApplication : Application() {
         //region presentation
         single<Navigator> { DefaultNavigator(startDestination = Destination.AuthGraph) }
         viewModelOf(::LaunchApplicationViewModel)
-        viewModelOf(::MainScreenViewModel)
+        viewModelOf(::HomeScreenViewModel)
         viewModelOf(::NewEventScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
         viewModelOf(::RegistrationScreenViewModel)

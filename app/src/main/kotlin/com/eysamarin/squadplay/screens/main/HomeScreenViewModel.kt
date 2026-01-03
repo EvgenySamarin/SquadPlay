@@ -12,7 +12,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventUI
-import com.eysamarin.squadplay.models.MainScreenUI
+import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.navigation.Destination
@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-class MainScreenViewModel(
+class HomeScreenViewModel(
     private val navigator: Navigator,
     private val calendarUIProvider: CalendarUIProvider,
     private val eventProvider: EventProvider,
@@ -42,7 +42,7 @@ class MainScreenViewModel(
     private val profileProvider: ProfileProvider,
     private val stringProvider: StringProvider,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
+    private val _uiState = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
     private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
@@ -140,7 +140,7 @@ class MainScreenViewModel(
                 Log.d("TAG", "updateMainScreenUI")
                 _uiState.emit(
                     UiState.Normal(
-                        MainScreenUI(
+                        HomeScreenUI(
                             user = userInfo,
                             calendarUI = calendar,
                             gameEventsOnDate = eventsBySelectedDate
@@ -156,7 +156,7 @@ class MainScreenViewModel(
         Log.d("TAG", "onLogOutTap")
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
-            navigator.navigate(Destination.AuthScreen)
+            navigator.navigateToAuthGraph()
         } else {
             Log.d("TAG", "cannot log out")
         }
