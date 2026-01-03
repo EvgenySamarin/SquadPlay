@@ -72,11 +72,10 @@ fun NewEventScreen(
             )
         },
         content = { innerPadding ->
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                contentAlignment = Alignment.Center,
             ) {
                 when (windowSize.widthSizeClass) {
                     WindowWidthSizeClass.Expanded,
@@ -113,7 +112,7 @@ private fun NewEventScreenMediumLayout(
 
     Column(
         modifier = Modifier
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val format = DecimalFormat("00")
