@@ -4,13 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.navigation.NavType
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
-import java.time.YearMonth
 
 
 /**
@@ -35,20 +29,5 @@ inline fun <reified T> serializableNavType(serializer: KSerializer<T>): NavType<
         override fun serializeAsValue(value: T): String {
             return Uri.encode(Json.encodeToString(serializer, value))
         }
-    }
-}
-
-object YearMonthSerializer : KSerializer<YearMonth> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
-        serialName = "YearMonth",
-        kind = PrimitiveKind.STRING
-    )
-
-    override fun serialize(encoder: Encoder, value: YearMonth) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): YearMonth {
-        return YearMonth.parse(decoder.decodeString())
     }
 }

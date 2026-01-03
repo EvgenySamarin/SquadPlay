@@ -207,7 +207,7 @@ class MainScreenViewModel(
 
         navigator.navigate(Destination.NewEventScreen(
             selectedDate = selectedDate,
-//            yearMonth = calendarUi.yearMonth,
+            yearMonth = calendarUi.yearMonth.toString(),
         ))
     }
 

@@ -3,6 +3,7 @@
 package com.eysamarin.squadplay.navigation
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -177,13 +178,12 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
             composable<Destination.NewEventScreen>(
                 typeMap = mapOf(
                     typeOf<Date>() to Destination.NewEventScreen.CustomNavType.DateType,
-//                    typeOf<YearMonth>() to Destination.NewEventScreen.CustomNavType.YearMonthType,
                 )
             ) { backStackEntry ->
                 val viewModel: NewEventScreenViewModel = koinViewModel()
                 val args = backStackEntry.toRoute<Destination.NewEventScreen>()
-                viewModel.updateSelectedDate(args.selectedDate)
-//                Log.d("TAG", "yearMonthJsonFlow: ${args.yearMonth}")
+                viewModel.updateSelectedDate(args)
+                Log.d("TAG", "yearMonthJsonFlow: ${args.yearMonth}")
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val snackbarHostState = remember { SnackbarHostState() }

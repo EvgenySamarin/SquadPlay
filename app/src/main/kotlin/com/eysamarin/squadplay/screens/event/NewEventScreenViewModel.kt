@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
-import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.NewEventScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -39,14 +38,14 @@ class NewEventScreenViewModel(
     val snackbarFlow = snackbarChannel.receiveAsFlow()
 
     private val userInfoState = MutableStateFlow<User?>(null)
-    private val selectedDateState = MutableStateFlow<Date?>(null)
+    private val navigationArgsState = MutableStateFlow<Destination.NewEventScreen?>(null)
 
     init {
         collectInitScreenData()
     }
 
-    fun updateSelectedDate(date: Date) = viewModelScope.launch {
-        selectedDateState.value = date
+    fun updateSelectedDate(args: Destination.NewEventScreen) = viewModelScope.launch {
+        navigationArgsState.value = args
     }
 
     private fun collectInitScreenData() {
@@ -63,14 +62,14 @@ class NewEventScreenViewModel(
             }
             .launchIn(viewModelScope)
 
-        selectedDateState
+        navigationArgsState
             .filterNotNull()
-            .onEach {
+            .onEach { args ->
                 _uiState.value = UiState.Normal(
                     NewEventScreenUI(
                         title = "new event screen",
-                        selectedDate = it,
-                        yearMonth = YearMonth.now(),
+                        selectedDate = args.selectedDate,
+                        yearMonth = YearMonth.parse(args.yearMonth),
                     )
                 )
             }

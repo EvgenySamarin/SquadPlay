@@ -32,11 +32,10 @@ sealed interface Destination {
     @Serializable
     data class NewEventScreen(
         val selectedDate: Date,
-//        val yearMonth: YearMonth,
+        val yearMonth: String,
     ): Destination {
         object CustomNavType {
             val DateType = serializableNavType(serializer<Date>())
-//            val YearMonthType = serializableNavType(YearMonthSerializer)
         }
     }
 }
