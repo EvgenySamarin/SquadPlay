@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
+import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
@@ -62,5 +63,13 @@ class AuthScreenViewModel(
     fun onSignUpTap() = viewModelScope.launch {
         Log.d("TAG", "onSignUpTap")
         navigator.navigate(Destination.RegistrationScreen)
+    }
+
+    fun onAction(action: AuthScreenAction) {
+        when (action) {
+            AuthScreenAction.OnSignInWithGoogleTap -> onSignInWithGoogleTap()
+            is AuthScreenAction.OnSignInTap -> onSignInTap(action.email, action.password)
+            AuthScreenAction.OnSignUpTap -> onSignUpTap()
+        }
     }
 }

@@ -13,6 +13,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventUI
+import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
@@ -252,6 +253,24 @@ class HomeScreenViewModel(
             } else {
                 Log.w("TAG", "failed to delete event")
             }
+        }
+    }
+
+    fun onAction(action: HomeScreenAction) {
+        when (action) {
+            is HomeScreenAction.OnDateTap -> onDateTap(action.date)
+            is HomeScreenAction.OnNextMonthTap -> onNextMonthTap(action.yearMonth)
+            is HomeScreenAction.OnPrevMonthTap -> onPreviousMonthTap(action.yearMonth)
+            HomeScreenAction.OnAddGameEventTap -> onAddGameEventTap()
+            HomeScreenAction.OnLogOutTap -> onLogOutTap()
+            HomeScreenAction.OnAvatarTap -> onAvatarTap()
+            HomeScreenAction.OnJoinGroupDialogConfirm -> {
+                onJoinGroupDialogConfirm()
+                onJoinGroupDialogDismiss()
+            }
+
+            HomeScreenAction.OnJoinGroupDialogDismiss -> onJoinGroupDialogDismiss()
+            is HomeScreenAction.OnDeleteEventTap -> onDeleteEventTap(action.eventId)
         }
     }
 

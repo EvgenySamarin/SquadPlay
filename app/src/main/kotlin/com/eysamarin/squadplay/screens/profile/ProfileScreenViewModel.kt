@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.Friend
+import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
@@ -116,5 +117,14 @@ class ProfileScreenViewModel(
     fun onSettingsTap() = viewModelScope.launch {
         Log.d("TAG", "onSettingsTap")
         navigator.navigate(Destination.SettingsScreen)
+    }
+
+    fun onAction(action: ProfileScreenAction) {
+        when (action) {
+            ProfileScreenAction.OnBackButtonTap -> onBackButtonTap()
+            ProfileScreenAction.OnCreateInviteLinkTap -> onCreateInviteGroupLinkTap()
+            ProfileScreenAction.OnLogOutTap -> onLogOutTap()
+            ProfileScreenAction.OnSettingsTap -> onSettingsTap()
+        }
     }
 }

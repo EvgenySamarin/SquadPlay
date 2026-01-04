@@ -8,6 +8,7 @@ import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.NewEventScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
@@ -110,5 +111,15 @@ class NewEventScreenViewModel(
                 stringProvider.eventSaveFailed
             }
         )
+    }
+
+    fun onAction(action: NewEventScreenAction) {
+        when (action) {
+            NewEventScreenAction.OnBackButtonTap -> onBackButtonTap()
+            is NewEventScreenAction.OnEventSaveTap -> onEventSaveTap(
+                dateTimeFrom = action.timeFrom,
+                dateTimeTo = action.timeTo,
+            )
+        }
     }
 }

@@ -29,12 +29,7 @@ import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.messaging.SnackbarProvider
-import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.Date
-import com.eysamarin.squadplay.models.HomeScreenAction
-import com.eysamarin.squadplay.models.NewEventScreenAction
-import com.eysamarin.squadplay.models.ProfileScreenAction
-import com.eysamarin.squadplay.models.RegistrationScreenAction
 import com.eysamarin.squadplay.models.SettingsScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
@@ -96,17 +91,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 AuthScreen(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     windowSize = windowSize,
-                    onAction = {
-                        when (it) {
-                            AuthScreenAction.OnSignInWithGoogleTap -> viewModel.onSignInWithGoogleTap()
-                            is AuthScreenAction.OnSignInTap -> viewModel.onSignInTap(
-                                it.email,
-                                it.password
-                            )
-
-                            AuthScreenAction.OnSignUpTap -> viewModel.onSignUpTap()
-                        }
-                    }
+                    onAction = viewModel::onAction,
                 )
             }
             composable<Destination.RegistrationScreen> {
@@ -115,16 +100,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 RegistrationScreen(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     windowSize = windowSize,
-                    onAction = { action ->
-                        when (action) {
-                            is RegistrationScreenAction.OnConfirmTap -> viewModel.onConfirmTap(
-                                action.email,
-                                action.password
-                            )
-
-                            RegistrationScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
-                        }
-                    }
+                    onAction = viewModel::onAction,
                 )
             }
         }
@@ -154,23 +130,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     confirmInviteDialogState = confirmInviteDialogState,
                     windowSize = windowSize,
-                    onAction = { action ->
-                        when (action) {
-                            is HomeScreenAction.OnDateTap -> viewModel.onDateTap(action.date)
-                            is HomeScreenAction.OnNextMonthTap -> viewModel.onNextMonthTap(action.yearMonth)
-                            is HomeScreenAction.OnPrevMonthTap -> viewModel.onPreviousMonthTap(action.yearMonth)
-                            HomeScreenAction.OnAddGameEventTap -> viewModel.onAddGameEventTap()
-                            HomeScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
-                            HomeScreenAction.OnAvatarTap -> viewModel.onAvatarTap()
-                            HomeScreenAction.OnJoinGroupDialogConfirm -> {
-                                viewModel.onJoinGroupDialogConfirm()
-                                viewModel.onJoinGroupDialogDismiss()
-                            }
-
-                            HomeScreenAction.OnJoinGroupDialogDismiss -> viewModel.onJoinGroupDialogDismiss()
-                            is HomeScreenAction.OnDeleteEventTap -> viewModel.onDeleteEventTap(action.eventId)
-                        }
-                    }
+                    onAction = viewModel::onAction,
                 )
             }
             composable<Destination.NewEventScreen>(
@@ -187,15 +147,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 NewEventScreen(
                     state = uiState,
                     windowSize = windowSize,
-                    onAction = { action ->
-                        when (action) {
-                            NewEventScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
-                            is NewEventScreenAction.OnEventSaveTap -> viewModel.onEventSaveTap(
-                                dateTimeFrom = action.timeFrom,
-                                dateTimeTo = action.timeTo,
-                            )
-                        }
-                    }
+                    onAction = viewModel::onAction,
                 )
             }
             composable<Destination.ProfileScreen> {
@@ -207,15 +159,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 ProfileScreen(
                     state = uiState,
                     windowSize = windowSize,
-                    onAction = { action ->
-
-                        when (action) {
-                            ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
-                            ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteGroupLinkTap()
-                            ProfileScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
-                            ProfileScreenAction.OnSettingsTap -> viewModel.onSettingsTap()
-                        }
-                    }
+                    onAction = viewModel::onAction,
                 )
 
                 if (inviteLinkState is UiState.Normal<String>) {

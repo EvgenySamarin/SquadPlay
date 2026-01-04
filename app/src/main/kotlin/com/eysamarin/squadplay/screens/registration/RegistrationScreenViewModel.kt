@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
+import com.eysamarin.squadplay.models.RegistrationScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
@@ -36,5 +37,12 @@ class RegistrationScreenViewModel(
     fun onBackButtonTap() = viewModelScope.launch {
         Log.d("TAG", "onBackButtonTap")
         navigator.navigateUp()
+    }
+
+    fun onAction(action: RegistrationScreenAction) {
+        when (action) {
+            is RegistrationScreenAction.OnConfirmTap -> onConfirmTap(action.email, action.password)
+            RegistrationScreenAction.OnBackButtonTap -> onBackButtonTap()
+        }
     }
 }
