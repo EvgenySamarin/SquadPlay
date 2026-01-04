@@ -4,7 +4,6 @@ package com.eysamarin.squadplay.navigation
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,6 +34,7 @@ import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.RegistrationScreenAction
+import com.eysamarin.squadplay.models.SettingsScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
@@ -46,6 +46,9 @@ import com.eysamarin.squadplay.screens.profile.ProfileScreen
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreen
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
+import com.eysamarin.squadplay.screens.settings.SettingsScreen
+import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -54,12 +57,6 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlin.reflect.typeOf
 
-/**
- * Here you can define different flags based on windowsSize or just push it further to concrete screen
- *
- * WindowsSize class is no single way to support adaptivity, you also can use the DisplayFeatures
- * from accompanist library
- */
 @Composable
 fun SquadPlayNavigation(windowSize: WindowSizeClass) {
 
@@ -195,7 +192,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 val viewModel: NewEventScreenViewModel = koinViewModel()
                 val args = backStackEntry.toRoute<Destination.NewEventScreen>()
                 viewModel.updateSelectedDate(args)
-                Log.d("TAG", "yearMonthJsonFlow: ${args.yearMonth}")
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val snackbarHostState = remember { SnackbarHostState() }
@@ -206,7 +202,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                     onAction = { action ->
                         when (action) {
                             NewEventScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
-                            is NewEventScreenAction.OnStartPollingTap -> viewModel.onEventSaveTap(
+                            is NewEventScreenAction.OnEventSaveTap -> viewModel.onEventSaveTap(
                                 dateTimeFrom = action.timeFrom,
                                 dateTimeTo = action.timeTo,
                             )
@@ -230,10 +226,12 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                     state = uiState,
                     windowSize = windowSize,
                     onAction = { action ->
+
                         when (action) {
                             ProfileScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
                             ProfileScreenAction.OnCreateInviteLinkTap -> viewModel.onCreateInviteGroupLinkTap()
                             ProfileScreenAction.OnLogOutTap -> viewModel.onLogOutTap()
+                            ProfileScreenAction.OnSettingsTap -> viewModel.onSettingsTap()
                         }
                     }
                 )
@@ -247,6 +245,35 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                     val shareIntent = Intent.createChooser(sendIntent, null)
                     LocalContext.current.startActivity(shareIntent)
                     viewModel.hideShareLink()
+                }
+            }
+            composable<Destination.SettingsScreen> {
+                val viewModel: SettingsScreenViewModel = koinViewModel()
+                val snackbarHostState = remember { SnackbarHostState() }
+
+                val context = LocalContext.current
+                val licensesMenuActivityTitle = stringResource(R.string.settings_screen_licenses_title)
+
+                SettingsScreen(
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                    windowSize = windowSize,
+                    onAction = { action ->
+                        when (action) {
+                            SettingsScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
+                            SettingsScreenAction.OnLicensesTap -> {
+                                OssLicensesMenuActivity.setActivityTitle(licensesMenuActivityTitle)
+                                context.startActivity(
+                                    Intent(context, OssLicensesMenuActivity::class.java)
+                                )
+                            }
+                        }
+                    },
+                )
+
+                LaunchedEffect(Unit) {
+                    viewModel.snackbarFlow.collect {
+                        snackbarHostState.showSnackbar(message = it)
+                    }
                 }
             }
         }

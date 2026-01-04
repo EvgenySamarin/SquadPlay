@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.android.gms.oss.licenses)
 }
 
 android {
@@ -99,6 +100,8 @@ dependencies {
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
     implementation(libs.com.google.firebase.messaging)
+
+    implementation(libs.com.google.android.gms.oss.licenses)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.navigationCompose)

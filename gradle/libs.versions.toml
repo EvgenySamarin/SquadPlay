@@ -64,6 +64,8 @@ com-google-firebase-firestore = { group = "com.google.firebase", name = "firebas
 com-google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 com-google-firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 
+com-google-android-gms-oss-licenses = {group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "comGoogleAndroidGmsOssLicenses"}
+
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
 org-jetbrains-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization"}
 
@@ -74,6 +76,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "googleFirebaseCrashlytics" }
+google-android-gms-oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "googleAndroidGmsOssLicenses" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-
