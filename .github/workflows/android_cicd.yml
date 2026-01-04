@@ -2,9 +2,11 @@ name: Android CI/CD
 
 on:
   push:
-    branches: [ "develop", "master" ]
+    branches:
+      - 'trunk'
+      - 'feature/**'
   pull_request:
-    branches: [ "develop", "master" ]
+    branches: [ 'trunk' ]
 
 jobs:
   build:
@@ -44,7 +46,7 @@ jobs:
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
 
       - name: Create Release Notes
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
@@ -53,7 +55,7 @@ jobs:
           echo "$COMMIT_MESSAGE" > whatsnew/en-US/default.txt
 
       - name: Upload to Firebase App Distribution (Internal)
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        if: startsWith(github.ref, 'refs/heads/feature/') && github.event_name == 'push'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
@@ -62,7 +64,7 @@ jobs:
           groups: internal-testers
 
       - name: Upload to Firebase App Distribution (Beta)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
@@ -72,7 +74,7 @@ jobs:
           releaseNotesFile: release_notes.txt
 
       - name: Deploy to Google Play Internal Testing
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}
