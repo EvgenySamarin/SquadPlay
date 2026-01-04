@@ -4,21 +4,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
-import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.Route
+import com.eysamarin.squadplay.messaging.SnackbarProvider
+import com.eysamarin.squadplay.models.RegistrationScreenAction
 import com.eysamarin.squadplay.models.UiState
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import com.eysamarin.squadplay.navigation.Destination
+import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.launch
 
 class RegistrationScreenViewModel(
+    private val navigator: Navigator,
+    private val snackbar: SnackbarProvider,
     private val authProvider: AuthProvider,
 ) : ViewModel() {
-    private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
-    val navigationFlow = navigationChannel.receiveAsFlow()
-
-    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
-    val snackbarFlow = snackbarChannel.receiveAsFlow()
 
     fun onConfirmTap(email: String, password: String) = viewModelScope.launch {
         Log.d("TAG", "onConfirmTap")
@@ -30,15 +27,22 @@ class RegistrationScreenViewModel(
 
             is UiState.Error -> {
                 Log.w("TAG", signUpState.description)
-                snackbarChannel.send(signUpState.description)
+                snackbar.showMessage(signUpState.description)
             }
 
-            is UiState.Normal<*> -> navigationChannel.send(NavAction.NavigateTo(Route.Auth.route))
+            is UiState.Normal<*> -> navigator.navigate(Destination.AuthScreen)
         }
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
         Log.d("TAG", "onBackButtonTap")
-        navigationChannel.send(NavAction.NavigateBack)
+        navigator.navigateUp()
+    }
+
+    fun onAction(action: RegistrationScreenAction) {
+        when (action) {
+            is RegistrationScreenAction.OnConfirmTap -> onConfirmTap(action.email, action.password)
+            RegistrationScreenAction.OnBackButtonTap -> onBackButtonTap()
+        }
     }
 }

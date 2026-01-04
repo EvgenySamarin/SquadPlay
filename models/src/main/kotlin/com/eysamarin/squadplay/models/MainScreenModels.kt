@@ -1,29 +1,23 @@
 package com.eysamarin.squadplay.models
 
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
-import java.time.Month
 import java.time.YearMonth
 import java.util.UUID
 
-sealed interface MainScreenAction {
-    object OnDismissEventDialog : MainScreenAction
-    object OnAddGameEventTap : MainScreenAction
-    object OnLogOutTap : MainScreenAction
-    object OnAvatarTap : MainScreenAction
-    object OnJoinGroupDialogDismiss : MainScreenAction
-    object OnJoinGroupDialogConfirm : MainScreenAction
-
-    class OnEventSaveTap(
-        val dateTimeFrom: LocalDateTime,
-        val dateTimeTo: LocalDateTime,
-    ) : MainScreenAction
-    class OnPrevMonthTap(val yearMonth: YearMonth) : MainScreenAction
-    class OnNextMonthTap(val yearMonth: YearMonth) : MainScreenAction
-    class OnDateTap(val date: CalendarUI.Date) : MainScreenAction
-    class OnDeleteEventTap(val eventId: String): MainScreenAction
+sealed interface HomeScreenAction {
+    object OnAddGameEventTap : HomeScreenAction
+    object OnLogOutTap : HomeScreenAction
+    object OnAvatarTap : HomeScreenAction
+    object OnJoinGroupDialogDismiss : HomeScreenAction
+    object OnJoinGroupDialogConfirm : HomeScreenAction
+    class OnPrevMonthTap(val yearMonth: YearMonth) : HomeScreenAction
+    class OnNextMonthTap(val yearMonth: YearMonth) : HomeScreenAction
+    class OnDateTap(val date: Date) : HomeScreenAction
+    class OnDeleteEventTap(val eventId: String): HomeScreenAction
 }
 
-data class MainScreenUI(
+data class HomeScreenUI(
     val user: User,
     val calendarUI: CalendarUI,
     val gameEventsOnDate: List<EventUI> = emptyList(),
@@ -33,30 +27,26 @@ data class CalendarUI(
     val daysOfWeek: List<String>,
     val yearMonth: YearMonth,
     val dates: List<Date>
+)
+
+@Serializable
+data class Date(
+    val dayOfMonth: Int? = null,
+    val monthNumber: Int? = null,
+    val countEvents: Int,
+    val isSelected: Boolean,
+    val enabled: Boolean,
 ) {
-    data class Date(
-        val dayOfMonth: Int? = null,
-        val month: Month? = null,
-        val countEvents: Int,
-        val isSelected: Boolean,
-        val enabled: Boolean,
-    ) {
-        companion object {
-            val Empty = Date(
-                dayOfMonth = null,
-                month = null,
-                countEvents = 0,
-                isSelected = false,
-                enabled = false,
-            )
-        }
+    companion object {
+        val Empty = Date(
+            dayOfMonth = null,
+            monthNumber = null,
+            countEvents = 0,
+            isSelected = false,
+            enabled = false,
+        )
     }
 }
-
-data class EventDialogUI(
-    val selectedDate: CalendarUI.Date,
-    val yearMonth: YearMonth,
-)
 
 data class TimePickerUI(
     val currentTarget: DialPickerTarget = DialPickerTarget.FROM,
@@ -88,61 +78,45 @@ data class EventUI(
     val isYourEvent: Boolean = false,
 )
 
-val PREVIEW_TIME_PICKER_UI = TimePickerUI(
-    currentTarget = DialPickerTarget.FROM,
-    timeFrom = LocalDateTime.of(2025, 4, 1, 12, 0),
-    timeTo = LocalDateTime.of(2025, 4, 1, 14, 15),
-)
-
-val PREVIEW_POLLING_DIALOG_UI = EventDialogUI(
-    selectedDate = CalendarUI.Date(
-        dayOfMonth = 6,
-        countEvents = 4,
-        enabled = true,
-        isSelected = true,
-    ),
-    yearMonth = YearMonth.now()
-)
-
 val PREVIEW_CALENDAR_UI = CalendarUI(
     daysOfWeek = listOf("Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"),
     yearMonth = YearMonth.now(),
     dates = listOf(
-        CalendarUI.Date(1, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(2, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(3, Month.DECEMBER, 1, false, true),
-        CalendarUI.Date(4, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(5, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(6, Month.DECEMBER, 5, true, true),
-        CalendarUI.Date(7, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(8, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(9, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(10, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(11, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(12, Month.DECEMBER, 3, false, true),
-        CalendarUI.Date(13, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(14, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(15, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(16, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(17, Month.DECEMBER, 2, false, true),
-        CalendarUI.Date(18, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(19, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(20, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(21, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(22, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(23, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(24, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(25, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(26, Month.DECEMBER, 5, false, true),
-        CalendarUI.Date(27, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(28, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(29, Month.DECEMBER, 1, false, true),
-        CalendarUI.Date(30, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(31, Month.DECEMBER, 0, false, true),
-        CalendarUI.Date(1, Month.JANUARY, 0, false, false),
-        CalendarUI.Date(2, Month.JANUARY, 0, false, false),
-        CalendarUI.Date(3, Month.JANUARY, 1, false, false),
-        CalendarUI.Date(4, Month.JANUARY, 0, false, false),
+        Date(1, 12, 0, isSelected = false, enabled = true),
+        Date(2, 12, 0, isSelected = false, enabled = true),
+        Date(3, 12, 1, isSelected = false, enabled = true),
+        Date(4, 12, 0, isSelected = false, enabled = true),
+        Date(5, 12, 0, isSelected = false, enabled = true),
+        Date(6, 12, 5, isSelected = true, enabled = true),
+        Date(7, 12, 0, isSelected = false, enabled = true),
+        Date(8, 12, 0, isSelected = false, enabled = true),
+        Date(9, 12, 0, isSelected = false, enabled = true),
+        Date(10, 12, 0, isSelected = false, enabled = true),
+        Date(11, 12, 0, isSelected = false, enabled = true),
+        Date(12, 12, 3, isSelected = false, enabled = true),
+        Date(13, 12, 0, isSelected = false, enabled = true),
+        Date(14, 12, 0, isSelected = false, enabled = true),
+        Date(15, 12, 0, isSelected = false, enabled = true),
+        Date(16, 12, 0, isSelected = false, enabled = true),
+        Date(17, 12, 2, isSelected = false, enabled = true),
+        Date(18, 12, 0, isSelected = false, enabled = true),
+        Date(19, 12, 0, isSelected = false, enabled = true),
+        Date(20, 12, 0, isSelected = false, enabled = true),
+        Date(21, 12, 0, isSelected = false, enabled = true),
+        Date(22, 12, 0, isSelected = false, enabled = true),
+        Date(23, 12, 0, isSelected = false, enabled = true),
+        Date(24, 12, 0, isSelected = false, enabled = true),
+        Date(25, 12, 0, isSelected = false, enabled = true),
+        Date(26, 12, 5, isSelected = false, enabled = true),
+        Date(27, 12, 0, isSelected = false, enabled = true),
+        Date(28, 12, 0, isSelected = false, enabled = true),
+        Date(29, 12, 1, isSelected = false, enabled = true),
+        Date(30, 12, 0, isSelected = false, enabled = true),
+        Date(31, 12, 0, isSelected = false, enabled = true),
+        Date(1, 1, 0, isSelected = false, enabled = false),
+        Date(2, 1, 0, isSelected = false, enabled = false),
+        Date(3, 1, 1, isSelected = false, enabled = false),
+        Date(4, 1, 0, isSelected = false, enabled = false),
     ),
 )
 
@@ -184,7 +158,7 @@ val PREVIEW_EVENTS = listOf(
     ),
 )
 
-val PREVIEW_MAIN_SCREEN_UI = MainScreenUI(
+val PREVIEW_MAIN_SCREEN_UI = HomeScreenUI(
     user = PREVIEW_USER,
     calendarUI = PREVIEW_CALENDAR_UI
 )

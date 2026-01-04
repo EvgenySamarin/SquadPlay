@@ -14,6 +14,7 @@
     <string name="select_time">Select time</string>
     <string name="from">From</string>
     <string name="to">To</string>
+    <string name="press_again_to_exit">Press again to exit</string>
     <!-- endregion -->
 
     <!-- region auth screen -->
@@ -43,7 +44,7 @@
     <string name="event_save_failed">Failed to save event</string>
     <string name="new_game_event">New game event</string>
     <string name="greeting_text">Welcome back, %s!</string>
-    <string name="create_new_event">Create new game event for date: $1%s.$2%s.$3%s</string>
+    <string name="create_new_event">Create new game event for date: %s</string>
     <string name="from_to_time_warning">If time \'To\' less then time \'From\', event will be scheduled on next day</string>
     <string name="schedule_event">Schedule event</string>
     <string name="time_from_not_set">Time from not set</string>
@@ -57,10 +58,16 @@
     <string name="group">Group: %s</string>
     <!-- endregion -->
 
+    <!-- region Settings screen -->
+    <string name="settings_screen_title">About app</string>
+    <string name="settings_screen_licenses_title">Open source licenses</string>
+    <!-- end region -->
+
     <!-- region content description -->
     <string name="content_description_log_out">log out</string>
     <string name="content_description_add_game">Add game event</string>
     <string name="content_description_back">Back</string>
-    <string name="content_desctiption_next">Next</string>
+    <string name="content_description_next">Next</string>
+    <string name="content_description_settings">Settings</string>
     <!-- endregion -->
 </resources>

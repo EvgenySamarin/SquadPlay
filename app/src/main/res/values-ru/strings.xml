@@ -12,6 +12,7 @@
     <string name="select_time">Укажите время</string>
     <string name="from">Стартуем</string>
     <string name="to">Расходимся</string>
+    <string name="press_again_to_exit">Нажмите еще раз для выхода</string>
     <!-- endregion -->
 
     <!-- region auth screen -->
@@ -55,10 +56,16 @@
     <string name="group">Группа: %s</string>
     <!-- endregion -->
 
+    <!-- region Settings screen -->
+    <string name="settings_screen_title">About app</string>
+    <string name="settings_screen_licenses_title">Лицензии</string>
+    <!-- end region -->
+
     <!-- region content description -->
     <string name="content_description_log_out">Выйти из аккаунта</string>
     <string name="content_description_add_game">Добавить игровое событие</string>
     <string name="content_description_back">Назад</string>
-    <string name="content_desctiption_next">Далее</string>
+    <string name="content_description_next">Далее</string>
+    <string name="content_description_settings">Настройки</string>
     <!-- endregion -->
 </resources>

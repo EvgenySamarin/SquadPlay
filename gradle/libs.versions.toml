@@ -8,6 +8,7 @@ android-targetSdk = "36"
 
 agp = "8.13.2"
 kotlin = "2.3.0"
+kotlinxSerialization = "1.9.0"
 orgJetbrainsKotlinxCoroutinesCore = "1.10.2"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -25,6 +26,9 @@ credentials = "1.5.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
 ioCoilKtCoil3Compose = "3.3.0"
 ioCoilKtCoil3NetworkOkHttp = "3.3.0"
+pickTimeCompose = "1.1.5"
+googleAndroidGmsOssLicenses = "0.10.10"
+comGoogleAndroidGmsOssLicenses = "17.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,13 +56,18 @@ androidx-credentials-credentials = { group = "androidx.credentials", name = "cre
 androidx-credentials-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 com-google-android-libraries-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "comGoogleAndroidLibrariesIdentityGoogleid" }
 
+com-github-anhaki-pick-time-compose = { group = "com.github.anhaki", name = "PickTime-Compose", version.ref = "pickTimeCompose" }
+
 com-google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 com-google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 com-google-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 com-google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 com-google-firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 
+com-google-android-gms-oss-licenses = {group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "comGoogleAndroidGmsOssLicenses"}
+
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
+org-jetbrains-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -67,5 +76,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "googleFirebaseCrashlytics" }
+google-android-gms-oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "googleAndroidGmsOssLicenses" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

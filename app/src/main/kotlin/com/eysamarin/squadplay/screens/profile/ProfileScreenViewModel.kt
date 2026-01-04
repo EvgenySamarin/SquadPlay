@@ -6,13 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.Friend
-import com.eysamarin.squadplay.models.NavAction
+import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
-import com.eysamarin.squadplay.models.Route.Auth
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.navigation.Destination
+import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -22,10 +22,10 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class ProfileScreenViewModel(
+    private val navigator: Navigator,
     private val profileProvider: ProfileProvider,
     private val authProvider: AuthProvider,
 ) : ViewModel() {
@@ -34,9 +34,6 @@ class ProfileScreenViewModel(
 
     private val _inviteLinkState = MutableStateFlow<UiState<String>>(UiState.Empty)
     val inviteLinkState = _inviteLinkState.asStateFlow()
-
-    private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
-    val navigationFlow = navigationChannel.receiveAsFlow()
 
     private val userInfoFlow = MutableStateFlow<User?>(null)
     private val userFriendsFlow = MutableStateFlow<List<Friend>>(emptyList())
@@ -50,7 +47,7 @@ class ProfileScreenViewModel(
         profileProvider.getUserInfoFlow()
             .onEach {
                 if (it == null) {
-                    navigationChannel.send(NavAction.NavigateTo(Auth.route))
+                    navigator.navigate(Destination.AuthScreen)
                 }
             }
             .filterNotNull()
@@ -82,7 +79,7 @@ class ProfileScreenViewModel(
 
     fun onBackButtonTap() = viewModelScope.launch {
         Log.d("TAG", "onBackButtonTap")
-        navigationChannel.send(NavAction.NavigateBack)
+        navigator.navigateUp()
     }
 
     fun onCreateInviteGroupLinkTap() = viewModelScope.launch {
@@ -111,9 +108,23 @@ class ProfileScreenViewModel(
         Log.d("TAG", "onLogOutTap")
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
-            navigationChannel.send(NavAction.NavigateTo(Auth.route))
+            navigator.navigateToAuthGraph()
         } else {
             Log.d("TAG", "cannot log out")
+        }
+    }
+
+    fun onSettingsTap() = viewModelScope.launch {
+        Log.d("TAG", "onSettingsTap")
+        navigator.navigate(Destination.SettingsScreen)
+    }
+
+    fun onAction(action: ProfileScreenAction) {
+        when (action) {
+            ProfileScreenAction.OnBackButtonTap -> onBackButtonTap()
+            ProfileScreenAction.OnCreateInviteLinkTap -> onCreateInviteGroupLinkTap()
+            ProfileScreenAction.OnLogOutTap -> onLogOutTap()
+            ProfileScreenAction.OnSettingsTap -> onSettingsTap()
         }
     }
 }

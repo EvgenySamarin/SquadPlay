@@ -1,10 +1,9 @@
-package com.eysamarin.squadplay.screens.main
+package com.eysamarin.squadplay.screens.event
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,9 +11,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,13 +27,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.models.DialPickerTarget
-import com.eysamarin.squadplay.models.EventDialogUI
-import com.eysamarin.squadplay.models.PREVIEW_POLLING_DIALOG_UI
+import com.eysamarin.squadplay.models.NewEventScreenAction
+import com.eysamarin.squadplay.models.NewEventScreenUI
+import com.eysamarin.squadplay.models.PREVIEW_NEW_EVENT_SCREEN_UI
 import com.eysamarin.squadplay.models.TimePickerUI
+import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.DialPicker
 import com.eysamarin.squadplay.ui.SquadPlayTimePicker
 import com.eysamarin.squadplay.ui.button.PrimaryButton
@@ -43,11 +50,56 @@ import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddGameEvent(
-    ui: EventDialogUI,
-    windowSize: WindowSizeClass,
-    onStartPollingTap: (timeFrom: LocalDateTime, timeTo: LocalDateTime) -> Unit
+fun NewEventScreen(
+    state: UiState<NewEventScreenUI>,
+    windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
+    onAction: (NewEventScreenAction) -> Unit
 ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(
+                        onClick = { onAction(NewEventScreenAction.OnBackButtonTap) }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_arrow_back_24),
+                            contentDescription = stringResource(R.string.content_description_back),
+                        )
+                    }
+                }
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        content = { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                when (windowSize.widthSizeClass) {
+                    WindowWidthSizeClass.Expanded,
+                    WindowWidthSizeClass.Compact,
+                    WindowWidthSizeClass.Medium -> NewEventScreenMediumLayout(
+                        state, windowSize, onAction
+                    )
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NewEventScreenMediumLayout(
+    state: UiState<NewEventScreenUI>,
+    windowSize: WindowSizeClass,
+    onAction: (NewEventScreenAction) -> Unit,
+) {
+    if (state !is UiState.Normal) return
+
+
     var dateTimeFrom by remember { mutableStateOf<LocalDateTime?>(null) }
     var dateTimeTo by remember { mutableStateOf<LocalDateTime?>(null) }
     var dialPickerTarget by remember { mutableStateOf(DialPickerTarget.FROM) }
@@ -61,17 +113,19 @@ fun AddGameEvent(
 
     Column(
         modifier = Modifier
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val format = DecimalFormat("00")
+        val formattedDate = buildString {
+            append(state.data.yearMonth.year)
+            append(".")
+            append(format.format(state.data.yearMonth.monthValue))
+            append(".")
+            append(format.format(state.data.selectedDate.dayOfMonth))
+        }
         Text(
-            text = stringResource(
-                R.string.create_new_event,
-                ui.yearMonth.year,
-                format.format(ui.yearMonth.monthValue),
-                format.format(ui.selectedDate.dayOfMonth),
-            ),
+            text = stringResource(R.string.create_new_event, formattedDate),
             style = adaptiveBodyByHeight(windowSize),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -111,9 +165,9 @@ fun AddGameEvent(
                     when (target) {
                         DialPickerTarget.FROM -> {
                             dateTimeFrom = LocalDateTime.of(
-                                /* year = */ ui.yearMonth.year,
-                                /* month = */ ui.yearMonth.month,
-                                /* dayOfMonth = */ ui.selectedDate.dayOfMonth ?: 1,
+                                /* year = */ state.data.yearMonth.year,
+                                /* month = */ state.data.yearMonth.month,
+                                /* dayOfMonth = */ state.data.selectedDate.dayOfMonth ?: 1,
                                 /* hour = */ timeState.hour,
                                 /* minute = */ timeState.minute
                             )
@@ -121,9 +175,9 @@ fun AddGameEvent(
 
                         DialPickerTarget.TO -> {
                             dateTimeTo = LocalDateTime.of(
-                                /* year = */ ui.yearMonth.year,
-                                /* month = */ ui.yearMonth.month,
-                                /* dayOfMonth = */ ui.selectedDate.dayOfMonth ?: 1,
+                                /* year = */ state.data.yearMonth.year,
+                                /* month = */ state.data.yearMonth.month,
+                                /* dayOfMonth = */ state.data.selectedDate.dayOfMonth ?: 1,
                                 /* hour = */ timeState.hour,
                                 /* minute = */ timeState.minute
                             )
@@ -153,30 +207,26 @@ fun AddGameEvent(
                 val isMinutesNextDay = from.hour == to.hour
                         && from.minute > (to.minute)
 
-                onStartPollingTap(
-                    from,
-                    if (isHoursNextDay || isMinutesNextDay) to.plusDays(1) else to
-                )
+                onAction(NewEventScreenAction.OnEventSaveTap(
+                    timeFrom = from,
+                    timeTo = if (isHoursNextDay || isMinutesNextDay) to.plusDays(1) else to
+                ))
             },
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+//region screen preview
 @PhoneDarkModePreview
 @PhoneLightModePreview
 @Composable
-private fun AddGameEventContentPreview() {
+fun NewEventScreenPhonePreview() {
     SquadPlayTheme {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)) {
-            Spacer(Modifier.padding(top = 24.dp))
-            AddGameEvent(
-                ui = PREVIEW_POLLING_DIALOG_UI,
-                windowSize = WINDOWS_SIZE_MEDIUM,
-                onStartPollingTap = { _, _ -> },
-            )
-        }
+        NewEventScreen(
+            state = UiState.Normal(PREVIEW_NEW_EVENT_SCREEN_UI),
+            onAction = {}
+        )
     }
 }
+//endregion

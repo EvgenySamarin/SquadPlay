@@ -8,20 +8,19 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
-import com.eysamarin.squadplay.models.CalendarUI.Date
+import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
-import com.eysamarin.squadplay.models.EventDialogUI
 import com.eysamarin.squadplay.models.EventUI
-import com.eysamarin.squadplay.models.MainScreenUI
-import com.eysamarin.squadplay.models.NavAction
-import com.eysamarin.squadplay.models.Route.Auth
-import com.eysamarin.squadplay.models.Route.Profile
+import com.eysamarin.squadplay.models.HomeScreenAction
+import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.navigation.Destination
+import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -31,37 +30,27 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
-class MainScreenViewModel(
+class HomeScreenViewModel(
+    private val navigator: Navigator,
+    private val snackbar: SnackbarProvider,
     private val calendarUIProvider: CalendarUIProvider,
     private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
     private val profileProvider: ProfileProvider,
     private val stringProvider: StringProvider,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<MainScreenUI>>(UiState.Loading)
+    private val _uiState = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
-
-    private val navigationChannel = Channel<NavAction>(Channel.BUFFERED)
-    val navigationFlow = navigationChannel.receiveAsFlow()
-
-    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
-    val snackbarFlow = snackbarChannel.receiveAsFlow()
 
     private val _confirmInviteDialogState = MutableStateFlow<UiState<String>>(UiState.Empty)
     val confirmInviteDialogState = _confirmInviteDialogState.asStateFlow()
 
     private val _inviteGroupIdState = MutableStateFlow<String?>(null)
     val inviteGroupIdState = _inviteGroupIdState.asStateFlow()
-
-    private val _eventDialogState = MutableStateFlow<UiState<EventDialogUI>>(UiState.Empty)
-    val eventDialogState = _eventDialogState.asStateFlow()
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
@@ -78,7 +67,7 @@ class MainScreenViewModel(
         profileProvider.getUserInfoFlow()
             .onEach {
                 if (it == null) {
-                    navigationChannel.send(NavAction.NavigateTo(Auth.route))
+                    navigator.navigate(Destination.AuthScreen)
                 }
             }
             .filterNotNull()
@@ -103,14 +92,14 @@ class MainScreenViewModel(
             }
             .onEach { (user, inviteGroupId) ->
                 if (user.groups.map { it.uid }.contains(inviteGroupId)) {
-                    snackbarChannel.send(stringProvider.alreadyInSquad)
+                    snackbar.showMessage(stringProvider.alreadyInSquad)
                     Log.w("TAG", "You're already in this squad")
                     return@onEach
                 }
 
                 val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
                 if (groupInfo == null) {
-                    snackbarChannel.send(stringProvider.squadNotFound(inviteGroupId))
+                    snackbar.showMessage(stringProvider.squadNotFound(inviteGroupId))
                     Log.w("TAG", "Group with uid: $inviteGroupId not found")
                     return@onEach
                 }
@@ -149,7 +138,7 @@ class MainScreenViewModel(
                 Log.d("TAG", "updateMainScreenUI")
                 _uiState.emit(
                     UiState.Normal(
-                        MainScreenUI(
+                        HomeScreenUI(
                             user = userInfo,
                             calendarUI = calendar,
                             gameEventsOnDate = eventsBySelectedDate
@@ -165,7 +154,7 @@ class MainScreenViewModel(
         Log.d("TAG", "onLogOutTap")
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
-            navigationChannel.send(NavAction.NavigateTo(Auth.route))
+            navigator.navigateToAuthGraph()
         } else {
             Log.d("TAG", "cannot log out")
         }
@@ -173,7 +162,7 @@ class MainScreenViewModel(
 
     fun onAvatarTap() = viewModelScope.launch {
         Log.d("TAG", "onAvatarTap")
-        navigationChannel.send(NavAction.NavigateTo(Profile.route))
+        navigator.navigate(Destination.ProfileScreen)
     }
 
     fun onNextMonthTap(nextMonth: YearMonth) = viewModelScope.launch {
@@ -203,46 +192,6 @@ class MainScreenViewModel(
         calendarUIState.emit(updatedCalendarUI)
     }
 
-    fun dismissEventDialog() = viewModelScope.launch {
-        Log.d("TAG", "dismissEventDialog")
-
-        _eventDialogState.emit(UiState.Empty)
-    }
-
-    fun onEventSaveTap(
-        dateTimeFrom: LocalDateTime,
-        dateTimeTo: LocalDateTime,
-    ) = viewModelScope.launch {
-        Log.d("TAG", "onEventSaveTap for dates: $dateTimeFrom - $dateTimeTo")
-        val currentUser = userInfoState.value ?: run {
-            Log.w("TAG", "currentUser is null cannot save event")
-            return@launch
-        }
-
-        if (currentUser.groups.isEmpty()) {
-            Log.d("TAG", "currentUser has no groups cannot save event")
-            snackbarChannel.send(stringProvider.youHaveNoSquad)
-            return@launch
-        }
-
-        val eventData = Event(
-            uid = UUID.randomUUID().toString(),
-            creatorId = currentUser.uid,
-            groupId = currentUser.groups.first().uid,
-            title = "New event",
-            fromDateTime = dateTimeFrom,
-            toDateTime = dateTimeTo,
-        )
-        val isSuccess = eventProvider.saveEventData(eventData)
-        snackbarChannel.send(
-            if (isSuccess) {
-                stringProvider.eventSaved
-            } else {
-                stringProvider.eventSaveFailed
-            }
-        )
-    }
-
     fun onAddGameEventTap() = viewModelScope.launch {
         Log.d("TAG", "onAddGameEventTap show polling dialog state")
 
@@ -254,10 +203,10 @@ class MainScreenViewModel(
             return@launch
         }
 
-        _eventDialogState.emit(UiState.Normal(EventDialogUI(
+        navigator.navigate(Destination.NewEventScreen(
             selectedDate = selectedDate,
-            yearMonth = calendarUi.yearMonth
-        )))
+            yearMonth = calendarUi.yearMonth.toString(),
+        ))
     }
 
     fun onJoinGroupDeepLinkRetrieved(inviteGroupId: String?) = viewModelScope.launch {
@@ -282,7 +231,7 @@ class MainScreenViewModel(
         val isSuccess = profileProvider.joinGroup(
             userId = currentUser.uid, groupId = inviteGroupId,
         )
-        snackbarChannel.send(
+        snackbar.showMessage(
             if (isSuccess) {
                 stringProvider.joinedSquad
             } else {
@@ -304,6 +253,24 @@ class MainScreenViewModel(
             } else {
                 Log.w("TAG", "failed to delete event")
             }
+        }
+    }
+
+    fun onAction(action: HomeScreenAction) {
+        when (action) {
+            is HomeScreenAction.OnDateTap -> onDateTap(action.date)
+            is HomeScreenAction.OnNextMonthTap -> onNextMonthTap(action.yearMonth)
+            is HomeScreenAction.OnPrevMonthTap -> onPreviousMonthTap(action.yearMonth)
+            HomeScreenAction.OnAddGameEventTap -> onAddGameEventTap()
+            HomeScreenAction.OnLogOutTap -> onLogOutTap()
+            HomeScreenAction.OnAvatarTap -> onAvatarTap()
+            HomeScreenAction.OnJoinGroupDialogConfirm -> {
+                onJoinGroupDialogConfirm()
+                onJoinGroupDialogDismiss()
+            }
+
+            HomeScreenAction.OnJoinGroupDialogDismiss -> onJoinGroupDialogDismiss()
+            is HomeScreenAction.OnDeleteEventTap -> onDeleteEventTap(action.eventId)
         }
     }
 

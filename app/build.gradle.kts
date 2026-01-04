@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.android.gms.oss.licenses)
 }
 
 android {
@@ -14,7 +16,10 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     val properties = Properties()
-        .also { it.load(project.rootProject.file("local.properties").inputStream()) }
+    val localPropertiesFile = project.rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        properties.load(localPropertiesFile.inputStream())
+    }
 
     defaultConfig {
         applicationId = "com.eysamarin.squadplay"
@@ -25,24 +30,36 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val firebaseDbUrl = System.getenv("FIREBASE_DATABASE_URL") ?: properties.getProperty("FIREBASE_DATABASE_URL")
+        val googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: properties.getProperty("GOOGLE_WEB_CLIENT_ID")
+
         buildConfigField(
             type = "String",
             name = "FIREBASE_DATABASE_URL",
-            value = "\"${properties.getProperty("FIREBASE_DATABASE_URL")}\""
+            value = "\"$firebaseDbUrl\""
         )
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
-            "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID")}\""
+            "\"$googleWebClientId\""
         )
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file(properties.getProperty("KEYSTORE_PATH"))
-            storePassword = properties.getProperty("KEYSTORE_PASSWORD")
-            keyAlias = properties.getProperty("KEY_ALIAS")
-            keyPassword = properties.getProperty("KEY_PASSWORD")
+            if (System.getenv("CI")?.toBoolean() == true) {
+                // CI environment: read from environment variables (GitHub secrets)
+                storeFile = rootProject.file("release.jks")
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            } else if (properties.getProperty("KEYSTORE_PATH") != null) {
+                // Local environment: read from local.properties
+                storeFile = file(properties.getProperty("KEYSTORE_PATH"))
+                storePassword = properties.getProperty("KEYSTORE_PASSWORD")
+                keyAlias = properties.getProperty("KEY_ALIAS")
+                keyPassword = properties.getProperty("KEY_PASSWORD")
+            }
         }
     }
 
@@ -91,11 +108,15 @@ dependencies {
     implementation(libs.androidx.credentials.credentials.play.services.auth)
     implementation(libs.com.google.android.libraries.identity.googleid)
 
+    implementation(libs.com.github.anhaki.pick.time.compose)
+
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics)
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
     implementation(libs.com.google.firebase.messaging)
+
+    implementation(libs.com.google.android.gms.oss.licenses)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.navigationCompose)
@@ -104,6 +125,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.windowSize)
+
+    implementation(libs.org.jetbrains.kotlinx.serialization.json)
 
     testImplementation(libs.io.insert.koin.test.junit4)
     testImplementation(libs.junit)

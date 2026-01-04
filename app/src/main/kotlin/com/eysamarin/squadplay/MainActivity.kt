@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -19,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.navigation.SquadPlayNavigation
 import com.eysamarin.squadplay.ui.PermissionDialog
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import org.koin.androidx.compose.koinViewModel
@@ -32,6 +34,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             SquadPlayTheme {
                 val windowSize = calculateWindowSizeClass(this)
@@ -77,7 +80,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                SquadPlayApp(windowSize)
+                SquadPlayNavigation(windowSize)
             }
         }
     }
@@ -101,8 +104,8 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(showBackground = true)
 @Composable
-fun FinanceStocksAppPreview() {
+fun FinanceStocksNavigationPreview() {
     SquadPlayTheme {
-        SquadPlayApp(WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)))
+        SquadPlayNavigation(WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)))
     }
 }
