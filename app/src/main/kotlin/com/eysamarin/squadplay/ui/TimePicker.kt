@@ -70,7 +70,7 @@ fun SquadPlayTimePicker(
                 )
                 Icon(
                     painter = painterResource(R.drawable.ic_keyboard_arrow_right_24),
-                    contentDescription = stringResource(R.string.content_desctiption_next),
+                    contentDescription = stringResource(R.string.content_description_next),
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
                 TimeUnit(

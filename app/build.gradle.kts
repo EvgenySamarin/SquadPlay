@@ -92,6 +92,8 @@ dependencies {
     implementation(libs.androidx.credentials.credentials.play.services.auth)
     implementation(libs.com.google.android.libraries.identity.googleid)
 
+    implementation(libs.com.github.anhaki.pick.time.compose)
+
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics)
     implementation(libs.com.google.firebase.firestore)

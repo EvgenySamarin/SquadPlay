@@ -206,7 +206,7 @@ private fun NewEventScreenMediumLayout(
                 val isMinutesNextDay = from.hour == to.hour
                         && from.minute > (to.minute)
 
-                onAction(NewEventScreenAction.OnStartPollingTap(
+                onAction(NewEventScreenAction.OnEventSaveTap(
                     timeFrom = from,
                     timeTo = if (isHoursNextDay || isMinutesNextDay) to.plusDays(1) else to
                 ))

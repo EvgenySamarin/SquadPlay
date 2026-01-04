@@ -5,11 +5,16 @@ import java.time.YearMonth
 
 sealed interface NewEventScreenAction {
     data object OnBackButtonTap : NewEventScreenAction
-    class OnStartPollingTap(
+    class OnEventSaveTap(
         val timeFrom: LocalDateTime,
         val timeTo: LocalDateTime,
     ) : NewEventScreenAction
 }
+
+data class PickerTimeUnit(
+    val hour: Int,
+    val minute: Int,
+)
 
 data class NewEventScreenUI(
     val title: String,

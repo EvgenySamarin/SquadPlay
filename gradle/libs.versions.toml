@@ -26,6 +26,9 @@ credentials = "1.5.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
 ioCoilKtCoil3Compose = "3.3.0"
 ioCoilKtCoil3NetworkOkHttp = "3.3.0"
+pickTimeCompose = "1.1.5"
+googleAndroidGmsOssLicenses = "0.10.10"
+comGoogleAndroidGmsOssLicenses = "17.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +55,8 @@ io-coil-kt-coil3-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-net
 androidx-credentials-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 com-google-android-libraries-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "comGoogleAndroidLibrariesIdentityGoogleid" }
+
+com-github-anhaki-pick-time-compose = { group = "com.github.anhaki", name = "PickTime-Compose", version.ref = "pickTimeCompose" }
 
 com-google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 com-google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
