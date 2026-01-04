@@ -3,6 +3,8 @@ name: Android CI/CD
 on:
   push:
     branches: [ "develop", "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -41,9 +43,20 @@ jobs:
       - name: Write Google Services credentials to file
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
 
-      - name: Upload to Firebase App Distribution
+      - name: Upload to Firebase App Distribution (Internal)
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFile: ${{ github.workspace }}/service-account.json
           file: app/build/outputs/apk/release/app-release.apk
+          groups: internal-testers
+
+      - name: Upload to Firebase App Distribution (Beta)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFile: ${{ github.workspace }}/service-account.json
+          file: app/build/outputs/apk/release/app-release.apk
+          groups: beta-testers
