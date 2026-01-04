@@ -6,19 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.NewEventScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -27,15 +26,13 @@ import java.util.UUID
 
 class NewEventScreenViewModel(
     private val navigator: Navigator,
+    private val snackbar: SnackbarProvider,
     private val profileProvider: ProfileProvider,
     private val eventProvider: EventProvider,
     private val stringProvider: StringProvider,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<NewEventScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
-
-    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
-    val snackbarFlow = snackbarChannel.receiveAsFlow()
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val navigationArgsState = MutableStateFlow<Destination.NewEventScreen?>(null)
@@ -90,7 +87,7 @@ class NewEventScreenViewModel(
 
         if (currentUser.groups.isEmpty()) {
             Log.d("TAG", "currentUser has no groups cannot save event")
-            snackbarChannel.send(stringProvider.youHaveNoSquad)
+            snackbar.showMessage(stringProvider.youHaveNoSquad)
             return@launch
         }
 
@@ -106,7 +103,7 @@ class NewEventScreenViewModel(
         if (isSuccess) {
             navigator.navigateUp()
         }
-        snackbarChannel.send(
+        snackbar.showMessage(
             if (isSuccess) {
                 stringProvider.eventSaved
             } else {

@@ -8,6 +8,7 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
@@ -19,7 +20,6 @@ import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -29,13 +29,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 class HomeScreenViewModel(
     private val navigator: Navigator,
+    private val snackbar: SnackbarProvider,
     private val calendarUIProvider: CalendarUIProvider,
     private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
@@ -44,9 +44,6 @@ class HomeScreenViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
-
-    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
-    val snackbarFlow = snackbarChannel.receiveAsFlow()
 
     private val _confirmInviteDialogState = MutableStateFlow<UiState<String>>(UiState.Empty)
     val confirmInviteDialogState = _confirmInviteDialogState.asStateFlow()
@@ -94,14 +91,14 @@ class HomeScreenViewModel(
             }
             .onEach { (user, inviteGroupId) ->
                 if (user.groups.map { it.uid }.contains(inviteGroupId)) {
-                    snackbarChannel.send(stringProvider.alreadyInSquad)
+                    snackbar.showMessage(stringProvider.alreadyInSquad)
                     Log.w("TAG", "You're already in this squad")
                     return@onEach
                 }
 
                 val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
                 if (groupInfo == null) {
-                    snackbarChannel.send(stringProvider.squadNotFound(inviteGroupId))
+                    snackbar.showMessage(stringProvider.squadNotFound(inviteGroupId))
                     Log.w("TAG", "Group with uid: $inviteGroupId not found")
                     return@onEach
                 }
@@ -233,7 +230,7 @@ class HomeScreenViewModel(
         val isSuccess = profileProvider.joinGroup(
             userId = currentUser.uid, groupId = inviteGroupId,
         )
-        snackbarChannel.send(
+        snackbar.showMessage(
             if (isSuccess) {
                 stringProvider.joinedSquad
             } else {

@@ -5,21 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class AuthScreenViewModel(
     private val navigator: Navigator,
+    private val snackbar: SnackbarProvider,
     private val authProvider: AuthProvider,
     private val stringProvider: StringProvider,
 ) : ViewModel() {
-
-    private val snackbarChannel = Channel<String>(Channel.RENDEZVOUS)
-    val snackbarFlow = snackbarChannel.receiveAsFlow()
 
     init {
         checkUserSignedIn()
@@ -39,7 +36,7 @@ class AuthScreenViewModel(
         if (isSuccess) {
             navigator.navigateToHomeGraph()
         } else {
-            snackbarChannel.send(stringProvider.cannotSignText)
+            snackbar.showMessage(stringProvider.cannotSignText)
             Log.d("TAG", "cannot sign in")
         }
     }
@@ -55,7 +52,7 @@ class AuthScreenViewModel(
 
             is UiState.Error -> {
                 Log.w("TAG", signInState.description)
-                snackbarChannel.send(signInState.description)
+                snackbar.showMessage(signInState.description)
             }
 
             is UiState.Normal<*> -> navigator.navigateToHomeGraph()

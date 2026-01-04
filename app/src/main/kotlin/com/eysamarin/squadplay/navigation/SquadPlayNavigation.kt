@@ -28,6 +28,7 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.HomeScreenAction
@@ -63,7 +64,16 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
 
-    NavigationEffect(flow = navigator.navigationActions) { action ->
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarProvider = koinInject<SnackbarProvider>()
+    val coroutineScope = rememberCoroutineScope()
+
+
+    LifecycleEffect(snackbarProvider.messagesChannel) {
+        coroutineScope.launch { snackbarHostState.showSnackbar(message = it) }
+    }
+
+    LifecycleEffect(flow = navigator.navigationActions) { action ->
         when (action) {
             is NavigationAction.Navigate -> navController.navigate(action.destination) {
                 action.navOptions(this)
@@ -80,7 +90,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
         navigation<Destination.AuthGraph>(startDestination = Destination.AuthScreen) {
             composable<Destination.AuthScreen> {
                 val viewModel: AuthScreenViewModel = koinViewModel()
-                val snackbarHostState = remember { SnackbarHostState() }
 
                 RootScreenBackHandler(snackbarHostState = snackbarHostState)
 
@@ -99,16 +108,9 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                         }
                     }
                 )
-
-                LaunchedEffect(Unit) {
-                    viewModel.snackbarFlow.collect {
-                        snackbarHostState.showSnackbar(message = it)
-                    }
-                }
             }
             composable<Destination.RegistrationScreen> {
                 val viewModel: RegistrationScreenViewModel = koinViewModel()
-                val snackbarHostState = remember { SnackbarHostState() }
 
                 RegistrationScreen(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -124,12 +126,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                         }
                     }
                 )
-
-                LaunchedEffect(Unit) {
-                    viewModel.snackbarFlow.collect {
-                        snackbarHostState.showSnackbar(message = it)
-                    }
-                }
             }
         }
 
@@ -150,7 +146,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
-                val snackbarHostState = remember { SnackbarHostState() }
 
                 RootScreenBackHandler(snackbarHostState = snackbarHostState)
 
@@ -177,12 +172,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                         }
                     }
                 )
-
-                LaunchedEffect(Unit) {
-                    viewModel.snackbarFlow.collect {
-                        snackbarHostState.showSnackbar(message = it)
-                    }
-                }
             }
             composable<Destination.NewEventScreen>(
                 typeMap = mapOf(
@@ -194,7 +183,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                 viewModel.updateSelectedDate(args)
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                val snackbarHostState = remember { SnackbarHostState() }
 
                 NewEventScreen(
                     state = uiState,
@@ -209,12 +197,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                         }
                     }
                 )
-
-                LaunchedEffect(Unit) {
-                    viewModel.snackbarFlow.collect {
-                        snackbarHostState.showSnackbar(message = it)
-                    }
-                }
             }
             composable<Destination.ProfileScreen> {
                 val viewModel: ProfileScreenViewModel = koinViewModel()
@@ -249,7 +231,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
             }
             composable<Destination.SettingsScreen> {
                 val viewModel: SettingsScreenViewModel = koinViewModel()
-                val snackbarHostState = remember { SnackbarHostState() }
 
                 val context = LocalContext.current
                 val licensesMenuActivityTitle = stringResource(R.string.settings_screen_licenses_title)
@@ -269,12 +250,6 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
                         }
                     },
                 )
-
-                LaunchedEffect(Unit) {
-                    viewModel.snackbarFlow.collect {
-                        snackbarHostState.showSnackbar(message = it)
-                    }
-                }
             }
         }
     }
@@ -303,7 +278,7 @@ private fun RootScreenBackHandler(
 }
 
 @Composable
-fun <T> NavigationEffect(
+fun <T> LifecycleEffect(
     flow: Flow<T>,
     key1: Any? = null,
     key2: Any? = null,
