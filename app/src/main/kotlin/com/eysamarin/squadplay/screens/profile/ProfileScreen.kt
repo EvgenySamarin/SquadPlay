@@ -154,6 +154,13 @@ private fun ProfileScreenMediumLayout(
                 onTap = {
                     onAction(ProfileScreenAction.OnCreateInviteLinkTap)
                 })
+            IconButton(onClick = { onAction(ProfileScreenAction.OnSettingsTap) }){
+                Icon(
+                    painter = painterResource(R.drawable.ic_settings_24),
+                    contentDescription = stringResource(R.string.content_description_settings),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
         Text(
             modifier = Modifier

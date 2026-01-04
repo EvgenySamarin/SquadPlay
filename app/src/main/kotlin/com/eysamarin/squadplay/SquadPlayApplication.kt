@@ -33,6 +33,7 @@ import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
 import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
+import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
 import com.eysamarin.squadplay.utils.hideSensitiveInLogs
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -102,6 +103,7 @@ class SquadPlayApplication : Application() {
         viewModelOf(::AuthScreenViewModel)
         viewModelOf(::RegistrationScreenViewModel)
         viewModelOf(::ProfileScreenViewModel)
+        viewModelOf(::SettingsScreenViewModel)
         //endregion
     }
 

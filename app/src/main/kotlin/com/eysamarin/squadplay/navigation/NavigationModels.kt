@@ -30,6 +30,8 @@ sealed interface Destination {
     @Serializable
     object ProfileScreen: Destination
     @Serializable
+    object SettingsScreen : Destination
+    @Serializable
     data class NewEventScreen(
         val selectedDate: Date,
         val yearMonth: String,

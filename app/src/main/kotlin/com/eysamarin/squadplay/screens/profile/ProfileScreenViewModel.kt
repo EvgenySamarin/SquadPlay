@@ -112,4 +112,9 @@ class ProfileScreenViewModel(
             Log.d("TAG", "cannot log out")
         }
     }
+
+    fun onSettingsTap() = viewModelScope.launch {
+        Log.d("TAG", "onSettingsTap")
+        navigator.navigate(Destination.SettingsScreen)
+    }
 }

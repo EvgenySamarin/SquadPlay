@@ -58,10 +58,16 @@
     <string name="group">Group: %s</string>
     <!-- endregion -->
 
+    <!-- region Settings screen -->
+    <string name="settings_screen_title">About app</string>
+    <string name="settings_screen_licenses_title">Open source licenses</string>
+    <!-- end region -->
+
     <!-- region content description -->
     <string name="content_description_log_out">log out</string>
     <string name="content_description_add_game">Add game event</string>
     <string name="content_description_back">Back</string>
-    <string name="content_desctiption_next">Next</string>
+    <string name="content_description_next">Next</string>
+    <string name="content_description_settings">Settings</string>
     <!-- endregion -->
 </resources>

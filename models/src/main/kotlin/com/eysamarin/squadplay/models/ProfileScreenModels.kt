@@ -6,6 +6,7 @@ sealed interface ProfileScreenAction {
     data object OnBackButtonTap : ProfileScreenAction
     object OnCreateInviteLinkTap : ProfileScreenAction
     object OnLogOutTap : ProfileScreenAction
+    object OnSettingsTap : ProfileScreenAction
 }
 
 data class ProfileScreenUI(
