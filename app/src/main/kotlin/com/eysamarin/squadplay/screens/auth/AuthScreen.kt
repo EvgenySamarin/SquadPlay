@@ -75,6 +75,7 @@ fun AuthScreen(
             }
         },
         snackbarHost = snackbarHost,
+        containerColor = MaterialTheme.colorScheme.surface,
     )
 }
 

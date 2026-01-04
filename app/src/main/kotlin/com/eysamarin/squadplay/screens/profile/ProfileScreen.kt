@@ -80,6 +80,7 @@ fun ProfileScreen(
                 }
             )
         },
+        containerColor = MaterialTheme.colorScheme.surface,
         content = { innerPadding ->
             Box(
                 modifier = Modifier

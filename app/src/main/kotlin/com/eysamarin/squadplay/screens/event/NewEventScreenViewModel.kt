@@ -103,6 +103,9 @@ class NewEventScreenViewModel(
             toDateTime = dateTimeTo,
         )
         val isSuccess = eventProvider.saveEventData(eventData)
+        if (isSuccess) {
+            navigator.navigateUp()
+        }
         snackbarChannel.send(
             if (isSuccess) {
                 stringProvider.eventSaved

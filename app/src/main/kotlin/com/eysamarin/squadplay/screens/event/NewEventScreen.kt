@@ -71,6 +71,7 @@ fun NewEventScreen(
                 }
             )
         },
+        containerColor = MaterialTheme.colorScheme.surface,
         content = { innerPadding ->
             Column(
                 modifier = Modifier
