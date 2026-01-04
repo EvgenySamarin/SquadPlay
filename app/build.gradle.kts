@@ -41,10 +41,19 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(properties.getProperty("KEYSTORE_PATH"))
-            storePassword = properties.getProperty("KEYSTORE_PASSWORD")
-            keyAlias = properties.getProperty("KEY_ALIAS")
-            keyPassword = properties.getProperty("KEY_PASSWORD")
+            if (System.getenv("CI")?.toBoolean() == true) {
+                // CI environment: read from environment variables (GitHub secrets)
+                storeFile = rootProject.file("release.jks")
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            } else if (properties.getProperty("KEYSTORE_PATH") != null) {
+                // Local environment: read from local.properties
+                storeFile = file(properties.getProperty("KEYSTORE_PATH"))
+                storePassword = properties.getProperty("KEYSTORE_PASSWORD")
+                keyAlias = properties.getProperty("KEY_ALIAS")
+                keyPassword = properties.getProperty("KEY_PASSWORD")
+            }
         }
     }
 
