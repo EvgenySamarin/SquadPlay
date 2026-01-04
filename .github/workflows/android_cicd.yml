@@ -43,6 +43,14 @@ jobs:
       - name: Write Google Services credentials to file
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
 
+      - name: Create Release Notes
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          NOTES="${{ github.event.head_commit.message }}"
+          echo "$NOTES" > release_notes.txt
+          mkdir -p whatsnew/en-US
+          echo "$NOTES" > whatsnew/en-US/default.txt
+
       - name: Upload to Firebase App Distribution (Internal)
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -60,6 +68,7 @@ jobs:
           serviceCredentialsFile: ${{ github.workspace }}/service-account.json
           file: app/build/outputs/bundle/release/app-release.aab
           groups: beta-testers
+          releaseNotesFile: release_notes.txt
 
       - name: Deploy to Google Play Internal Testing
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
@@ -69,3 +78,4 @@ jobs:
           packageName: com.eysamarin.squadplay
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: internal
+          whatsNewDirectory: whatsnew/
