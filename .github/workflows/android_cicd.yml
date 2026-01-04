@@ -38,7 +38,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-        run: ./gradlew app:assembleRelease
+        run: ./gradlew app:bundleRelease
 
       - name: Write Google Services credentials to file
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
@@ -49,7 +49,7 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFile: ${{ github.workspace }}/service-account.json
-          file: app/build/outputs/apk/release/app-release.apk
+          file: app/build/outputs/bundle/release/app-release.aab
           groups: internal-testers
 
       - name: Upload to Firebase App Distribution (Beta)
@@ -58,5 +58,14 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFile: ${{ github.workspace }}/service-account.json
-          file: app/build/outputs/apk/release/app-release.apk
+          file: app/build/outputs/bundle/release/app-release.aab
           groups: beta-testers
+
+      - name: Deploy to Google Play Internal Testing
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}
+          packageName: com.eysamarin.squadplay
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: internal
