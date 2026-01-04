@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew app:assembleRelease
 
       - name: Upload to Firebase App Distribution
-        uses: wzieba/firebaser-action@v1.5.0
+        uses: wzieba/firebaser-v2@v1.1.1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
