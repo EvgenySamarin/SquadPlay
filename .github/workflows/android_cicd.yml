@@ -33,9 +33,12 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew app:assembleRelease
 
+      - name: Write Google Services credentials to file
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
+
       - name: Upload to Firebase App Distribution
-        uses: wzieba/firebaser-v2@v1.1.1
+        uses: firebase/firebase-actions/distribute-app@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
-          serviceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-          filePath: app/build/outputs/apk/release/app-release.apk
+          serviceCredentialsFile: ${{ github.workspace }}/service-account.json
+          file: app/build/outputs/apk/release/app-release.apk
