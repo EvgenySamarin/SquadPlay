@@ -45,11 +45,12 @@ jobs:
 
       - name: Create Release Notes
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          NOTES="${{ github.event.head_commit.message }}"
-          echo "$NOTES" > release_notes.txt
+          echo "$COMMIT_MESSAGE" > release_notes.txt
           mkdir -p whatsnew/en-US
-          echo "$NOTES" > whatsnew/en-US/default.txt
+          echo "$COMMIT_MESSAGE" > whatsnew/en-US/default.txt
 
       - name: Upload to Firebase App Distribution (Internal)
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
