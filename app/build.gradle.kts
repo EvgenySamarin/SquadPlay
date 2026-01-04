@@ -16,7 +16,10 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     val properties = Properties()
-        .also { it.load(project.rootProject.file("local.properties").inputStream()) }
+    val localPropertiesFile = project.rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        properties.load(localPropertiesFile.inputStream())
+    }
 
     defaultConfig {
         applicationId = "com.eysamarin.squadplay"
@@ -27,15 +30,18 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val firebaseDbUrl = System.getenv("FIREBASE_DATABASE_URL") ?: properties.getProperty("FIREBASE_DATABASE_URL")
+        val googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: properties.getProperty("GOOGLE_WEB_CLIENT_ID")
+
         buildConfigField(
             type = "String",
             name = "FIREBASE_DATABASE_URL",
-            value = "\"${properties.getProperty("FIREBASE_DATABASE_URL")}\""
+            value = "\"$firebaseDbUrl\""
         )
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
-            "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID")}\""
+            "\"$googleWebClientId\""
         )
     }
 
