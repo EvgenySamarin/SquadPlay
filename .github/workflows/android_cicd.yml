@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build & Test
+    name: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
