@@ -2,14 +2,16 @@ name: Android CI/CD
 
 on:
   push:
-    branches: [ "develop", "master" ]
+    branches:
+      - 'trunk'
+      - 'feature/**'
   pull_request:
-    branches: [ "develop", "master" ]
+    branches: [ 'trunk' ]
 
 jobs:
   build:
+    name: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,20 +42,11 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: ./gradlew app:bundleRelease
 
-      - name: Write Google Services credentials to file
+      - name: Write Firebase Service Account
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
 
-      - name: Create Release Notes
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          echo "$COMMIT_MESSAGE" > release_notes.txt
-          mkdir -p whatsnew/en-US
-          echo "$COMMIT_MESSAGE" > whatsnew/en-US/default.txt
-
       - name: Upload to Firebase App Distribution (Internal)
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        if: startsWith(github.ref, 'refs/heads/feature/') && github.event_name == 'push'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
@@ -61,22 +54,66 @@ jobs:
           file: app/build/outputs/bundle/release/app-release.aab
           groups: internal-testers
 
+      - name: Upload App Bundle Artifact
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle
+          path: app/build/outputs/bundle/release/app-release.aab
+          retention-days: 1
+
+      - name: Create Release Notes
+        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          echo "$COMMIT_MESSAGE" > release_notes.txt
+          mkdir -p whatsnew/en-US
+          echo "$COMMIT_MESSAGE" > whatsnew/en-US/default.txt
+
+      - name: Upload Release Notes Artifact
+        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: |
+            release_notes.txt
+            whatsnew/
+          retention-days: 1
+
+  deploy:
+    name: Deploy to Production Channels
+    needs: build
+    if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download App Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+
+      - name: Download Release Notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+
+      - name: Write Firebase Service Account
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
+
       - name: Upload to Firebase App Distribution (Beta)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFile: ${{ github.workspace }}/service-account.json
-          file: app/build/outputs/bundle/release/app-release.aab
+          file: app-release.aab
           groups: beta-testers
           releaseNotesFile: release_notes.txt
 
       - name: Deploy to Google Play Internal Testing
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}
           packageName: com.eysamarin.squadplay
-          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          releaseFiles: app-release.aab
           track: internal
           whatsNewDirectory: whatsnew/
