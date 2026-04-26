@@ -6,14 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.navigation.Destination
-import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LaunchApplicationViewModel(
     private val authProvider: AuthProvider,
-    private val navigator: Navigator,
 ) : ViewModel() {
     val visiblePermissionDialogQueue = mutableStateListOf<String>()
 
