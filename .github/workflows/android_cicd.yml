@@ -42,6 +42,14 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: ./gradlew app:bundleRelease
 
+      - name: Create Release Notes
+        env:
+          MESSAGE: ${{ github.event.head_commit.message || github.event.pull_request.title }}
+        run: |
+          echo "$MESSAGE" > release_notes.txt
+          mkdir -p whatsnew/en-US
+          echo "$MESSAGE" > whatsnew/en-US/default.txt
+
       - name: Write Firebase Service Account
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ${{ github.workspace }}/service-account.json
 
@@ -53,6 +61,7 @@ jobs:
           serviceCredentialsFile: ${{ github.workspace }}/service-account.json
           file: app/build/outputs/bundle/release/app-release.aab
           groups: internal-testers
+          releaseNotesFile: release_notes.txt
 
       - name: Upload App Bundle Artifact
         if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk'
@@ -62,17 +71,8 @@ jobs:
           path: app/build/outputs/bundle/release/app-release.aab
           retention-days: 1
 
-      - name: Create Release Notes
-        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          echo "$COMMIT_MESSAGE" > release_notes.txt
-          mkdir -p whatsnew/en-US
-          echo "$COMMIT_MESSAGE" > whatsnew/en-US/default.txt
-
       - name: Upload Release Notes Artifact
-        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/heads/feature/')
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
