@@ -1,126 +1,62 @@
-<!-- 
-This README template got from https://github.com/othneildrew/Best-README-Template/tree/master
-Thx a lot Othneil Drew for this awesome template, shared with MIT License!
--->
+# SquadPlay 🎮
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-<!-- [![Contributors][contributors-shield]][contributors-url] pro subscribe gitHub required-->
-<!-- [![Forks][forks-shield]][forks-url] -->
-<!-- [![Stargazers][stars-shield]][stars-url] -->
-<!-- [![Issues][issues-shield]][issues-url] -->
-<!-- [![MIT License][license-shield]][license-url] -->
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![LinkedIn](https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555)](https://linkedin.com/in/evgenysamarin)
 
-<!-- PROJECT LOGO -->
-<br />
-<div>
-  <a href="https://github.com/EvgenySamarin/SquadPlay">
-    <img src="" alt="Logo" width="80" height="80">
-  </a>
+**SquadPlay** is an Android application designed to help you and your friends organize game sessions easily. No more endless chat scrolls to figure out who's playing and when.
 
-<h3 align="center">SquadPlay</h3>
+## 🚀 Features
 
-  <p>
-    Project description
-    <br />
-    <a href="https://github.com/EvgenySamarin/SquadPlay"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/EvgenySamarin/SquadPlay">View Demo</a>
-    ·
-    <a href="https://github.com/EvgenySamarin/SquadPlay/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/EvgenySamarin/SquadPlay/issues">Request Feature</a>
-  </p>
-</div>
+- **Session Organization:** Create and manage game events.
+- **Friend Management:** Keep track of your squad.
+- **Calendar Integration:** See upcoming games at a glance.
+- **Real-time Updates:** Stay notified with Firebase Cloud Messaging.
+- **Seamless Auth:** Easy login with Google Sign-In and Firebase Auth.
 
+## 🛠 Built With
 
+- **Language:** [Kotlin](https://kotlinlang.org/)
+- **UI Framework:** [Jetpack Compose](https://developer.android.com/jetpack/compose)
+- **Architecture:** Clean Architecture with Multi-module setup
+- **Dependency Injection:** [Koin](https://insert-koin.io/)
+- **Backend:** [Firebase](https://firebase.google.com/) (Firestore, Auth, Messaging, Crashlytics)
+- **Image Loading:** [Coil](https://coil-kt.github.io/coil/)
+- **Design:** Material 3
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+## 📁 Project Structure
 
+The project is divided into several modules to ensure separation of concerns and maintainability:
 
+- **`:app`**: The main Android module containing UI (Compose), ViewModels, and Android-specific logic.
+- **`:domain`**: Business logic and Use Cases. Pure Kotlin module.
+- **`:data`**: Implementation of repositories, handling data from Firebase and other sources.
+- **`:contract`**: Interfaces and abstractions for communication between modules.
+- **`:models`**: Shared data models used throughout the application.
 
-<!-- ABOUT THE PROJECT -->
-## <a id="about-the-project">About The Project</a>
+## 🚦 Getting Started
 
-<p>(<a href="#readme-top">back to top</a>)</p>
+### Prerequisites
 
+- Android Studio Jellyfish or newer.
+- JDK 17.
+- A Firebase project (you'll need to add your own `google-services.json`).
 
+### Installation
 
-### Built With
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/EvgenySamarin/SquadPlay.git
+   ```
+2. Open the project in Android Studio.
+3. Connect your Firebase project and add `google-services.json` to the `app/` directory.
+4. Build and Run!
 
+## 🗺 Roadmap
 
+See the [open issues](https://github.com/EvgenySamarin/SquadPlay/issues) for a full list of proposed features and known issues.
 
-<p>(<a href="#readme-top">back to top</a>)</p>
+## 📬 Contact
 
-<!-- ROADMAP -->
-## Roadmap
-See the [project roadmap](https://github.com/users/EvgenySamarin/projects/1/views/4)
+Evgeny Samarin - [ey.samarin@gmail.com](mailto:ey.samarin@gmail.com)
+Twitter: [@EvgenySamarin](https://twitter.com/EvgenySamarin)
 
-See the [open issues](https://github.com/EvgenySamarin/SquadPlay/issues) for a full list of
-proposed features (and known issues).
-
-<p>(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- CONTACT -->
-## Contact
-
-Twitter (X) / [@EvgenySamarin](https://twitter.com/EvgenySamarin) - ey.samarin@gmail.com
-
-Project
-Link: [https://github.com/EvgenySamarin/SquadPlay](https://github.com/EvgenySamarin/SquadPlay)
-
-<p>(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-
-[contributors-shield]: https://img.shields.io/github/contributors/EvgenySamarin/SquadPlay.svg?style=for-the-badge
-
-[contributors-url]: https://github.com/EvgenySamarin/SquadPlay/graphs/contributors
-
-[forks-shield]: https://img.shields.io/github/forks/EvgenySamarin/SquadPlay.svg?style=for-the-badge
-
-[forks-url]: https://github.com/EvgenySamarin/SquadPlay/network/members
-
-[stars-shield]: https://img.shields.io/github/stars/EvgenySamarin/SquadPlay.svg?style=for-the-badge
-
-[stars-url]: https://github.com/EvgenySamarin/SquadPlay/stargazers
-
-[issues-shield]: https://img.shields.io/github/issues/EvgenySamarin/SquadPlay.svg?style=for-the-badge
-
-[issues-url]: https://github.com/EvgenySamarin/SquadPlay/issues
-
-[license-shield]: https://img.shields.io/github/license/EvgenySamarin/SquadPlay.svg?style=for-the-badge
-
-[license-url]: https://github.com/EvgenySamarin/SquadPlay/blob/master/LICENSE.txt
-
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-
-[linkedin-url]: https://linkedin.com/in/evgenysamarin
-
-[product-screenshot]: images/screenshot.png
-
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
+Project Link: [https://github.com/EvgenySamarin/SquadPlay](https://github.com/EvgenySamarin/SquadPlay)
