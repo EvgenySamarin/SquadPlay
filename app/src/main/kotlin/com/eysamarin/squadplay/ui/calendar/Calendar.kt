@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -203,45 +203,21 @@ fun ContentItem(
     onItemTap: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
     Box(
         modifier = modifier
-            .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
-            .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
             .clickable(enabled = date.enabled) {
                 onItemTap(date)
-            }
-    ) {
-        BadgedBox(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(vertical = 12.dp),
-            badge = {
-                if (date.countEvents > 0) {
-                    Badge(
-                        modifier = Modifier.offset(x = 10.dp, y = (-8).dp),
-                        containerColor = when {
-                            !date.enabled -> MaterialTheme.colorScheme.outlineVariant
-                            date.isSelected -> MaterialTheme.colorScheme.onPrimary
-                            else -> MaterialTheme.colorScheme.primary
-                        },
-                        contentColor = when {
-                            !date.enabled -> MaterialTheme.colorScheme.surface
-                            date.isSelected -> MaterialTheme.colorScheme.primary
-                            else -> MaterialTheme.colorScheme.onPrimary
-                        }
-
-                    ) {
-                        Text(
-                            text = date.countEvents.toString(),
-                            style = adaptiveLabelByHeight(windowSize)
-                        )
-                    }
-                }
             },
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
+                .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                .size(48.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            
             Text(
-                modifier = Modifier,
                 text = date.dayOfMonth?.toString() ?: "",
                 color = when {
                     !date.enabled -> MaterialTheme.colorScheme.outlineVariant
@@ -250,6 +226,40 @@ fun ContentItem(
                 },
                 style = adaptiveBodyByHeight(windowSize),
             )
+
+        }
+
+        if (date.countEvents > 0) {
+            Badge(
+                modifier = Modifier.align(Alignment.TopEnd).offset(6.dp, (-6).dp),
+                containerColor = when {
+                    !date.enabled -> MaterialTheme.colorScheme.outlineVariant
+                    date.isSelected -> MaterialTheme.colorScheme.onPrimary
+                    else -> MaterialTheme.colorScheme.primary
+                },
+                contentColor = when {
+                    !date.enabled -> MaterialTheme.colorScheme.surface
+                    date.isSelected -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onPrimary
+                }
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    if (date.hasUserEvents) {
+                        Text(
+                            text = "★",
+                            style = adaptiveLabelByHeight(windowSize),
+                            modifier = Modifier.padding(end = 2.dp)
+                        )
+                    }
+                    Text(
+                        text = date.countEvents.toString(),
+                        style = adaptiveLabelByHeight(windowSize)
+                    )
+                }
+            }
         }
     }
 }

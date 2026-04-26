@@ -114,7 +114,11 @@ class HomeScreenViewModel(
         ) { userInfo, calendar, events ->
             userInfo ?: return@combine null
 
-            val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(calendar, events)
+            val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(
+                calendar = calendar,
+                events = events,
+                currentUserId = userInfo.uid
+            )
 
             val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
             val eventsBySelectedDate = events.filter {

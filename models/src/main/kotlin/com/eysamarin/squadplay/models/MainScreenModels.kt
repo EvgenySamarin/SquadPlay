@@ -36,6 +36,7 @@ data class Date(
     val countEvents: Int,
     val isSelected: Boolean,
     val enabled: Boolean,
+    val hasUserEvents: Boolean = false,
 ) {
     companion object {
         val Empty = Date(
@@ -44,6 +45,7 @@ data class Date(
             countEvents = 0,
             isSelected = false,
             enabled = false,
+            hasUserEvents = false,
         )
     }
 }
@@ -84,16 +86,16 @@ val PREVIEW_CALENDAR_UI = CalendarUI(
     dates = listOf(
         Date(1, 12, 0, isSelected = false, enabled = true),
         Date(2, 12, 0, isSelected = false, enabled = true),
-        Date(3, 12, 1, isSelected = false, enabled = true),
+        Date(3, 12, 1, isSelected = false, enabled = true, hasUserEvents = true),
         Date(4, 12, 0, isSelected = false, enabled = true),
         Date(5, 12, 0, isSelected = false, enabled = true),
-        Date(6, 12, 5, isSelected = true, enabled = true),
+        Date(6, 12, 99, isSelected = true, enabled = true, hasUserEvents = true),
         Date(7, 12, 0, isSelected = false, enabled = true),
         Date(8, 12, 0, isSelected = false, enabled = true),
         Date(9, 12, 0, isSelected = false, enabled = true),
         Date(10, 12, 0, isSelected = false, enabled = true),
         Date(11, 12, 0, isSelected = false, enabled = true),
-        Date(12, 12, 3, isSelected = false, enabled = true),
+        Date(12, 12, 3, isSelected = false, enabled = true, hasUserEvents = true),
         Date(13, 12, 0, isSelected = false, enabled = true),
         Date(14, 12, 0, isSelected = false, enabled = true),
         Date(15, 12, 0, isSelected = false, enabled = true),
@@ -107,7 +109,7 @@ val PREVIEW_CALENDAR_UI = CalendarUI(
         Date(23, 12, 0, isSelected = false, enabled = true),
         Date(24, 12, 0, isSelected = false, enabled = true),
         Date(25, 12, 0, isSelected = false, enabled = true),
-        Date(26, 12, 5, isSelected = false, enabled = true),
+        Date(26, 12, 5, isSelected = false, enabled = true, hasUserEvents = true),
         Date(27, 12, 0, isSelected = false, enabled = true),
         Date(28, 12, 0, isSelected = false, enabled = true),
         Date(29, 12, 1, isSelected = false, enabled = true),
