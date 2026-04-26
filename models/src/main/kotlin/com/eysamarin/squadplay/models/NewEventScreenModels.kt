@@ -1,7 +1,7 @@
 package com.eysamarin.squadplay.models
 
-import java.time.LocalDateTime
-import java.time.YearMonth
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 
 sealed interface NewEventScreenAction {
     data object OnBackButtonTap : NewEventScreenAction
@@ -19,13 +19,13 @@ data class PickerTimeUnit(
 data class NewEventScreenUI(
     val title: String,
     val selectedDate: Date,
-    val yearMonth: YearMonth,
+    val yearMonth: LocalDate,
 )
 
 val PREVIEW_TIME_PICKER_UI = TimePickerUI(
     currentTarget = DialPickerTarget.FROM,
-    timeFrom = LocalDateTime.of(2025, 4, 1, 12, 0),
-    timeTo = LocalDateTime.of(2025, 4, 1, 14, 15),
+    timeFrom = LocalDateTime(2025, 4, 1, 12, 0),
+    timeTo = LocalDateTime(2025, 4, 1, 14, 15),
 )
 
 val PREVIEW_NEW_EVENT_SCREEN_UI = NewEventScreenUI(
@@ -36,5 +36,5 @@ val PREVIEW_NEW_EVENT_SCREEN_UI = NewEventScreenUI(
         enabled = true,
         isSelected = true,
     ),
-    yearMonth = YearMonth.now()
+    yearMonth = java.time.LocalDate.now().run { LocalDate(year, monthValue, 1) }
 )

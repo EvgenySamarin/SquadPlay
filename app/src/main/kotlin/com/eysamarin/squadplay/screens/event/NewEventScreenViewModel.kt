@@ -20,8 +20,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
-import java.time.YearMonth
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 import java.util.UUID
 
 
@@ -67,7 +67,7 @@ class NewEventScreenViewModel(
                     NewEventScreenUI(
                         title = "new event screen",
                         selectedDate = args.selectedDate,
-                        yearMonth = YearMonth.parse(args.yearMonth),
+                        yearMonth = LocalDate.parse(args.yearMonth),
                     )
                 )
             }

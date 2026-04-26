@@ -3,14 +3,16 @@ package com.eysamarin.squadplay.domain.calendar
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import java.time.format.TextStyle
 import java.util.Locale
 
 interface CalendarUIProvider {
-    fun provideCalendarUIBy(yearMonth: YearMonth): CalendarUI
+    fun provideCalendarUIBy(yearMonth: LocalDate): CalendarUI
     fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI
     fun mergedCalendarWithEvents(
         calendar: CalendarUI,
@@ -26,7 +28,9 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         val daysOfWeek = mutableListOf<String>()
 
         for (dayOfWeek in DayOfWeek.entries) {
-            val localizedDayName = dayOfWeek.getDisplayName(
+            // Convert kotlinx.datetime.DayOfWeek to java.time.DayOfWeek for display name
+            val javaDayOfWeek = java.time.DayOfWeek.valueOf(dayOfWeek.name)
+            val localizedDayName = javaDayOfWeek.getDisplayName(
                 TextStyle.SHORT, Locale.getDefault(),
             )
             daysOfWeek.add(localizedDayName)
@@ -43,7 +47,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         dates = calendar.dates.map { date ->
             val eventsOnDate = events.filter { event ->
                 val fromDayOfMonth = event.fromDateTime.dayOfMonth
-                val fromMonthOfYear = event.fromDateTime.month.value
+                val fromMonthOfYear = event.fromDateTime.month.ordinal + 1
 
                 val isSameDay = fromDayOfMonth == date.dayOfMonth
                         && fromMonthOfYear == date.monthNumber
@@ -56,7 +60,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         },
     )
 
-    override fun provideCalendarUIBy(yearMonth: YearMonth): CalendarUI {
+    override fun provideCalendarUIBy(yearMonth: LocalDate): CalendarUI {
         val dates = dataSource.getDates(yearMonth)
 
         return CalendarUI(
@@ -84,35 +88,32 @@ class CalendarUIProviderImpl: CalendarUIProvider {
 
 
 class CalendarDataSource {
-    fun YearMonth.getDayOfMonthStartingFromMonday(): List<LocalDate> {
-        val firstDayOfMonth = LocalDate.of(year, month, 1)
-        val firstMondayOfMonth = firstDayOfMonth.with(DayOfWeek.MONDAY)
-        val firstDayOfNextMonth = firstDayOfMonth.plusMonths(1)
+    fun LocalDate.getDayOfMonthStartingFromMonday(): List<LocalDate> {
+        val firstDayOfMonth = LocalDate(year, month, 1)
+        val daysToSubtract = (firstDayOfMonth.dayOfWeek.ordinal - DayOfWeek.MONDAY.ordinal + 7) % 7
+        val firstMondayOfMonth = firstDayOfMonth.minus(daysToSubtract, DateTimeUnit.DAY)
+        val firstDayOfNextMonth = firstDayOfMonth.plus(1, DateTimeUnit.MONTH)
 
-        return generateSequence(firstMondayOfMonth) { it.plusDays(1) }
-            .takeWhile { it.isBefore(firstDayOfNextMonth) }
+        return generateSequence(firstMondayOfMonth) { it.plus(1, DateTimeUnit.DAY) }
+            .takeWhile { it < firstDayOfNextMonth }
             .toMutableList()
             .apply {
-                val extraDaysCount = DayOfWeek.SUNDAY.value - last().dayOfWeek.value
-                repeat(extraDaysCount) {
-                    add(last().plusDays(1))
+                while (last().dayOfWeek != DayOfWeek.SUNDAY) {
+                    add(last().plus(1, DateTimeUnit.DAY))
                 }
             }
             .toList()
     }
 
-    fun getDates(yearMonth: YearMonth): List<Date> {
+    fun getDates(yearMonth: LocalDate): List<Date> {
+        val today = java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
         return yearMonth.getDayOfMonthStartingFromMonday()
             .map { date ->
                 Date(
-                    dayOfMonth = if (date.monthValue == yearMonth.monthValue) {
-                        date.dayOfMonth
-                    } else {
-                        date.dayOfMonth
-                    },
-                    monthNumber = date.month.value,
-                    isSelected = date.isEqual(LocalDate.now()) && date.monthValue == yearMonth.monthValue,
-                    enabled = date.monthValue == yearMonth.monthValue,
+                    dayOfMonth = date.dayOfMonth,
+                    monthNumber = date.monthNumber,
+                    isSelected = date == today && date.monthNumber == yearMonth.monthNumber,
+                    enabled = date.monthNumber == yearMonth.monthNumber,
                     countEvents = 0,
                 )
             }

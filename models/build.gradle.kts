@@ -10,4 +10,5 @@ kotlin {
 
 dependencies {
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
 }

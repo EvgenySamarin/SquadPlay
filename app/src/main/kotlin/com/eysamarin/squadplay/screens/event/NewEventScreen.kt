@@ -45,8 +45,10 @@ import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.plus
 import java.text.DecimalFormat
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +122,7 @@ private fun NewEventScreenMediumLayout(
         val formattedDate = buildString {
             append(state.data.yearMonth.year)
             append(".")
-            append(format.format(state.data.yearMonth.monthValue))
+            append(format.format(state.data.yearMonth.month.ordinal + 1))
             append(".")
             append(format.format(state.data.selectedDate.dayOfMonth))
         }
@@ -164,7 +166,7 @@ private fun NewEventScreenMediumLayout(
                     errorText = null
                     when (target) {
                         DialPickerTarget.FROM -> {
-                            dateTimeFrom = LocalDateTime.of(
+                            dateTimeFrom = LocalDateTime(
                                 /* year = */ state.data.yearMonth.year,
                                 /* month = */ state.data.yearMonth.month,
                                 /* dayOfMonth = */ state.data.selectedDate.dayOfMonth ?: 1,
@@ -174,7 +176,7 @@ private fun NewEventScreenMediumLayout(
                         }
 
                         DialPickerTarget.TO -> {
-                            dateTimeTo = LocalDateTime.of(
+                            dateTimeTo = LocalDateTime(
                                 /* year = */ state.data.yearMonth.year,
                                 /* month = */ state.data.yearMonth.month,
                                 /* dayOfMonth = */ state.data.selectedDate.dayOfMonth ?: 1,
@@ -209,7 +211,9 @@ private fun NewEventScreenMediumLayout(
 
                 onAction(NewEventScreenAction.OnEventSaveTap(
                     timeFrom = from,
-                    timeTo = if (isHoursNextDay || isMinutesNextDay) to.plusDays(1) else to
+                    timeTo = if (isHoursNextDay || isMinutesNextDay) {
+                        LocalDateTime(from.date.plus(1, DateTimeUnit.DAY), from.time)
+                    } else to
                 ))
             },
         )

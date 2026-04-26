@@ -126,6 +126,7 @@ dependencies {
     implementation(libs.androidx.compose.material3.windowSize)
 
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
 
     testImplementation(libs.io.insert.koin.test.junit4)
     testImplementation(libs.junit)

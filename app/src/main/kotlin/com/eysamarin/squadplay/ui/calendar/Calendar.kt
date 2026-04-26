@@ -46,16 +46,20 @@ import com.eysamarin.squadplay.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import kotlinx.coroutines.launch
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import java.time.format.TextStyle
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
 fun Calendar(
     ui: CalendarUI,
     windowSize: WindowSizeClass,
-    onPreviousMonthTap: (YearMonth) -> Unit,
-    onNextMonthTap: (YearMonth) -> Unit,
+    onPreviousMonthTap: (LocalDate) -> Unit,
+    onNextMonthTap: (LocalDate) -> Unit,
     onDateTap: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,9 +86,9 @@ fun Calendar(
                     coroutineScope.launch {
                         val offset = horizontalDragOffset.value
                         if (offset < -swipeThresholdPx) {
-                            onNextMonthTap(ui.yearMonth.plusMonths(1))
+                            onNextMonthTap(ui.yearMonth.plus(1, DateTimeUnit.MONTH))
                         } else if (offset > swipeThresholdPx) {
-                            onPreviousMonthTap(ui.yearMonth.minusMonths(1))
+                            onPreviousMonthTap(ui.yearMonth.minus(1, DateTimeUnit.MONTH))
                         } else {
                             horizontalDragOffset.animateTo(0f, animationSpec = tween(300))
                         }
@@ -139,20 +143,22 @@ fun WeekDayItem(day: String, modifier: Modifier = Modifier, windowSize: WindowSi
 @Composable
 fun Header(
     windowSize: WindowSizeClass,
-    yearMonth: YearMonth,
-    onPreviousMonthTap: (YearMonth) -> Unit,
-    onNextMonthTap: (YearMonth) -> Unit,
+    yearMonth: LocalDate,
+    onPreviousMonthTap: (LocalDate) -> Unit,
+    onNextMonthTap: (LocalDate) -> Unit,
 ) {
     Row {
-        IconButton(onClick = { onPreviousMonthTap(yearMonth.minusMonths(1)) }) {
+        IconButton(onClick = { onPreviousMonthTap(yearMonth.minus(1, DateTimeUnit.MONTH)) }) {
             Icon(
                 painter = painterResource(R.drawable.ic_keyboard_arrow_left_24),
                 contentDescription = "previous",
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }
+        // Localized month name using java.time.Month as helper
+        val monthName = java.time.Month.valueOf(yearMonth.month.name).getDisplayName(TextStyle.FULL, Locale.getDefault())
         Text(
-            text = yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+            text = "$monthName ${yearMonth.year}",
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
             style = adaptiveTitleByHeight(windowSize),
@@ -160,7 +166,7 @@ fun Header(
                 .weight(1f)
                 .align(Alignment.CenterVertically)
         )
-        IconButton(onClick = { onNextMonthTap(yearMonth.plusMonths(1)) }) {
+        IconButton(onClick = { onNextMonthTap(yearMonth.plus(1, DateTimeUnit.MONTH)) }) {
             Icon(
                 painter = painterResource(R.drawable.ic_keyboard_arrow_right_24),
                 contentDescription = "next",

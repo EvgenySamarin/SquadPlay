@@ -36,4 +36,5 @@ dependencies {
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
     implementation(libs.com.google.firebase.messaging)
+    implementation(libs.kotlinx.datetime)
 }
