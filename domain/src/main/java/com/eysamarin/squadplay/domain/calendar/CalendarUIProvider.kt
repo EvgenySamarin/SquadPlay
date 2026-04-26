@@ -12,7 +12,11 @@ import java.util.Locale
 interface CalendarUIProvider {
     fun provideCalendarUIBy(yearMonth: YearMonth): CalendarUI
     fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI
-    fun mergedCalendarWithEvents(calendar: CalendarUI, events: List<Event>): CalendarUI
+    fun mergedCalendarWithEvents(
+        calendar: CalendarUI,
+        events: List<Event>,
+        currentUserId: String
+    ): CalendarUI
 }
 
 class CalendarUIProviderImpl: CalendarUIProvider {
@@ -33,18 +37,21 @@ class CalendarUIProviderImpl: CalendarUIProvider {
 
     override fun mergedCalendarWithEvents(
         calendar: CalendarUI,
-        events: List<Event>
+        events: List<Event>,
+        currentUserId: String
     ): CalendarUI = calendar.copy(
         dates = calendar.dates.map { date ->
-            date.copy(
-                countEvents = events.count { event ->
-                    val fromDayOfMonth = event.fromDateTime.dayOfMonth
-                    val fromMonthOfYear = event.fromDateTime.month.value
+            val eventsOnDate = events.filter { event ->
+                val fromDayOfMonth = event.fromDateTime.dayOfMonth
+                val fromMonthOfYear = event.fromDateTime.month.value
 
-                    val isSameDay = fromDayOfMonth == date.dayOfMonth
-                            && fromMonthOfYear == date.monthNumber
-                    isSameDay
-                },
+                val isSameDay = fromDayOfMonth == date.dayOfMonth
+                        && fromMonthOfYear == date.monthNumber
+                isSameDay
+            }
+            date.copy(
+                countEvents = eventsOnDate.count(),
+                hasUserEvents = eventsOnDate.any { it.creatorId == currentUserId }
             )
         },
     )
