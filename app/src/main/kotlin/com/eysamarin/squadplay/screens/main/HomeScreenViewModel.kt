@@ -30,8 +30,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 
 class HomeScreenViewModel(
     private val navigator: Navigator,
@@ -121,7 +123,8 @@ class HomeScreenViewModel(
 
             val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
             val eventsBySelectedDate = events.filter {
-                selectedDate?.dayOfMonth == it.fromDateTime.dayOfMonth
+                selectedDate?.dayOfMonth == it.fromDateTime.day
+                        && selectedDate.monthNumber == it.fromDateTime.month.number
             }.map {
                 EventUI(
                     eventId = it.uid,
@@ -139,7 +142,7 @@ class HomeScreenViewModel(
             .filterNotNull()
             .onEach { (userInfo, calendar, eventsBySelectedDate) ->
                 Log.d("TAG", "updateMainScreenUI")
-                _uiState.emit(
+                _uiState.update {
                     UiState.Normal(
                         HomeScreenUI(
                             user = userInfo,
@@ -147,7 +150,7 @@ class HomeScreenViewModel(
                             gameEventsOnDate = eventsBySelectedDate
                         )
                     )
-                )
+                }
             }
             .flowOn(Dispatchers.IO)
             .launchIn(viewModelScope)
