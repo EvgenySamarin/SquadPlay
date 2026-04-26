@@ -28,7 +28,6 @@ import com.eysamarin.squadplay.domain.resource.StringProviderImpl
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.messaging.SnackbarProviderImpl
 import com.eysamarin.squadplay.navigation.DefaultNavigator
-import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
@@ -98,7 +97,7 @@ class SquadPlayApplication : Application() {
         //endregion
 
         //region presentation
-        single<Navigator> { DefaultNavigator(startDestination = Destination.AuthGraph) }
+        single<Navigator> { DefaultNavigator() }
         single<SnackbarProvider> { SnackbarProviderImpl() }
         viewModelOf(::LaunchApplicationViewModel)
         viewModelOf(::HomeScreenViewModel)
