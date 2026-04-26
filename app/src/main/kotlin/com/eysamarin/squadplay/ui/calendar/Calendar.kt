@@ -211,16 +211,16 @@ fun ContentItem(
 ) {
 
     Box(
-        modifier = modifier
-            .clickable(enabled = date.enabled) {
-                onItemTap(date)
-            },
+        modifier = modifier,
     ) {
         Box(
             modifier = Modifier
                 .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
                 .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                .size(48.dp),
+                .size(48.dp)
+                .clickable(enabled = date.enabled) {
+                    onItemTap(date)
+                },
             contentAlignment = Alignment.Center,
         ) {
             Text(
