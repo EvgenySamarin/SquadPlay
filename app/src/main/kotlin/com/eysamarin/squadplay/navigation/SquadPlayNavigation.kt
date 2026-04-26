@@ -54,7 +54,10 @@ import org.koin.compose.koinInject
 import kotlin.reflect.typeOf
 
 @Composable
-fun SquadPlayNavigation(windowSize: WindowSizeClass) {
+fun SquadPlayNavigation(
+    windowSize: WindowSizeClass,
+    startDestination: Destination,
+) {
 
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
@@ -80,7 +83,7 @@ fun SquadPlayNavigation(windowSize: WindowSizeClass) {
 
     NavHost(
         navController = navController,
-        startDestination = navigator.startDestination
+        startDestination = startDestination
     ) {
         navigation<Destination.AuthGraph>(startDestination = Destination.AuthScreen) {
             composable<Destination.AuthScreen> {
