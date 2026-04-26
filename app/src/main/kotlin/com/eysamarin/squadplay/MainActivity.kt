@@ -12,6 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -33,12 +34,14 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             SquadPlayTheme {
                 val windowSize = calculateWindowSizeClass(this)
                 val viewModel: LaunchApplicationViewModel = koinViewModel()
+                splashScreen.setKeepOnScreenCondition { viewModel.isLoading.value }
                 val permissionDialogQueue = viewModel.visiblePermissionDialogQueue
 
                 val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
