@@ -18,9 +18,12 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.SquadPlayNavigation
 import com.eysamarin.squadplay.ui.PermissionDialog
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
@@ -41,7 +44,10 @@ class MainActivity : ComponentActivity() {
             SquadPlayTheme {
                 val windowSize = calculateWindowSizeClass(this)
                 val viewModel: LaunchApplicationViewModel = koinViewModel()
-                splashScreen.setKeepOnScreenCondition { viewModel.isLoading.value }
+                val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+                val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
+
+                splashScreen.setKeepOnScreenCondition { isLoading }
                 val permissionDialogQueue = viewModel.visiblePermissionDialogQueue
 
                 val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
@@ -83,7 +89,9 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                SquadPlayNavigation(windowSize)
+                if (!isLoading) {
+                    SquadPlayNavigation(windowSize, startDestination)
+                }
             }
         }
     }
@@ -109,6 +117,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FinanceStocksNavigationPreview() {
     SquadPlayTheme {
-        SquadPlayNavigation(WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)))
+        SquadPlayNavigation(
+            windowSize = WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)),
+            startDestination = Destination.AuthGraph
+        )
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
+import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,10 +20,13 @@ class LaunchApplicationViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _startDestination = MutableStateFlow<Destination>(Destination.AuthGraph)
+    val startDestination = _startDestination.asStateFlow()
+
     init {
         viewModelScope.launch {
             if (authProvider.isUserExists()) {
-                navigator.navigateToHomeGraph()
+                _startDestination.value = Destination.HomeGraph
             }
             _isLoading.value = false
         }
