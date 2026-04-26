@@ -27,6 +27,7 @@ comGoogleAndroidLibrariesIdentityGoogleid = "1.1.1"
 ioCoilKtCoil3Compose = "3.3.0"
 ioCoilKtCoil3NetworkOkHttp = "3.3.0"
 pickTimeCompose = "1.1.5"
+kotlinxDatetime = "0.7.1"
 googleAndroidGmsOssLicenses = "0.10.10"
 comGoogleAndroidGmsOssLicenses = "17.3.0"
 
@@ -68,6 +69,7 @@ com-google-android-gms-oss-licenses = {group = "com.google.android.gms", name = 
 
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
 org-jetbrains-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization"}
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

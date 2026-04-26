@@ -12,4 +12,5 @@ dependencies {
     implementation(project(":contract"))
 
     implementation(libs.org.jetbrains.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.datetime)
 }

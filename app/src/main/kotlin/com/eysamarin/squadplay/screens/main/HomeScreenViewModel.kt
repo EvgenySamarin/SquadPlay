@@ -31,8 +31,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.LocalDate
 
 class HomeScreenViewModel(
     private val navigator: Navigator,
@@ -55,7 +54,7 @@ class HomeScreenViewModel(
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
     private val calendarUIState = MutableStateFlow<CalendarUI>(
-        calendarUIProvider.provideCalendarUIBy(yearMonth = YearMonth.now())
+        calendarUIProvider.provideCalendarUIBy(yearMonth = java.time.LocalDate.now().run { LocalDate(year, monthValue, 1) })
     )
 
     init {
@@ -128,8 +127,8 @@ class HomeScreenViewModel(
                     eventId = it.uid,
                     title = it.title,
                     subtitle = stringProvider.fromToDate(
-                        fromDate = it.fromDateTime.format(DEFAULT_TIME_FORMATTER),
-                        toDate = it.toDateTime.format(DEFAULT_TIME_FORMATTER),
+                        fromDate = formatTime(it.fromDateTime.hour, it.fromDateTime.minute),
+                        toDate = formatTime(it.toDateTime.hour, it.toDateTime.minute),
                     ),
                     iconUrl = it.eventIconUrl,
                     isYourEvent = it.creatorId == userInfo.uid
@@ -169,14 +168,14 @@ class HomeScreenViewModel(
         navigator.navigate(Destination.ProfileScreen)
     }
 
-    fun onNextMonthTap(nextMonth: YearMonth) = viewModelScope.launch {
+    fun onNextMonthTap(nextMonth: LocalDate) = viewModelScope.launch {
         Log.d("TAG", "onNextMonthTap: $nextMonth")
 
         val nextMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = nextMonth)
         calendarUIState.emit(nextMonthCalendarUI)
     }
 
-    fun onPreviousMonthTap(prevMonth: YearMonth) = viewModelScope.launch {
+    fun onPreviousMonthTap(prevMonth: LocalDate) = viewModelScope.launch {
         Log.d("TAG", "onPreviousMonthTap: $prevMonth")
 
         val prevMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = prevMonth)
@@ -278,7 +277,7 @@ class HomeScreenViewModel(
         }
     }
 
-    companion object {
-        val DEFAULT_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    private fun formatTime(hour: Int, minute: Int): String {
+        return String.format(java.util.Locale.getDefault(), "%02d:%02d", hour, minute)
     }
 }

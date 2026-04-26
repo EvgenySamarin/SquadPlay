@@ -1,8 +1,8 @@
 package com.eysamarin.squadplay.models
 
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
-import java.time.YearMonth
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 import java.util.UUID
 
 sealed interface HomeScreenAction {
@@ -11,8 +11,8 @@ sealed interface HomeScreenAction {
     object OnAvatarTap : HomeScreenAction
     object OnJoinGroupDialogDismiss : HomeScreenAction
     object OnJoinGroupDialogConfirm : HomeScreenAction
-    class OnPrevMonthTap(val yearMonth: YearMonth) : HomeScreenAction
-    class OnNextMonthTap(val yearMonth: YearMonth) : HomeScreenAction
+    class OnPrevMonthTap(val yearMonth: LocalDate) : HomeScreenAction
+    class OnNextMonthTap(val yearMonth: LocalDate) : HomeScreenAction
     class OnDateTap(val date: Date) : HomeScreenAction
     class OnDeleteEventTap(val eventId: String): HomeScreenAction
 }
@@ -25,7 +25,7 @@ data class HomeScreenUI(
 
 data class CalendarUI(
     val daysOfWeek: List<String>,
-    val yearMonth: YearMonth,
+    val yearMonth: LocalDate,
     val dates: List<Date>
 )
 
@@ -82,7 +82,7 @@ data class EventUI(
 
 val PREVIEW_CALENDAR_UI = CalendarUI(
     daysOfWeek = listOf("Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"),
-    yearMonth = YearMonth.now(),
+    yearMonth = java.time.LocalDate.now().run { LocalDate(year, monthValue, 1) },
     dates = listOf(
         Date(1, 12, 0, isSelected = false, enabled = true),
         Date(2, 12, 0, isSelected = false, enabled = true),
