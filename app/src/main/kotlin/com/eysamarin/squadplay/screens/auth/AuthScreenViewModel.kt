@@ -19,18 +19,6 @@ class AuthScreenViewModel(
     private val stringProvider: StringProvider,
 ) : ViewModel() {
 
-    init {
-        checkUserSignedIn()
-    }
-
-    private fun checkUserSignedIn() = viewModelScope.launch {
-        val isUserExists = authProvider.isUserExists()
-
-        if (isUserExists) {
-            navigator.navigateToHomeGraph()
-        }
-    }
-
     fun onSignInWithGoogleTap() = viewModelScope.launch {
         Log.d("TAG", "onSignUpTap")
         val isSuccess = authProvider.signInWithGoogle()
