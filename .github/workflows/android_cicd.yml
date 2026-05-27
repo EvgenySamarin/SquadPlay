@@ -5,6 +5,8 @@ on:
     branches:
       - 'trunk'
       - 'feature/**'
+    tags:
+      - 'v*'
   pull_request:
     branches: [ 'trunk' ]
 
@@ -40,7 +42,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-        run: ./gradlew app:bundleRelease
+        run: ./gradlew app:bundleRelease app:assembleRelease
 
       - name: Create Release Notes
         env:
@@ -64,15 +66,23 @@ jobs:
           releaseNotesFile: release_notes.txt
 
       - name: Upload App Bundle Artifact
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk'
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: app-bundle
           path: app/build/outputs/bundle/release/app-release.aab
           retention-days: 1
 
+      - name: Upload APK Artifact
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-apk
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 1
+
       - name: Upload Release Notes Artifact
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/heads/feature/')
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
@@ -117,3 +127,32 @@ jobs:
           releaseFiles: app-release.aab
           track: internal
           whatsNewDirectory: whatsnew/
+
+  github-release:
+    name: Create GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download App Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app-release.aab
+            app-release.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
