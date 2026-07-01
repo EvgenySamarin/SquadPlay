@@ -14,7 +14,7 @@ import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -29,11 +29,11 @@ class ProfileScreenViewModel(
     private val profileProvider: ProfileProvider,
     private val authProvider: AuthProvider,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<UiState<ProfileScreenUI>>
+        field = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
 
-    private val _inviteLinkState = MutableStateFlow<UiState<String>>(UiState.Empty)
-    val inviteLinkState = _inviteLinkState.asStateFlow()
+    val inviteLinkState: StateFlow<UiState<String>>
+        field = MutableStateFlow<UiState<String>>(UiState.Empty)
 
     private val userInfoFlow = MutableStateFlow<User?>(null)
     private val userFriendsFlow = MutableStateFlow<List<Friend>>(emptyList())
@@ -72,7 +72,7 @@ class ProfileScreenViewModel(
         }
             .filterNotNull()
             .onEach { (userInfo, friends) ->
-                _uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo, friends = friends)))
+                uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo, friends = friends)))
             }
             .launchIn(viewModelScope)
     }
@@ -96,12 +96,12 @@ class ProfileScreenViewModel(
         }
 
         val inviteLink = profileProvider.createNewInviteLink(inviteGroupId = groupId)
-        _inviteLinkState.emit(UiState.Normal(inviteLink))
+        inviteLinkState.emit(UiState.Normal(inviteLink))
     }
 
     fun hideShareLink() = viewModelScope.launch {
         Log.d("TAG", "hideShareLink")
-        _inviteLinkState.emit(UiState.Empty)
+        inviteLinkState.emit(UiState.Empty)
     }
 
     fun onLogOutTap() = viewModelScope.launch {
