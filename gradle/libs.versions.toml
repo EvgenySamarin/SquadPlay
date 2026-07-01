@@ -4,7 +4,7 @@ android-compileSdk = "37"
 #noinspection UnusedVersionCatalogEntry
 android-minSdk = "28"
 #noinspection UnusedVersionCatalogEntry
-android-targetSdk = "36"
+android-targetSdk = "37"
 
 agp = "9.2.1"
 kotlin = "2.4.0"
