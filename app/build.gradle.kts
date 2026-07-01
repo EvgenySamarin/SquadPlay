@@ -86,6 +86,9 @@ android {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs = listOf("-XXLanguage:+ExplicitBackingFields")
+    }
     jvmToolchain(jdkVersion = 17)
 }
 
@@ -133,7 +136,6 @@ dependencies {
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
     debugImplementation(libs.androidx.compose.ui.tooling)

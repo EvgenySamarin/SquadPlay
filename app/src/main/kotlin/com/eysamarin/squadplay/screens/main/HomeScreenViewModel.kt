@@ -22,7 +22,7 @@ import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -44,14 +44,15 @@ class HomeScreenViewModel(
     private val profileProvider: ProfileProvider,
     private val stringProvider: StringProvider,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
 
-    private val _confirmInviteDialogState = MutableStateFlow<UiState<String>>(UiState.Empty)
-    val confirmInviteDialogState = _confirmInviteDialogState.asStateFlow()
+    val uiState: StateFlow<UiState<HomeScreenUI>>
+        field = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
 
-    private val _inviteGroupIdState = MutableStateFlow<String?>(null)
-    val inviteGroupIdState = _inviteGroupIdState.asStateFlow()
+    val confirmInviteDialogState: StateFlow<UiState<String>>
+        field = MutableStateFlow<UiState<String>>(UiState.Empty)
+
+    val inviteGroupIdState: StateFlow<String?>
+        field = MutableStateFlow<String?>(null)
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
@@ -104,7 +105,7 @@ class HomeScreenViewModel(
                     Log.w("TAG", "Group with uid: $inviteGroupId not found")
                     return@onEach
                 }
-                _confirmInviteDialogState.emit(UiState.Normal(stringProvider.wantToJoinSquad(groupInfo.title)))
+                confirmInviteDialogState.emit(UiState.Normal(stringProvider.wantToJoinSquad(groupInfo.title)))
             }
             .launchIn(viewModelScope)
 
@@ -142,7 +143,7 @@ class HomeScreenViewModel(
             .filterNotNull()
             .onEach { (userInfo, calendar, eventsBySelectedDate) ->
                 Log.d("TAG", "updateMainScreenUI")
-                _uiState.update {
+                uiState.update {
                     UiState.Normal(
                         HomeScreenUI(
                             user = userInfo,
@@ -219,7 +220,7 @@ class HomeScreenViewModel(
         if (inviteGroupId == null) return@launch
 
         Log.d("TAG", "onInviteGroupDeepLinkRetrieved: $inviteGroupId")
-        _inviteGroupIdState.emit(inviteGroupId)
+        inviteGroupIdState.emit(inviteGroupId)
     }
 
     fun onJoinGroupDialogConfirm() = viewModelScope.launch {
@@ -247,7 +248,7 @@ class HomeScreenViewModel(
     }
 
     fun onJoinGroupDialogDismiss() = viewModelScope.launch {
-        _confirmInviteDialogState.emit(UiState.Empty)
+        confirmInviteDialogState.emit(UiState.Empty)
     }
 
     fun onDeleteEventTap(eventId: String) = viewModelScope.launch {

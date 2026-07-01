@@ -15,13 +15,13 @@ import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import java.util.UUID
 
 
@@ -32,8 +32,8 @@ class NewEventScreenViewModel(
     private val eventProvider: EventProvider,
     private val stringProvider: StringProvider,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<NewEventScreenUI>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<UiState<NewEventScreenUI>>
+        field = MutableStateFlow<UiState<NewEventScreenUI>>(UiState.Loading)
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val navigationArgsState = MutableStateFlow<Destination.NewEventScreen?>(null)
@@ -63,7 +63,7 @@ class NewEventScreenViewModel(
         navigationArgsState
             .filterNotNull()
             .onEach { args ->
-                _uiState.value = UiState.Normal(
+                uiState.value = UiState.Normal(
                     NewEventScreenUI(
                         title = "new event screen",
                         selectedDate = args.selectedDate,

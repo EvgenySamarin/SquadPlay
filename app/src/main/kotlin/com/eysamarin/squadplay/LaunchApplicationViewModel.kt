@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.navigation.Destination
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class LaunchApplicationViewModel(
@@ -15,18 +15,18 @@ class LaunchApplicationViewModel(
 ) : ViewModel() {
     val visiblePermissionDialogQueue = mutableStateListOf<String>()
 
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading = _isLoading.asStateFlow()
+    val isLoading: StateFlow<Boolean>
+        field = MutableStateFlow(true)
 
-    private val _startDestination = MutableStateFlow<Destination>(Destination.AuthGraph)
-    val startDestination = _startDestination.asStateFlow()
+    val startDestination: StateFlow<Destination>
+        field = MutableStateFlow<Destination>(Destination.AuthGraph)
 
     init {
         viewModelScope.launch {
             if (authProvider.isUserExists()) {
-                _startDestination.value = Destination.HomeGraph
+                startDestination.value = Destination.HomeGraph
             }
-            _isLoading.value = false
+            isLoading.value = false
         }
     }
 

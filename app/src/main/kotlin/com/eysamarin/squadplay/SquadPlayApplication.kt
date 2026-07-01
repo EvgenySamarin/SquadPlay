@@ -35,12 +35,12 @@ import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
-import com.eysamarin.squadplay.utils.hideSensitiveInLogs
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.core.annotation.KoinViewModelScopeApi
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.option.viewModelScopeFactory
@@ -109,6 +109,7 @@ class SquadPlayApplication : Application() {
         //endregion
     }
 
+    @OptIn(KoinViewModelScopeApi::class)
     override fun onCreate() {
         super.onCreate()
 
@@ -119,14 +120,13 @@ class SquadPlayApplication : Application() {
             modules(appModule)
         }
 
-        FirebaseMessaging.getInstance().token
+        FirebaseMessaging.getInstance().register()
             .addOnFailureListener { exception ->
                 Log.e("TAG", "Failed to retrieve Firebase Messaging token", exception)
             }
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val token = task.result
-                    Log.d("TAG", "Token was successfully retrieved: ${token.hideSensitiveInLogs()}")
+                    Log.d("TAG", "Token was successfully registered")
                 } else {
                     Log.e("TAG", "Failed to retrieve Firebase Messaging token", task.exception)
                 }
