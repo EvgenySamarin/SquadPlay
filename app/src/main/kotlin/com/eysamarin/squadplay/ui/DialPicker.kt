@@ -3,7 +3,6 @@ package com.eysamarin.squadplay.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.anhaki.picktime.PickHourMinute
 import com.anhaki.picktime.utils.PickTimeFocusIndicator
 import com.anhaki.picktime.utils.PickTimeTextStyle
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PickerTimeUnit
@@ -46,18 +46,18 @@ fun DialPicker(
             onHourChange = { hour = it },
             initialMinute = currentMinute,
             onMinuteChange = { minute = it },
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            unselectedTextStyle = with(MaterialTheme.typography.bodyLarge) {
+            containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
+            unselectedTextStyle = with(DesignSystemTheme.typography.bodyLarge) {
                 PickTimeTextStyle(
-                    color = MaterialTheme.colorScheme.outline,
+                    color = DesignSystemTheme.colorScheme.outline,
                     fontSize = fontSize,
                     fontFamily = fontFamily ?: FontFamily.Default,
                     fontWeight = fontWeight ?: FontWeight.Normal,
                 )
             },
-            selectedTextStyle = with(MaterialTheme.typography.headlineLarge) {
+            selectedTextStyle = with(DesignSystemTheme.typography.headlineLarge) {
                 PickTimeTextStyle(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = DesignSystemTheme.colorScheme.onPrimaryContainer,
                     fontSize = fontSize,
                     fontFamily = fontFamily ?: FontFamily.Default,
                     fontWeight = FontWeight.Bold,
@@ -67,7 +67,7 @@ fun DialPicker(
                 enabled = true,
                 widthFull = false,
                 shape = RoundedCornerShape(20.dp),
-                background = MaterialTheme.colorScheme.primaryContainer,
+                background = DesignSystemTheme.colorScheme.primaryContainer,
             )
         )
     }

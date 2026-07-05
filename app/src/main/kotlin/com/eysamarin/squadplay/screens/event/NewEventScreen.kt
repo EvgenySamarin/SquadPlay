@@ -13,7 +13,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,6 +30,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
@@ -42,8 +43,6 @@ import com.eysamarin.squadplay.models.TimePickerUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.DialPicker
 import com.eysamarin.squadplay.ui.SquadPlayTimePicker
-import com.eysamarin.squadplay.ui.button.PrimaryButton
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
@@ -73,7 +72,7 @@ fun NewEventScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = DesignSystemTheme.colorScheme.surface,
         content = { innerPadding ->
             Column(
                 modifier = Modifier
@@ -130,18 +129,18 @@ private fun NewEventScreenMediumLayout(
         Text(
             text = stringResource(R.string.create_new_event, formattedDate),
             style = adaptiveBodyByHeight(windowSize),
-            color = MaterialTheme.colorScheme.onSurface,
+            color = DesignSystemTheme.colorScheme.onSurface,
         )
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceTint)
+                .background(DesignSystemTheme.colorScheme.surfaceTint)
         ) {
             Text(
                 modifier = Modifier.padding(8.dp),
                 text = stringResource(R.string.from_to_time_warning),
                 style = adaptiveBodyByHeight(windowSize),
-                color = MaterialTheme.colorScheme.inverseOnSurface,
+                color = DesignSystemTheme.colorScheme.inverseOnSurface,
             )
         }
         SquadPlayTimePicker(
@@ -155,7 +154,7 @@ private fun NewEventScreenMediumLayout(
             modifier = Modifier,
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
             )
         ) {
             DialPicker(
@@ -192,18 +191,17 @@ private fun NewEventScreenMediumLayout(
 
         val fromNotSetErrorText = stringResource(R.string.time_from_not_set)
         val toNotSetErrorText = stringResource(R.string.time_to_not_set)
-        PrimaryButton(
+        Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            windowSize = windowSize,
             text = stringResource(R.string.schedule_event),
             onTap = {
                 val from = dateTimeFrom ?: run {
                     errorText = fromNotSetErrorText
-                    return@PrimaryButton
+                    return@Button
                 }
                 val to = dateTimeTo ?: run {
                     errorText = toNotSetErrorText
-                    return@PrimaryButton
+                    return@Button
                 }
 
                 val isHoursNextDay = from.hour > to.hour
@@ -227,7 +225,7 @@ private fun NewEventScreenMediumLayout(
 @PhoneLightModePreview
 @Composable
 fun NewEventScreenPhonePreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         NewEventScreen(
             state = UiState.Normal(PREVIEW_NEW_EVENT_SCREEN_UI),
             onAction = {}

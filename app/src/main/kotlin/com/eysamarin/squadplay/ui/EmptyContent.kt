@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -14,9 +13,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 
 @Composable
@@ -33,12 +32,12 @@ fun EmptyContent(
                 modifier = Modifier,
                 painter = painterResource(R.drawable.ic_not_found),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
+                tint = DesignSystemTheme.colorScheme.outline
             )
             Text(
                 text = stringResource(R.string.no_data_yet),
                 style = adaptiveBodyByHeight(windowSize),
-                color = MaterialTheme.colorScheme.outline,
+                color = DesignSystemTheme.colorScheme.outline,
             )
         }
     }
@@ -47,7 +46,7 @@ fun EmptyContent(
 @DarkLightModePreview
 @Composable
 fun EmptyContentPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         EmptyContent(windowSize = WINDOWS_SIZE_MEDIUM)
     }
 }

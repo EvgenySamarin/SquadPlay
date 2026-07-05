@@ -12,7 +12,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -22,11 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.SquadPlayNavigation
 import com.eysamarin.squadplay.ui.PermissionDialog
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SquadPlayTheme {
+            DesignSystemTheme {
                 val windowSize = calculateWindowSizeClass(this)
                 val viewModel: LaunchApplicationViewModel = koinViewModel()
                 val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun FinanceStocksNavigationPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         SquadPlayNavigation(
             windowSize = WindowSizeClass.calculateFromSize(DpSize(400.dp, 900.dp)),
             startDestination = Destination.AuthGraph

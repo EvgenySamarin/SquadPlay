@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -34,12 +33,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.ButtonState
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.RegistrationScreenAction
-import com.eysamarin.squadplay.ui.button.SecondaryButton
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,20 +77,17 @@ fun RegistrationScreen(
                 when (windowSize.widthSizeClass) {
                     WindowWidthSizeClass.Compact,
                     WindowWidthSizeClass.Medium,
-                    WindowWidthSizeClass.Expanded -> RegistrationMediumLayout(
-                        windowSize = windowSize, onAction = onAction
-                    )
+                    WindowWidthSizeClass.Expanded -> RegistrationMediumLayout(onAction = onAction)
                 }
             }
         },
         snackbarHost = snackbarHost,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = DesignSystemTheme.colorScheme.surface,
     )
 }
 
 @Composable
 private fun RegistrationMediumLayout(
-    windowSize: WindowSizeClass,
     onAction: (RegistrationScreenAction) -> Unit,
 ) {
     var password by remember { mutableStateOf("") }
@@ -160,13 +157,12 @@ private fun RegistrationMediumLayout(
         }
         item {
             Spacer(Modifier.width(24.dp))
-            SecondaryButton(
-                enabled = password.isNotEmpty()
-                        && !confirmPasswordHasErrors
-                        && email.isNotEmpty()
-                        && !emailHasErrors,
+            Button(
+                state = if(password.isNotEmpty()
+                    && !confirmPasswordHasErrors
+                    && email.isNotEmpty()
+                    && !emailHasErrors) ButtonState.Default else ButtonState.Disabled,
                 modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
-                windowSize = windowSize,
                 text = stringResource(R.string.confirm),
                 onTap = { onAction(RegistrationScreenAction.OnConfirmTap(email, password)) },
             )
@@ -179,7 +175,7 @@ private fun RegistrationMediumLayout(
 @PhoneLightModePreview
 @Composable
 fun RegistrationScreenPhonePreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         RegistrationScreen(onAction = {})
     }
 }

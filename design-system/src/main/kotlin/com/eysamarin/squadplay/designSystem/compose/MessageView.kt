@@ -81,17 +81,17 @@ fun MessageView(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Button(
-                    title = primaryButtonTitle,
+                    text = primaryButtonTitle,
                     onTap = onPrimaryButtonTap,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Filled,
                 )
                 secondaryButtonTitle?.let {
                     Button(
-                        title = it,
+                        text = it,
                         onTap = onSecondaryButtonTap,
                         size = ButtonSize.Small,
-                        style = ButtonStyle.Plain,
+                        style = ButtonStyle.Text,
                     )
                 }
             }

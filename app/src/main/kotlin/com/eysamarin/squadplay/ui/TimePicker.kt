@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -22,12 +21,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PREVIEW_TIME_PICKER_UI
 import com.eysamarin.squadplay.models.TimePickerUI
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
@@ -45,15 +44,15 @@ fun SquadPlayTimePicker(
         Text(
             text = stringResource(R.string.select_time),
             style = adaptiveBodyByHeight(windowSize),
-            color = MaterialTheme.colorScheme.onSurface
+            color = DesignSystemTheme.colorScheme.onSurface
         )
         Card(
             modifier = Modifier.padding(top = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
             ),
-            border = if (ui.errorText != null) BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.error) else null,
+            border = if (ui.errorText != null) BorderStroke(width = 1.dp, color = DesignSystemTheme.colorScheme.error) else null,
         ) {
             Row(
                 modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
@@ -88,7 +87,7 @@ fun SquadPlayTimePicker(
                 modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),
                 text = it,
                 style = adaptiveBodyByHeight(windowSize),
-                color = MaterialTheme.colorScheme.error,
+                color = DesignSystemTheme.colorScheme.error,
             )
         }
     }
@@ -119,13 +118,13 @@ private fun TimeUnit(
         Text(
             text = label,
             style = adaptiveLabelByHeight(windowSize),
-            color = MaterialTheme.colorScheme.outline,
+            color = DesignSystemTheme.colorScheme.outline,
         )
         Text(
             modifier = Modifier.padding(top = 6.dp),
             text = timeString,
             style = adaptiveHeadlineByHeight(windowSize),
-            color = if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            color = if(selected) DesignSystemTheme.colorScheme.primary else DesignSystemTheme.colorScheme.onSurface,
         )
     }
 }
@@ -133,7 +132,7 @@ private fun TimeUnit(
 @DarkLightModePreview
 @Composable
 fun TimePickerPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         Column {
             Spacer(Modifier.padding(top = 24.dp))
             SquadPlayTimePicker(

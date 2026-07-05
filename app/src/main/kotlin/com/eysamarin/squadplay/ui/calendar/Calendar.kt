@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -28,11 +27,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
@@ -41,7 +42,6 @@ import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.PREVIEW_CALENDAR_UI
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
@@ -51,7 +51,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import java.time.format.TextStyle
-import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -132,7 +131,7 @@ fun WeekDayItem(day: String, modifier: Modifier = Modifier, windowSize: WindowSi
         Text(
             text = day,
             style = adaptiveLabelByHeight(windowSize),
-            color = MaterialTheme.colorScheme.outline,
+            color = DesignSystemTheme.colorScheme.outline,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(10.dp)
@@ -152,15 +151,15 @@ fun Header(
             Icon(
                 painter = painterResource(R.drawable.ic_keyboard_arrow_left_24),
                 contentDescription = "previous",
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = DesignSystemTheme.colorScheme.onSurface
             )
         }
         // Localized month name using java.time.Month as helper
-        val monthName = java.time.Month.valueOf(yearMonth.month.name).getDisplayName(TextStyle.FULL, Locale.getDefault())
+        val monthName = java.time.Month.valueOf(yearMonth.month.name).getDisplayName(TextStyle.FULL, LocalLocale.current.platformLocale)
         Text(
             text = "$monthName ${yearMonth.year}",
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = DesignSystemTheme.colorScheme.onSurface,
             style = adaptiveTitleByHeight(windowSize),
             modifier = Modifier
                 .weight(1f)
@@ -170,7 +169,7 @@ fun Header(
             Icon(
                 painter = painterResource(R.drawable.ic_keyboard_arrow_right_24),
                 contentDescription = "next",
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = DesignSystemTheme.colorScheme.onSurface
             )
         }
     }
@@ -216,7 +215,7 @@ fun ContentItem(
         Box(
             modifier = Modifier
                 .clip(SquircleShape(cornerSmoothing = CornerSmoothing.Small))
-                .background(color = if (date.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                .background(color = if (date.isSelected) DesignSystemTheme.colorScheme.primary else Color.Transparent)
                 .size(48.dp)
                 .clickable(enabled = date.enabled) {
                     onItemTap(date)
@@ -226,9 +225,9 @@ fun ContentItem(
             Text(
                 text = date.dayOfMonth?.toString() ?: "",
                 color = when {
-                    !date.enabled -> MaterialTheme.colorScheme.outlineVariant
-                    date.isSelected -> MaterialTheme.colorScheme.onPrimary
-                    else -> MaterialTheme.colorScheme.onSurface
+                    !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                    date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
+                    else -> DesignSystemTheme.colorScheme.onSurface
                 },
                 style = adaptiveBodyByHeight(windowSize),
             )
@@ -239,14 +238,14 @@ fun ContentItem(
             Badge(
                 modifier = Modifier.align(Alignment.TopEnd).offset(6.dp, (-6).dp),
                 containerColor = when {
-                    !date.enabled -> MaterialTheme.colorScheme.outlineVariant
-                    date.isSelected -> MaterialTheme.colorScheme.onPrimary
-                    else -> MaterialTheme.colorScheme.primary
+                    !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                    date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
+                    else -> DesignSystemTheme.colorScheme.primary
                 },
                 contentColor = when {
-                    !date.enabled -> MaterialTheme.colorScheme.surface
-                    date.isSelected -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.onPrimary
+                    !date.enabled -> DesignSystemTheme.colorScheme.surface
+                    date.isSelected -> DesignSystemTheme.colorScheme.primary
+                    else -> DesignSystemTheme.colorScheme.onPrimary
                 }
             ) {
                 Row(
@@ -274,7 +273,7 @@ fun ContentItem(
 @PhoneLightModePreview
 @Composable
 fun CalendarPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         Column {
             Spacer(Modifier.padding(top = 24.dp))
             Calendar(

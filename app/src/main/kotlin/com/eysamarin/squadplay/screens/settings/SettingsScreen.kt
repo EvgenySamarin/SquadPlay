@@ -10,7 +10,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -22,11 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.SettingsScreenAction
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +67,7 @@ fun SettingsScreen(
             }
         },
         snackbarHost = snackbarHost,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = DesignSystemTheme.colorScheme.surface,
     )
 }
 
@@ -98,7 +97,7 @@ private fun SettingsMediumLayout(
 @PhoneLightModePreview
 @Composable
 fun SettingsScreenPhonePreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         SettingsScreen(onAction = {})
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
@@ -50,7 +50,6 @@ import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,8 +99,8 @@ fun HomeScreen(
                     onAction(HomeScreenAction.OnAddGameEventTap)
                 },
                 shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
+                containerColor = DesignSystemTheme.colorScheme.secondary,
+                contentColor = DesignSystemTheme.colorScheme.onSecondary,
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_add_24),
@@ -110,7 +109,7 @@ fun HomeScreen(
                 Text(text = stringResource(R.string.new_game_event))
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = DesignSystemTheme.colorScheme.surface,
     )
 
     if (confirmInviteDialogState is UiState.Normal<String>) {
@@ -236,7 +235,7 @@ private fun GreetingBar(
                 .weight(1f, false),
             text = stringResource(R.string.greeting_text, user.username),
             style = adaptiveHeadlineByHeight(windowSize),
-            color = MaterialTheme.colorScheme.onSurface
+            color = DesignSystemTheme.colorScheme.onSurface
         )
         Box(
             modifier = Modifier
@@ -255,7 +254,7 @@ private fun GreetingBar(
 @PhoneLightModePreview
 @Composable
 fun HomeScreenPhonePreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         HomeScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             onAction = {},
@@ -267,7 +266,7 @@ fun HomeScreenPhonePreview() {
 @TabletLightModePreview
 @Composable
 fun HomeScreenTabletPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         HomeScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_EXPANDED,
@@ -280,7 +279,7 @@ fun HomeScreenTabletPreview() {
 @WearLightModePreview
 @Composable
 fun HomeScreenWearPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         HomeScreen(
             state = UiState.Normal(PREVIEW_MAIN_SCREEN_UI),
             windowSize = WINDOWS_SIZE_COMPACT,

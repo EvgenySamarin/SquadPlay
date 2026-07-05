@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -20,13 +19,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.PREVIEW_EVENTS
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 
@@ -45,7 +44,7 @@ fun Event(
         Box(
             modifier = Modifier
                 .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
-                .background(MaterialTheme.colorScheme.primary)
+                .background(DesignSystemTheme.colorScheme.primary)
         ) {
             if (ui.iconUrl != null) {
                 AsyncImage(
@@ -63,7 +62,7 @@ fun Event(
                         .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
                     painter = painterResource(R.drawable.ic_question),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
+                    tint = DesignSystemTheme.colorScheme.onPrimary,
                 )
             }
         }
@@ -71,13 +70,13 @@ fun Event(
             Text(
                 text = ui.title,
                 style = adaptiveTitleByHeight(windowSize),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = DesignSystemTheme.colorScheme.onSurface,
             )
             ui.subtitle?.let {
                 Text(
                     text = it,
                     style = adaptiveBodyByHeight(windowSize),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = DesignSystemTheme.colorScheme.onSurface,
                 )
             }
         }
@@ -90,7 +89,7 @@ fun Event(
                         .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
                     painter = painterResource(R.drawable.ic_delete_24),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
+                    tint = DesignSystemTheme.colorScheme.error,
                 )
             }
         }
@@ -100,7 +99,7 @@ fun Event(
 @DarkLightModePreview
 @Composable
 private fun EventPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             PREVIEW_EVENTS.forEach {
                 Event(windowSize = WINDOWS_SIZE_MEDIUM, ui = it)
