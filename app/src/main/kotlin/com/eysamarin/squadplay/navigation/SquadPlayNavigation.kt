@@ -44,7 +44,7 @@ import com.eysamarin.squadplay.screens.registration.RegistrationScreen
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.screens.settings.SettingsScreen
 import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch

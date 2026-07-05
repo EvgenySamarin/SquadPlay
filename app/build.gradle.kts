@@ -97,6 +97,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":data"))
     implementation(project(":contract"))
+    implementation(project(":design-system"))
 
     implementation(libs.io.insert.koin.compose)
     implementation(libs.androidx.core.ktx)

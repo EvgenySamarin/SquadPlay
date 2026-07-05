@@ -30,6 +30,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.PREVIEW_PROFILE_SCREEN_UI
 import com.eysamarin.squadplay.models.ProfileScreenAction
@@ -45,9 +48,7 @@ import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
-import com.eysamarin.squadplay.utils.PhoneDarkModePreview
-import com.eysamarin.squadplay.utils.PhoneLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

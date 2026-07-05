@@ -15,12 +15,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient1
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient2
 import com.eysamarin.squadplay.ui.theme.AvatarBorderGradient3
-import com.eysamarin.squadplay.utils.DarkLightModePreview
 
 @Composable
 fun UserAvatar(

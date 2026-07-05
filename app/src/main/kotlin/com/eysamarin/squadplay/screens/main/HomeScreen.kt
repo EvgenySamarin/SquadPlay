@@ -30,6 +30,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_EXPANDED
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import com.eysamarin.squadplay.designSystem.compose.utils.TabletDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.TabletLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.WearDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.WearLightModePreview
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
@@ -43,15 +52,6 @@ import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
-import com.eysamarin.squadplay.utils.PhoneDarkModePreview
-import com.eysamarin.squadplay.utils.PhoneLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_COMPACT
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_EXPANDED
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.utils.TabletDarkModePreview
-import com.eysamarin.squadplay.utils.TabletLightModePreview
-import com.eysamarin.squadplay.utils.WearDarkModePreview
-import com.eysamarin.squadplay.utils.WearLightModePreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

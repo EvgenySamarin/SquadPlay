@@ -17,9 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.anhaki.picktime.PickHourMinute
 import com.anhaki.picktime.utils.PickTimeFocusIndicator
 import com.anhaki.picktime.utils.PickTimeTextStyle
+import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.PickerTimeUnit
-import com.eysamarin.squadplay.utils.DarkLightModePreview
 import java.util.Calendar
 
 @Composable

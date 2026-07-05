@@ -34,12 +34,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.RegistrationScreenAction
 import com.eysamarin.squadplay.ui.button.SecondaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
-import com.eysamarin.squadplay.utils.PhoneDarkModePreview
-import com.eysamarin.squadplay.utils.PhoneLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
