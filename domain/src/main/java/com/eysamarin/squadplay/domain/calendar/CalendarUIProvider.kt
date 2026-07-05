@@ -7,6 +7,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import java.time.format.TextStyle
 import java.util.Locale
@@ -46,7 +47,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
     ): CalendarUI = calendar.copy(
         dates = calendar.dates.map { date ->
             val eventsOnDate = events.filter { event ->
-                val fromDayOfMonth = event.fromDateTime.dayOfMonth
+                val fromDayOfMonth = event.fromDateTime.day
                 val fromMonthOfYear = event.fromDateTime.month.ordinal + 1
 
                 val isSameDay = fromDayOfMonth == date.dayOfMonth
@@ -110,10 +111,10 @@ class CalendarDataSource {
         return yearMonth.getDayOfMonthStartingFromMonday()
             .map { date ->
                 Date(
-                    dayOfMonth = date.dayOfMonth,
-                    monthNumber = date.monthNumber,
-                    isSelected = date == today && date.monthNumber == yearMonth.monthNumber,
-                    enabled = date.monthNumber == yearMonth.monthNumber,
+                    dayOfMonth = date.day,
+                    monthNumber = date.month.number,
+                    isSelected = date == today && date.month.number == yearMonth.month.number,
+                    enabled = date.month.number == yearMonth.month.number,
                     countEvents = 0,
                 )
             }

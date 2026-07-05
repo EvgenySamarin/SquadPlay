@@ -16,9 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
-import com.eysamarin.squadplay.utils.DarkLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 /**
  * @see <a href="https://developers.google.com/identity/branding-guidelines">

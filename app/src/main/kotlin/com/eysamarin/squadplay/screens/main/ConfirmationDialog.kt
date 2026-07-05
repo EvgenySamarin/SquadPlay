@@ -6,12 +6,12 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.button.SecondaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
-import com.eysamarin.squadplay.utils.DarkLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 
 @Composable
 fun ConfirmationDialog(

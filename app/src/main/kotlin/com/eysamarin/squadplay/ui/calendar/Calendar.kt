@@ -33,6 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.PREVIEW_CALENDAR_UI
@@ -42,9 +45,6 @@ import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
-import com.eysamarin.squadplay.utils.PhoneDarkModePreview
-import com.eysamarin.squadplay.utils.PhoneLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate

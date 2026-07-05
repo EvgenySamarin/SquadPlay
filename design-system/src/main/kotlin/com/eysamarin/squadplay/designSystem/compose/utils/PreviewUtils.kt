@@ -1,18 +1,34 @@
-package com.eysamarin.squadplay.utils
+package com.eysamarin.squadplay.designSystem.compose.utils
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.designSystem.R
 
 
 @Preview(
+    showSystemUi = true,
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
+    showSystemUi = true,
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
@@ -114,3 +130,27 @@ object PreviewUtils {
         DpSize(width = 900.dp, height = 1000.dp)
     )
 }
+
+@Composable
+fun previewIconPainter(): Painter = painterResource(R.drawable.ic_select)
+
+@Composable
+fun VariantPreviewText(text: String) = Text(
+    text = text,
+    modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Cyan)
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun previewSheetState(): SheetState = remember {
+    SheetState(
+        skipPartiallyExpanded = true,
+        positionalThreshold = { .1f },
+        velocityThreshold = { .1f },
+        initialValue = SheetValue.Expanded,
+    )
+}
+
+fun loremIpsumString(words: Int): String = LoremIpsum(words).values.joinToString { it }

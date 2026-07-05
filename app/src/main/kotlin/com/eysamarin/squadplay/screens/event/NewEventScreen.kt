@@ -31,6 +31,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
+import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.DialPickerTarget
 import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.NewEventScreenUI
@@ -42,9 +45,6 @@ import com.eysamarin.squadplay.ui.SquadPlayTimePicker
 import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
-import com.eysamarin.squadplay.utils.PhoneDarkModePreview
-import com.eysamarin.squadplay.utils.PhoneLightModePreview
-import com.eysamarin.squadplay.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
@@ -88,7 +88,8 @@ fun NewEventScreen(
                     )
                 }
             }
-        }
+        },
+        bottomBar = {}
     )
 }
 
