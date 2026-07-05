@@ -12,10 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
+import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.ui.button.PrimaryButton
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 
@@ -41,13 +41,12 @@ fun PermissionDialog(
             ) {
                 HorizontalDivider()
                 if (isPermanentlyDeclined) {
-                    PrimaryButton(
-                        windowSize = windowSize,
+                    Button(
                         text = "Grant permission",
                         onTap = onGoToAppSettingsTap,
                     )
                 } else {
-                    PrimaryButton(windowSize = windowSize, text = "Ok", onTap = onConfirmTap)
+                    Button(text = "Ok", onTap = onConfirmTap)
                 }
             }
         },
@@ -67,7 +66,7 @@ fun PermissionDialog(
 @DarkLightModePreview
 @Composable
 private fun PermissionDialogPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         PermissionDialog(
             windowSize = WINDOWS_SIZE_MEDIUM,
             descriptionText = LoremIpsum(25).values.joinToString(" "),

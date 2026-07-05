@@ -6,11 +6,11 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.ButtonStyle
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.ui.button.PrimaryButton
-import com.eysamarin.squadplay.ui.button.SecondaryButton
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 
 @Composable
@@ -34,10 +34,10 @@ fun ConfirmationDialog(
         text = textComposable,
         onDismissRequest = onDismiss,
         confirmButton = {
-            PrimaryButton(windowSize, stringResource(R.string.yes), onTap = onConfirmTap)
+            Button(text = stringResource(R.string.yes), onTap = onConfirmTap)
         },
         dismissButton = {
-            SecondaryButton(windowSize, stringResource(R.string.no), onTap = onDismiss)
+            Button(text = stringResource(R.string.no), onTap = onDismiss, style = ButtonStyle.Text)
         },
     )
 }
@@ -45,7 +45,7 @@ fun ConfirmationDialog(
 @DarkLightModePreview
 @Composable
 private fun ConfirmationDialogPreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         ConfirmationDialog(
             windowSize = WINDOWS_SIZE_MEDIUM,
             title = "Title example",

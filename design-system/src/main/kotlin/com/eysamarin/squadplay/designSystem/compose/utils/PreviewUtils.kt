@@ -60,10 +60,9 @@ annotation class TabletDarkModePreview
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
     device = "spec:width=411dp,height=891dp",
     name = "Phone preview light",
-    locale = "ru",
+    locale = "en",
     uiMode = Configuration.UI_MODE_NIGHT_NO
 )
 @Retention(AnnotationRetention.SOURCE)
@@ -73,7 +72,6 @@ annotation class PhoneLightModePreview
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
     device = "spec:width=411dp,height=891dp",
     name = "Phone preview night",
     uiMode = Configuration.UI_MODE_NIGHT_YES
@@ -142,6 +140,7 @@ fun VariantPreviewText(text: String) = Text(
         .background(Color.Cyan)
 )
 
+@Suppress("unused")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun previewSheetState(): SheetState = remember {
@@ -153,4 +152,5 @@ fun previewSheetState(): SheetState = remember {
     )
 }
 
+@Suppress("unused")
 fun loremIpsumString(words: Int): String = LoremIpsum(words).values.joinToString { it }

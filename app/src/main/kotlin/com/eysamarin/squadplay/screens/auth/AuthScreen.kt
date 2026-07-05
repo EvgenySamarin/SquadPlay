@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -37,14 +36,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.ButtonState
+import com.eysamarin.squadplay.designSystem.compose.ButtonStyle
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.AuthScreenAction
 import com.eysamarin.squadplay.ui.button.GoogleButton
-import com.eysamarin.squadplay.ui.button.PrimaryButton
-import com.eysamarin.squadplay.ui.button.SecondaryButton
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 
 @Composable
@@ -75,7 +75,7 @@ fun AuthScreen(
             }
         },
         snackbarHost = snackbarHost,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = DesignSystemTheme.colorScheme.surface,
     )
 }
 
@@ -96,7 +96,7 @@ private fun AuthScreenMediumLayout(
                 painter = painterResource(R.drawable.ic_launcher_foreground),
                 contentDescription = null,
                 tint = if (isSystemInDarkTheme()) {
-                    MaterialTheme.colorScheme.primary
+                    DesignSystemTheme.colorScheme.primary
                 } else {
                     Color.Unspecified
                 },
@@ -106,7 +106,7 @@ private fun AuthScreenMediumLayout(
         }
 
         item {
-            EmailPasswordSignIn(windowSize = windowSize, onAction = onAction)
+            EmailPasswordSignIn(onAction = onAction)
         }
     }
 }
@@ -123,13 +123,12 @@ private fun AuthScreenExpandedLayout(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = stringResource(R.string.auth_screen_title), style = adaptiveHeadlineByHeight(windowSize))
-        EmailPasswordSignIn(windowSize = windowSize, onAction = onAction)
+        EmailPasswordSignIn(onAction = onAction)
     }
 }
 
 @Composable
 private fun EmailPasswordSignIn(
-    windowSize: WindowSizeClass,
     onAction: (AuthScreenAction) -> Unit
 ) {
     var password by remember { mutableStateOf("") }
@@ -174,16 +173,15 @@ private fun EmailPasswordSignIn(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        PrimaryButton(
+        Button(
             modifier = Modifier.fillMaxWidth(),
-            enabled = isEmailValid && password.isNotEmpty(),
-            windowSize = windowSize,
+            state = if (isEmailValid && password.isNotEmpty()) ButtonState.Default else ButtonState.Disabled,
             text = stringResource(R.string.sign_in),
             onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
         )
-        SecondaryButton(
+        Button(
             modifier = Modifier.fillMaxWidth(),
-            windowSize = windowSize,
+            style = ButtonStyle.Outline,
             text = stringResource(R.string.sign_up),
             onTap = { onAction(AuthScreenAction.OnSignUpTap) },
         )
@@ -200,7 +198,7 @@ private fun EmailPasswordSignIn(
 @PhoneLightModePreview
 @Composable
 fun MainScreenPhonePreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         AuthScreen(onAction = {})
     }
 }

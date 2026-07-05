@@ -14,7 +14,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,6 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
@@ -40,10 +41,8 @@ import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
-import com.eysamarin.squadplay.ui.button.PrimaryButton
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.SquadPlayTheme
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
@@ -81,7 +80,7 @@ fun ProfileScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = DesignSystemTheme.colorScheme.surface,
         content = { innerPadding ->
             Box(
                 modifier = Modifier
@@ -129,13 +128,13 @@ private fun ProfileScreenMediumLayout(
                 Text(
                     text = state.data.user.username,
                     style = adaptiveHeadlineByHeight(windowSize),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = DesignSystemTheme.colorScheme.onSurface
                 )
                 state.data.user.email?.let {
                     Text(
                         text = it,
                         style = adaptiveTitleByHeight(windowSize),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = DesignSystemTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -149,8 +148,7 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            PrimaryButton(
-                windowSize,
+            Button(
                 text = stringResource(R.string.share_invite_link),
                 onTap = {
                     onAction(ProfileScreenAction.OnCreateInviteLinkTap)
@@ -159,7 +157,7 @@ private fun ProfileScreenMediumLayout(
                 Icon(
                     painter = painterResource(R.drawable.ic_settings_24),
                     contentDescription = stringResource(R.string.content_description_settings),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = DesignSystemTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -169,7 +167,7 @@ private fun ProfileScreenMediumLayout(
                 .weight(1f, false),
             text = stringResource(R.string.friends_list),
             style = adaptiveBodyByHeight(windowSize),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = DesignSystemTheme.colorScheme.onSurfaceVariant
         )
 
         FriendsList(state.data.friends, windowSize)
@@ -215,13 +213,13 @@ private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
                         modifier = Modifier.fillMaxWidth(),
                         text = friend.username,
                         style = adaptiveTitleByHeight(windowSize),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = DesignSystemTheme.colorScheme.onSurface
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.group, friend.groupTitleFrom),
                         style = adaptiveLabelByHeight(windowSize),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = DesignSystemTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -234,7 +232,7 @@ private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
 @PhoneLightModePreview
 @Composable
 fun ProfileScreenPhonePreview() {
-    SquadPlayTheme {
+    DesignSystemTheme {
         ProfileScreen(
             state = UiState.Normal(PREVIEW_PROFILE_SCREEN_UI),
             onAction = {}

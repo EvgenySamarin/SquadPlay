@@ -141,7 +141,7 @@ fun DashboardButton(
 
 @DarkLightModePreview
 @Composable
-private fun DashboardButtonPreview() {
+private fun ButtonPreview() {
     DesignSystemTheme {
         Column(modifier = Modifier.background(DesignSystemTheme.colorScheme.surface)) {
             VariantPreviewText("Variant 1")

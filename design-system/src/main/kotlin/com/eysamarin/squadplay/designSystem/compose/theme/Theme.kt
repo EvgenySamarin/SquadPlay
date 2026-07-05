@@ -97,7 +97,7 @@ private val darkScheme = darkColorScheme(
  * - `MaterialTheme.typography.bodyMedium`
  * - etc.
  *
- * Please check this [code lab](https://developer.android.com/codelabs/jetpack-compose-theming#0) to learn how to proper use theming in compose code
+ * Please check this [code lab](https://developer.android.com/codelabs/jetpack-compose-theming#0) to learn how to properly use theming in compose code
  *
  * @param darkTheme Whether the current parameters will result in a dark theme.
  * @param dynamicColor Whether the theme should use a dynamic color is available on Android 12+
