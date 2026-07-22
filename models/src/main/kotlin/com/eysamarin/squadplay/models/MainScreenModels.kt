@@ -1,8 +1,8 @@
 package com.eysamarin.squadplay.models
 
-import kotlinx.serialization.Serializable
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
 sealed interface HomeScreenAction {
@@ -162,5 +162,6 @@ val PREVIEW_EVENTS = listOf(
 
 val PREVIEW_MAIN_SCREEN_UI = HomeScreenUI(
     user = PREVIEW_USER,
-    calendarUI = PREVIEW_CALENDAR_UI
+    calendarUI = PREVIEW_CALENDAR_UI,
+    gameEventsOnDate = PREVIEW_EVENTS,
 )

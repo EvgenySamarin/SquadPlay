@@ -23,12 +23,10 @@ import com.eysamarin.squadplay.designSystem.R
 
 
 @Preview(
-    showSystemUi = true,
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
-    showSystemUi = true,
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
@@ -38,7 +36,6 @@ annotation class DarkLightModePreview
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
     device = "spec:width=1280dp,height=800dp,dpi=240",
     name = "Tablet preview light",
     uiMode = Configuration.UI_MODE_NIGHT_NO,
@@ -49,7 +46,6 @@ annotation class TabletLightModePreview
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
     device = "spec:width=1280dp,height=800dp,dpi=240",
     name = "Tablet preview dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -82,7 +78,6 @@ annotation class PhoneDarkModePreview
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
     device = "id:wearos_rect",
     name = "Phone preview light",
     uiMode = Configuration.UI_MODE_NIGHT_NO,
@@ -93,7 +88,6 @@ annotation class WearLightModePreview
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
     device = "id:wearos_rect",
     name = "Phone preview dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,

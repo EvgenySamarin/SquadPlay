@@ -34,7 +34,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.designSystem.compose.Button
-import com.eysamarin.squadplay.designSystem.compose.ButtonState
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -158,10 +157,10 @@ private fun RegistrationMediumLayout(
         item {
             Spacer(Modifier.width(24.dp))
             Button(
-                state = if(password.isNotEmpty()
+                enabled = password.isNotEmpty()
                     && !confirmPasswordHasErrors
                     && email.isNotEmpty()
-                    && !emailHasErrors) ButtonState.Default else ButtonState.Disabled,
+                    && !emailHasErrors,
                 modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
                 text = stringResource(R.string.confirm),
                 onTap = { onAction(RegistrationScreenAction.OnConfirmTap(email, password)) },
