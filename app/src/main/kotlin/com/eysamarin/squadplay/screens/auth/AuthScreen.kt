@@ -37,7 +37,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.designSystem.compose.Button
-import com.eysamarin.squadplay.designSystem.compose.ButtonState
 import com.eysamarin.squadplay.designSystem.compose.ButtonStyle
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
@@ -175,7 +174,7 @@ private fun EmailPasswordSignIn(
     ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            state = if (isEmailValid && password.isNotEmpty()) ButtonState.Default else ButtonState.Disabled,
+            enabled = isEmailValid && password.isNotEmpty(),
             text = stringResource(R.string.sign_in),
             onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
         )

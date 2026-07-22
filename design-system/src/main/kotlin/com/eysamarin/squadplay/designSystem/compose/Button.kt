@@ -42,8 +42,7 @@ enum class ButtonSize {
 
 enum class ButtonState {
     Default,
-    Disabled,
-    Destructive,
+    Error,
 }
 
 @Composable
@@ -54,44 +53,51 @@ fun Button(
     state: ButtonState = ButtonState.Default,
     iconPainter: Painter? = null,
     text: String? = null,
+    enabled: Boolean = true,
     onTap: () -> Unit = {},
 ) {
-    val containerColor = when (style) {
-        ButtonStyle.Filled -> when (state) {
-            ButtonState.Default -> DesignSystemTheme.colorScheme.primary
-            ButtonState.Destructive -> DesignSystemTheme.colorScheme.error
-            ButtonState.Disabled -> DesignSystemTheme.colorScheme.outline.copy(alpha = 0.12f)
+    val containerColor = if (!enabled) {
+        DesignSystemTheme.colorScheme.onSurface.copy(alpha = 0.10f)
+    } else {
+        when (style) {
+            ButtonStyle.Filled -> when (state) {
+                ButtonState.Default -> DesignSystemTheme.colorScheme.primary
+                ButtonState.Error -> DesignSystemTheme.colorScheme.error
+            }
+
+            ButtonStyle.Tinted -> when (state) {
+                ButtonState.Default -> DesignSystemTheme.colorScheme.secondary
+                ButtonState.Error -> DesignSystemTheme.colorScheme.error
+            }
+
+            ButtonStyle.Text,
+            ButtonStyle.Outline -> Color.Transparent
         }
 
-        ButtonStyle.Tinted -> when (state) {
-            ButtonState.Default -> DesignSystemTheme.colorScheme.secondary
-            ButtonState.Destructive -> DesignSystemTheme.colorScheme.error
-            ButtonState.Disabled -> DesignSystemTheme.colorScheme.outline.copy(alpha = 0.12f)
-        }
-
-        ButtonStyle.Text,
-        ButtonStyle.Outline -> Color.Transparent
     }
 
-    val contentColor = when (style) {
-        ButtonStyle.Filled -> when (state) {
-            ButtonState.Disabled -> DesignSystemTheme.colorScheme.outline.copy(alpha = 0.3f)
-            ButtonState.Default -> DesignSystemTheme.colorScheme.onPrimary
-            ButtonState.Destructive -> DesignSystemTheme.colorScheme.onError
-        }
+    val contentColor = if (!enabled) {
+        DesignSystemTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+    } else {
+        when (style) {
+            ButtonStyle.Filled -> when (state) {
+                ButtonState.Default -> DesignSystemTheme.colorScheme.onPrimary
+                ButtonState.Error -> DesignSystemTheme.colorScheme.onError
+            }
 
-        ButtonStyle.Tinted -> when (state) {
-            ButtonState.Disabled -> DesignSystemTheme.colorScheme.outline.copy(alpha = 0.3f)
-            ButtonState.Default -> DesignSystemTheme.colorScheme.onSecondary
-            ButtonState.Destructive -> DesignSystemTheme.colorScheme.onError
-        }
-        ButtonStyle.Text,
-        ButtonStyle.Outline -> when (state) {
-            ButtonState.Disabled -> DesignSystemTheme.colorScheme.outline.copy(alpha = 0.3f)
-            ButtonState.Default -> DesignSystemTheme.colorScheme.primary
-            ButtonState.Destructive -> DesignSystemTheme.colorScheme.error
+            ButtonStyle.Tinted -> when (state) {
+                ButtonState.Default -> DesignSystemTheme.colorScheme.onSecondary
+                ButtonState.Error -> DesignSystemTheme.colorScheme.onError
+            }
+
+            ButtonStyle.Text,
+            ButtonStyle.Outline -> when (state) {
+                ButtonState.Default -> DesignSystemTheme.colorScheme.primary
+                ButtonState.Error -> DesignSystemTheme.colorScheme.error
+            }
         }
     }
+
     val paddingsVertical = when (size) {
         ButtonSize.Default -> 12.dp
         ButtonSize.Small -> 8.dp
@@ -113,12 +119,12 @@ fun Button(
         modifier = modifier
             .clip(RoundedCornerShape(size = cornerRadius))
             .clickable(
-                enabled = state != ButtonState.Disabled,
+                enabled = enabled,
                 onClick = onTap
             )
             .background(containerColor)
             .then(
-                if (style == ButtonStyle.Outline) {
+                if (style == ButtonStyle.Outline && enabled) {
                     Modifier.border(
                         width = 1.dp,
                         color = contentColor,
@@ -202,7 +208,7 @@ private fun ButtonPreview() {
                     modifier = Modifier.weight(1f),
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Tinted,
                 )
@@ -224,14 +230,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Filled,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Filled,
                 )
@@ -252,14 +258,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Tinted,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Tinted,
                 )
@@ -280,14 +286,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Outline,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Outline,
                 )
@@ -308,14 +314,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Text,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Default,
                     style = ButtonStyle.Text,
                 )
@@ -337,14 +343,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Filled,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Filled,
                 )
@@ -365,14 +371,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Tinted,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Tinted,
                 )
@@ -393,14 +399,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Outline,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Outline,
                 )
@@ -421,14 +427,14 @@ private fun ButtonPreview() {
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Disabled,
+                    enabled = false,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Text,
                 )
                 Button(
                     iconPainter = previewIconPainter(),
                     text = "Label",
-                    state = ButtonState.Destructive,
+                    state = ButtonState.Error,
                     size = ButtonSize.Small,
                     style = ButtonStyle.Text,
                 )
