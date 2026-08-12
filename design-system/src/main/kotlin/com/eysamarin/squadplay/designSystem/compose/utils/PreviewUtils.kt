@@ -127,6 +127,9 @@ object PreviewUtils {
 fun previewIconPainter(): Painter = painterResource(R.drawable.ic24_select)
 
 @Composable
+fun previewImagePainter(): Painter = painterResource(R.drawable.img_stub)
+
+@Composable
 fun VariantPreviewText(text: String) = Text(
     text = text,
     modifier = Modifier

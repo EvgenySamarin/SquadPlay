@@ -5,6 +5,7 @@
 keystore
 /keystore/upload-keystore.jks
 .idea
+.artifacts**
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml

@@ -28,7 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.DSListItem
+import com.eysamarin.squadplay.designSystem.compose.DSListItemDefaults
+import com.eysamarin.squadplay.designSystem.compose.DSListItemLeadingType
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -45,7 +49,6 @@ import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
-import com.eysamarin.squadplay.ui.Event
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
@@ -137,16 +140,21 @@ private fun HomeScreenMediumLayout(
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
     ) {
-        GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
-            onAction(HomeScreenAction.OnAvatarTap)
-        })
+        GreetingBar(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            windowSize = windowSize,
+            user = state.data.user,
+            onAvatarTap = {
+                onAction(HomeScreenAction.OnAvatarTap)
+            }
+        )
         Spacer(Modifier.height(16.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Calendar(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     ui = state.data.calendarUI,
                     windowSize = windowSize,
                     onPreviousMonthTap = { onAction(HomeScreenAction.OnPrevMonthTap(it)) },
@@ -162,10 +170,21 @@ private fun HomeScreenMediumLayout(
                 item { EmptyContent(windowSize, modifier = Modifier.fillMaxSize()) }
             } else {
                 items(items = state.data.gameEventsOnDate) { item ->
-                    Event(
-                        windowSize = windowSize,
-                        ui = item,
-                        onDeleteEventTap = { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) },
+                    DSListItem(
+                        headline = item.title,
+                        supportingText = item.subtitle,
+                        leadingType = DSListItemLeadingType.Image,
+                        leadingPainter = if (item.iconUrl != null) {
+                            rememberAsyncImagePainter(model = item.iconUrl)
+                        } else {
+                            painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
+                        },
+                        trailingIconPainter = if (item.isYourEvent) {
+                            painterResource(R.drawable.ic_delete_24)
+                        } else null,
+                        onTrailingIconClick = if (item.isYourEvent) {
+                            { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) }
+                        } else null,
                     )
                 }
             }
@@ -207,10 +226,25 @@ private fun MainScreenExpandedLayout(
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(items = state.data.gameEventsOnDate) { item ->
-                    Event(
-                        windowSize = windowSize,
-                        ui = item,
-                        onDeleteEventTap = { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) },
+                    DSListItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        headline = item.title,
+                        supportingText = item.subtitle,
+                        leadingType = DSListItemLeadingType.Image,
+                        leadingPainter = if (item.iconUrl != null) {
+                            rememberAsyncImagePainter(model = item.iconUrl)
+                        } else {
+                            painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
+                        },
+                        trailingIconPainter = if (item.isYourEvent) {
+                            painterResource(R.drawable.ic_delete_24)
+                        } else null,
+                        onTrailingIconClick = if (item.isYourEvent) {
+                            { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) }
+                        } else null,
+                        sizes = DSListItemDefaults.sizes(
+                            imageWidth = 150.dp
+                        )
                     )
                 }
             }
@@ -221,11 +255,13 @@ private fun MainScreenExpandedLayout(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GreetingBar(
+    modifier: Modifier = Modifier,
     windowSize: WindowSizeClass,
     user: User,
     onAvatarTap: () -> Unit = {},
 ) {
     Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
