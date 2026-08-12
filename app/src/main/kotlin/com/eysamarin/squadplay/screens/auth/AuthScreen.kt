@@ -14,7 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -24,20 +28,17 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.designSystem.compose.Button
 import com.eysamarin.squadplay.designSystem.compose.ButtonStyle
+import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -126,16 +127,18 @@ private fun AuthScreenExpandedLayout(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmailPasswordSignIn(
     onAction: (AuthScreenAction) -> Unit
 ) {
-    var password by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    val passwordState = rememberTextFieldState()
+    val emailState = rememberTextFieldState()
     val emailHasErrors by remember {
         derivedStateOf {
-            if (email.isNotEmpty()) {
-                !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+            val emailText = emailState.text.toString()
+            if (emailText.isNotEmpty()) {
+                !Patterns.EMAIL_ADDRESS.matcher(emailText).matches()
             } else {
                 false
             }
@@ -143,10 +146,9 @@ private fun EmailPasswordSignIn(
     }
 
     OutlinedTextField(
-        value = email,
+        state = emailState,
         isError = emailHasErrors,
-        onValueChange = { email = it },
-        maxLines = 1,
+        lineLimits = TextFieldLineLimits.SingleLine,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         label = { Text(stringResource(R.string.label_email)) },
         supportingText = {
@@ -156,31 +158,28 @@ private fun EmailPasswordSignIn(
         }
     )
 
-    OutlinedTextField(
-        value = password,
-        maxLines = 1,
-        onValueChange = { password = it },
-        visualTransformation = PasswordVisualTransformation(),
+    OutlinedSecureTextField(
+        state = passwordState,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         label = { Text(stringResource(R.string.label_password)) },
     )
     Spacer(Modifier.height(16.dp))
 
-    val isEmailValid = email.isNotEmpty() && !emailHasErrors
+    val isEmailValid = emailState.text.isNotEmpty() && !emailHasErrors
     Column(
         modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Button(
+        DSButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = isEmailValid && password.isNotEmpty(),
+            enabled = isEmailValid && passwordState.text.isNotEmpty(),
             text = stringResource(R.string.sign_in),
-            onTap = { onAction(AuthScreenAction.OnSignInTap(email, password)) },
+            onTap = { onAction(AuthScreenAction.OnSignInTap(emailState.text.toString(), passwordState.text.toString())) },
         )
-        Button(
+        DSButton(
             modifier = Modifier.fillMaxWidth(),
-            style = ButtonStyle.Outline,
+            variant = ButtonStyle.Outline,
             text = stringResource(R.string.sign_up),
             onTap = { onAction(AuthScreenAction.OnSignUpTap) },
         )

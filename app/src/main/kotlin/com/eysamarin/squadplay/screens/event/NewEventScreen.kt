@@ -30,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -191,17 +191,17 @@ private fun NewEventScreenMediumLayout(
 
         val fromNotSetErrorText = stringResource(R.string.time_from_not_set)
         val toNotSetErrorText = stringResource(R.string.time_to_not_set)
-        Button(
+        DSButton(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             text = stringResource(R.string.schedule_event),
             onTap = {
                 val from = dateTimeFrom ?: run {
                     errorText = fromNotSetErrorText
-                    return@Button
+                    return@DSButton
                 }
                 val to = dateTimeTo ?: run {
                     errorText = toNotSetErrorText
-                    return@Button
+                    return@DSButton
                 }
 
                 val isHoursNextDay = from.hour > to.hour
