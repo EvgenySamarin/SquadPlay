@@ -55,12 +55,12 @@ import kotlin.math.roundToInt
 
 @Composable
 fun Calendar(
+    modifier: Modifier = Modifier,
     ui: CalendarUI,
     windowSize: WindowSizeClass,
     onPreviousMonthTap: (LocalDate) -> Unit,
     onNextMonthTap: (LocalDate) -> Unit,
     onDateTap: (Date) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val horizontalDragOffset = remember { Animatable(0f) }
