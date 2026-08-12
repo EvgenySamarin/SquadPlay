@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
@@ -41,12 +41,12 @@ fun PermissionDialog(
             ) {
                 HorizontalDivider()
                 if (isPermanentlyDeclined) {
-                    Button(
+                    DSButton(
                         text = "Grant permission",
                         onTap = onGoToAppSettingsTap,
                     )
                 } else {
-                    Button(text = "Ok", onTap = onConfirmTap)
+                    DSButton(text = "Ok", onTap = onConfirmTap)
                 }
             }
         },

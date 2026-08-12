@@ -80,18 +80,18 @@ fun MessageView(
                 modifier = Modifier.padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Button(
+                DSButton(
                     text = primaryButtonTitle,
                     onTap = onPrimaryButtonTap,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
                 secondaryButtonTitle?.let {
-                    Button(
+                    DSButton(
                         text = it,
                         onTap = onSecondaryButtonTap,
                         size = ButtonSize.Small,
-                        style = ButtonStyle.Text,
+                        variant = ButtonStyle.Text,
                     )
                 }
             }

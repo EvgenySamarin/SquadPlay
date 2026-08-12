@@ -46,9 +46,9 @@ enum class ButtonState {
 }
 
 @Composable
-fun Button(
+fun DSButton(
     modifier: Modifier = Modifier,
-    style: ButtonStyle = ButtonStyle.Filled,
+    variant: ButtonStyle = ButtonStyle.Filled,
     size: ButtonSize = ButtonSize.Default,
     state: ButtonState = ButtonState.Default,
     iconPainter: Painter? = null,
@@ -59,7 +59,7 @@ fun Button(
     val containerColor = if (!enabled) {
         DesignSystemTheme.colorScheme.onSurface.copy(alpha = 0.10f)
     } else {
-        when (style) {
+        when (variant) {
             ButtonStyle.Filled -> when (state) {
                 ButtonState.Default -> DesignSystemTheme.colorScheme.primary
                 ButtonState.Error -> DesignSystemTheme.colorScheme.error
@@ -79,7 +79,7 @@ fun Button(
     val contentColor = if (!enabled) {
         DesignSystemTheme.colorScheme.onSurface.copy(alpha = 0.4f)
     } else {
-        when (style) {
+        when (variant) {
             ButtonStyle.Filled -> when (state) {
                 ButtonState.Default -> DesignSystemTheme.colorScheme.onPrimary
                 ButtonState.Error -> DesignSystemTheme.colorScheme.onError
@@ -124,7 +124,7 @@ fun Button(
             )
             .background(containerColor)
             .then(
-                if (style == ButtonStyle.Outline && enabled) {
+                if (variant == ButtonStyle.Outline && enabled) {
                     Modifier.border(
                         width = 1.dp,
                         color = contentColor,
@@ -172,7 +172,7 @@ fun Button(
 @PhoneLightModePreview
 @PhoneDarkModePreview
 @Composable
-private fun ButtonPreview() {
+private fun DSButtonPreview() {
     DesignSystemTheme {
         Column(
             modifier = Modifier
@@ -180,7 +180,7 @@ private fun ButtonPreview() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             VariantPreviewText("Variant 0: external modifiers")
-            Button(
+            DSButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -188,7 +188,7 @@ private fun ButtonPreview() {
                 text = "Full line Button with long text label",
                 state = ButtonState.Default,
                 size = ButtonSize.Default,
-                style = ButtonStyle.Filled,
+                variant = ButtonStyle.Filled,
             )
             Row(
                 modifier = Modifier
@@ -196,21 +196,21 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Button(
+                DSButton(
                     modifier = Modifier.weight(1f),
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
-                Button(
+                DSButton(
                     modifier = Modifier.weight(1f),
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
             }
             VariantPreviewText("Variant 1: size=Default")
@@ -220,26 +220,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
             }
             Row(
@@ -248,26 +248,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
             }
             Row(
@@ -276,26 +276,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Outline,
+                    variant = ButtonStyle.Outline,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Outline,
+                    variant = ButtonStyle.Outline,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Outline,
+                    variant = ButtonStyle.Outline,
                 )
             }
             Row(
@@ -304,26 +304,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Text,
+                    variant = ButtonStyle.Text,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Text,
+                    variant = ButtonStyle.Text,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Default,
-                    style = ButtonStyle.Text,
+                    variant = ButtonStyle.Text,
                 )
             }
             VariantPreviewText("Variant 2: size=Small")
@@ -333,26 +333,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Filled,
+                    variant = ButtonStyle.Filled,
                 )
             }
             Row(
@@ -361,26 +361,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Tinted,
+                    variant = ButtonStyle.Tinted,
                 )
             }
             Row(
@@ -389,26 +389,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Outline,
+                    variant = ButtonStyle.Outline,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Outline,
+                    variant = ButtonStyle.Outline,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Outline,
+                    variant = ButtonStyle.Outline,
                 )
             }
             Row(
@@ -417,26 +417,26 @@ private fun ButtonPreview() {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Default,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Text,
+                    variant = ButtonStyle.Text,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     enabled = false,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Text,
+                    variant = ButtonStyle.Text,
                 )
-                Button(
+                DSButton(
                     iconPainter = previewIconPainter(),
                     text = "Label",
                     state = ButtonState.Error,
                     size = ButtonSize.Small,
-                    style = ButtonStyle.Text,
+                    variant = ButtonStyle.Text,
                 )
             }
         }

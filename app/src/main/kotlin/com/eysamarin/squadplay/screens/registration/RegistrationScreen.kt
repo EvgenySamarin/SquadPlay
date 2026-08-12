@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -22,18 +24,15 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.designSystem.compose.Button
+import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -89,22 +88,25 @@ fun RegistrationScreen(
 private fun RegistrationMediumLayout(
     onAction: (RegistrationScreenAction) -> Unit,
 ) {
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    val passwordState = rememberTextFieldState()
+    val confirmPasswordState = rememberTextFieldState()
     val confirmPasswordHasErrors by remember {
         derivedStateOf {
-            if (password.isNotEmpty() || confirmPassword.isNotEmpty()) {
-                password != confirmPassword
+            val passwordText = passwordState.text
+            val confirmPasswordText = confirmPasswordState.text
+            if (passwordText.isNotEmpty() || confirmPasswordText.isNotEmpty()) {
+                passwordText.toString() != confirmPasswordText.toString()
             } else {
                 false
             }
         }
     }
-    var email by remember { mutableStateOf("") }
+    val emailState = rememberTextFieldState()
     val emailHasErrors by remember {
         derivedStateOf {
-            if (email.isNotEmpty()) {
-                !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+            val emailText = emailState.text.toString()
+            if (emailText.isNotEmpty()) {
+                !Patterns.EMAIL_ADDRESS.matcher(emailText).matches()
             } else {
                 false
             }
@@ -118,9 +120,9 @@ private fun RegistrationMediumLayout(
     ) {
         item {
             OutlinedTextField(
-                value = email,
+                state = emailState,
                 isError = emailHasErrors,
-                onValueChange = { email = it },
+                lineLimits = TextFieldLineLimits.SingleLine,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 label = { Text(stringResource(R.string.label_email)) },
                 supportingText = {
@@ -131,20 +133,16 @@ private fun RegistrationMediumLayout(
             )
         }
         item {
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                visualTransformation = PasswordVisualTransformation(),
+            OutlinedSecureTextField(
+                state = passwordState,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 label = { Text(stringResource(R.string.label_password)) },
             )
         }
         item {
-            OutlinedTextField(
-                value = confirmPassword,
+            OutlinedSecureTextField(
+                state = confirmPasswordState,
                 isError = confirmPasswordHasErrors,
-                onValueChange = { confirmPassword = it },
-                visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 label = { Text(stringResource(R.string.confirm_password)) },
                 supportingText = {
@@ -156,14 +154,13 @@ private fun RegistrationMediumLayout(
         }
         item {
             Spacer(Modifier.width(24.dp))
-            Button(
-                enabled = password.isNotEmpty()
+            DSButton(
+                enabled = passwordState.text.isNotEmpty()
                     && !confirmPasswordHasErrors
-                    && email.isNotEmpty()
+                    && emailState.text.isNotEmpty()
                     && !emailHasErrors,
-                modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
                 text = stringResource(R.string.confirm),
-                onTap = { onAction(RegistrationScreenAction.OnConfirmTap(email, password)) },
+                onTap = { onAction(RegistrationScreenAction.OnConfirmTap(emailState.text.toString(), passwordState.text.toString())) },
             )
         }
     }
