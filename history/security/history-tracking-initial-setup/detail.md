@@ -1,33 +1,25 @@
-# Detail: Biometric Transaction Guard
+# Detail: History Tracking Initial Setup
 
-* **Target Commit Title**: `feat(security): enforce biometric prompt on high-value transfers`
+* **Target Commit Title**: `chore(security): initialize architectural history tracking and index`
 
 ## 1. Intent & Architectural Constraints
-
-Enforce strong customer authentication (SCA) for single transfers exceeding limit. Must avoid
-blocking the main UI thread during biometric prompt invocation and fallback gracefully to PIN when
-biometrics are unavailable.
+Prevent AI context drift, loss of business intent during iterative refactoring, and hallucinated contract changes by implementing an append-only, low-token architectural history registry. Ensure immutable records are staged safely in `.artifacts/` and only published to `history/` upon explicit user sign-off.
 
 ## 2. Executed Plan
-
-- [x] Create `BiometricPromptHandler` abstraction.
-- [x] Inject biometric gate check into `ConfirmTransferUseCase`.
-- [x] Update `TransferRepository` signature with required security payload.
-- [x] Implement error handling for hardware lockout and canceled prompts.
+- [x] Establish root `history/` directory layout and index schema.
+- [x] Configure domain-based partitioning and parent lineage resolution.
+- [x] Define `brief.md` and `detail.md` templates.
+- [x] Integrate with Antigravity skills (`history-tracker`, `history-context-resolver`, `gitflow-commit-formatter`).
 
 ## 3. Touched Files
-
-* `core/security/BiometricPromptHandler.kt`
-* `domain/transfers/ConfirmTransferUseCase.kt`
-* `data/transfers/TransferRepository.kt`
-* `test/security/BiometricPromptHandlerTest.kt`
+* `history/INDEX.md`
+* `.antigravity/skills/history-tracker/SKILL.md`
+* `.antigravity/skills/history-context-resolver/SKILL.md`
+* `.antigravity/skills/gitflow-commit-formatter/SKILL.md`
+* `GEMINI.md`
 
 ## 4. Architectural Divergences & Discoveries
-
-Initially planned to store token in memory cache, but shifted to returning a single-use
-crypto-signed nonce to prevent replay attacks during network retry.
+Omitted calendar timestamps (`YYYY/MM/`) and mutable `IN_PROGRESS` statuses in favor of semantic domain paths (`history/<domain>/<slug>/`) and Antigravity's native `.artifacts/` review lifecycle.
 
 ## 5. Resulting Commits
-
-* `a1c4e92` - feat(security): enforce biometric prompt on high-value transfers
-* `8f2b311` - test(security): add unit tests for BiometricPromptHandler
+* `c001a01` - chore(security): initialize architectural history tracking and index

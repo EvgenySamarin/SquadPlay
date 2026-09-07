@@ -5,15 +5,16 @@ description: Formats git commit messages with branch-based prefixes, Conventiona
 
 # Gitflow Commit Formatter Skill
 
-When generating a git commit message, you MUST follow this specific format to maintain consistency with Gitflow, issue tracking, and architectural history.
+When generating a git commit message, you MUST follow this specific format to maintain consistency 
+with Gitflow, issue tracking, and architectural history.
 
 ## Format
 ```text
 [branch-name] <type>(<scope>): <description>
 
-[optional body / BREAKING CHANGE]
+[optional body / BREAKING CHANGE: <explanation>]
 
-[optional reference footer]
+[optional reference footer: Ref: history/<domain>/<slug>/]
 ```
 
 ## Instructions
@@ -35,9 +36,9 @@ When generating a git commit message, you MUST follow this specific format to ma
 7. **Description**: Use the imperative mood, present tense (e.g., "add feature", "fix bug"). Do not capitalize the first letter and do not end with a period.
 8. **Breaking Changes**: If the changes break backward compatibility, you MUST:
    - Add a `!` after the type/scope (e.g., `feat(api)!: remove deprecated endpoint`).
-   - Add a footer starting with `BREAKING CHANGE: ` followed by a description of what was changed and how to migrate.
+   - Leave a blank line after the title and add a footer starting with `BREAKING CHANGE: ` followed by a description of what was changed and how to migrate.
 9. **History Reference Footer (Traceability)**:
-   - If the commit fulfills a task tracked under `history/<domain>/<slug>/`, append a footer to the commit message body: `Ref: history/<domain>/<slug>/`
+   - If the commit fulfills a task tracked under `history/<domain>/<slug>/`, append a footer separated by a blank line: `Ref: history/<domain>/<slug>/`.
 10. **Atomic Commits**: Every commit MUST be atomic, meaning it should contain only one logical change or fix.
 11. **Analyze and Propose**:
     - Before generating the message, analyze all changed files and the specific modifications within them at the line level.
