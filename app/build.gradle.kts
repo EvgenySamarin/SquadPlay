@@ -29,8 +29,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val firebaseDbUrl = System.getenv("FIREBASE_DATABASE_URL") ?: properties.getProperty("FIREBASE_DATABASE_URL")
-        val googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: properties.getProperty("GOOGLE_WEB_CLIENT_ID")
+        val firebaseDbUrl = System.getenv("FIREBASE_DATABASE_URL") ?: properties.getProperty("FIREBASE_DATABASE_URL") ?: ""
+        val googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: properties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
+        val rawgApiKey = System.getenv("RAWG_API_KEY") ?: properties.getProperty("RAWG_API_KEY") ?: ""
 
         buildConfigField(
             type = "String",
@@ -41,6 +42,11 @@ android {
             "String",
             "GOOGLE_WEB_CLIENT_ID",
             "\"$googleWebClientId\""
+        )
+        buildConfigField(
+            "String",
+            "RAWG_API_KEY",
+            "\"$rawgApiKey\""
         )
     }
 

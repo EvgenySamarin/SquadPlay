@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -37,4 +38,5 @@ dependencies {
     implementation(libs.com.google.firebase.auth)
     implementation(libs.com.google.firebase.messaging)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.org.jetbrains.kotlinx.serialization.json)
 }

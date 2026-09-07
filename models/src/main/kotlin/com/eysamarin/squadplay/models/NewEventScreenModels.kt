@@ -6,9 +6,12 @@ import kotlinx.datetime.LocalDate
 sealed interface NewEventScreenAction {
     data object OnBackButtonTap : NewEventScreenAction
     class OnEventSaveTap(
+        val title: String,
         val timeFrom: LocalDateTime,
         val timeTo: LocalDateTime,
+        val eventIconUrl: String?,
     ) : NewEventScreenAction
+    class OnGameTitleChanged(val title: String) : NewEventScreenAction
 }
 
 data class PickerTimeUnit(
@@ -20,6 +23,8 @@ data class NewEventScreenUI(
     val title: String,
     val selectedDate: Date,
     val yearMonth: LocalDate,
+    val gameTitle: String = "",
+    val eventIconUrl: String? = null,
 )
 
 val PREVIEW_TIME_PICKER_UI = TimePickerUI(

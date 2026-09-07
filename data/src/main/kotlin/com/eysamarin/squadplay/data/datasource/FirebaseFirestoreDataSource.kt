@@ -75,6 +75,7 @@ class FirebaseFirestoreDataSourceImpl(
             "creatorId" to event.creatorId,
             "groupId" to event.groupId,
             "title" to event.title,
+            "eventIconUrl" to event.eventIconUrl,
             "dateFrom" to event.fromDateTime.toTimestamp(),
             "dateTo" to event.toDateTime.toTimestamp(),
         )
@@ -175,12 +176,14 @@ class FirebaseFirestoreDataSourceImpl(
                         Log.e("TAG", "dateTo is null for event: ${document.id}")
                         return@mapNotNull null
                     }
+                    val eventIconUrl = document.getString("eventIconUrl")
 
                     Event(
                         uid = document.id,
                         creatorId = creatorId,
                         groupId = groupId,
                         title = title,
+                        eventIconUrl = eventIconUrl,
                         fromDateTime = dateFrom.toLocalDateTime(),
                         toDateTime = dateTo.toLocalDateTime(),
                     )
