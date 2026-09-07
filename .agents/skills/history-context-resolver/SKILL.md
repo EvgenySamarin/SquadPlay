@@ -30,7 +30,8 @@ Before starting Step 1, verify that both `target_domain` and `target_intent` are
    * *No matches found* ➔ **Finish**: Return `NO_HISTORICAL_CONFLICT_DETECTED`.
    * *Domain or keyword match found* ➔ **Proceed to Step 2**.
 * **Step 2: Trace Parent Lineage via `brief.md`**
-   * Follow `Parent` links up to 3 levels; discard anything marked under `Deprecates`.
+   * Follow `Parent` links up to 3 levels by default; if the chain continues, prompt the user for a new depth limit.
+   * Discard anything marked under `Deprecates`.
    * *No contract collision & no hotspots affected* ➔ **Finish**: Return Lineage Insights.
    * *Contract collision, hotspot affected, or explicit user ask* ➔ **Proceed to Step 3**.
 * **Step 3: Deep Dive Escalation**
@@ -52,7 +53,9 @@ Before starting Step 1, verify that both `target_domain` and `target_intent` are
 3. **Trace the Parent Chain**:
     - Inspect the `Parent:` field.
     - If `Parent` is not `none`, open `history/<parent_path>/brief.md` directly (where `<parent_path>` is `<domain>/<parent_slug>`).
-    - Traverse upstream up to a **maximum depth of 3 levels**.
+    - Traverse upstream up to a **default depth of 3 levels**.
+    - If at depth 3 the `Parent:` field is still not `none`, **PAUSE** execution and prompt the user: *"The historical lineage structure is deeper than 3 levels. How much deeper would you like to traverse? (e.g., '1 more step', '3 more levels', or 'traverse all the way')."*
+    - Resume traversal based on the user's explicitly provided depth limit.
 4. **Prune Deprecated Constraints**:
     - If any ancestor specifies a value under `Deprecates:`, discard constraints and hotspots belonging to that deprecated slug.
 5. **Aggregate Context**:
