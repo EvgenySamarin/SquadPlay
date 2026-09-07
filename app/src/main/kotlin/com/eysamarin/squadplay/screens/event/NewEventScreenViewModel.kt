@@ -25,18 +25,27 @@ import kotlinx.datetime.LocalDateTime
 import java.util.UUID
 
 
+import com.eysamarin.squadplay.domain.game.GameProvider
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+
 class NewEventScreenViewModel(
     private val navigator: Navigator,
     private val snackbar: SnackbarProvider,
     private val profileProvider: ProfileProvider,
     private val eventProvider: EventProvider,
     private val stringProvider: StringProvider,
+    private val gameProvider: GameProvider,
 ) : ViewModel() {
     val uiState: StateFlow<UiState<NewEventScreenUI>>
         field = MutableStateFlow<UiState<NewEventScreenUI>>(UiState.Loading)
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val navigationArgsState = MutableStateFlow<Destination.NewEventScreen?>(null)
+    
+    private val gameTitleState = MutableStateFlow("")
+    private val gameThumbnailUrlState = MutableStateFlow<String?>(null)
+    private var searchJob: Job? = null
 
     init {
         collectInitScreenData()
@@ -63,15 +72,31 @@ class NewEventScreenViewModel(
         navigationArgsState
             .filterNotNull()
             .onEach { args ->
-                uiState.value = UiState.Normal(
-                    NewEventScreenUI(
-                        title = "new event screen",
-                        selectedDate = args.selectedDate,
-                        yearMonth = LocalDate.parse(args.yearMonth),
-                    )
-                )
+                updateUiState(args)
             }
             .launchIn(viewModelScope)
+            
+        gameTitleState.onEach { title ->
+            val args = navigationArgsState.value ?: return@onEach
+            updateUiState(args)
+        }.launchIn(viewModelScope)
+        
+        gameThumbnailUrlState.onEach { url ->
+            val args = navigationArgsState.value ?: return@onEach
+            updateUiState(args)
+        }.launchIn(viewModelScope)
+    }
+    
+    private fun updateUiState(args: Destination.NewEventScreen) {
+        uiState.value = UiState.Normal(
+            NewEventScreenUI(
+                title = "new event screen",
+                selectedDate = args.selectedDate,
+                yearMonth = LocalDate.parse(args.yearMonth),
+                gameTitle = gameTitleState.value,
+                eventIconUrl = gameThumbnailUrlState.value,
+            )
+        )
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
@@ -79,7 +104,7 @@ class NewEventScreenViewModel(
         navigator.navigateUp()
     }
 
-    fun onEventSaveTap(dateTimeFrom: LocalDateTime, dateTimeTo: LocalDateTime) = viewModelScope.launch {
+    fun onEventSaveTap(title: String, dateTimeFrom: LocalDateTime, dateTimeTo: LocalDateTime, eventIconUrl: String?) = viewModelScope.launch {
         Log.d("TAG", "onEventSaveTap for dates: $dateTimeFrom - $dateTimeTo")
         val currentUser = userInfoState.value ?: run {
             Log.w("TAG", "currentUser is null cannot save event")
@@ -96,7 +121,8 @@ class NewEventScreenViewModel(
             uid = UUID.randomUUID().toString(),
             creatorId = currentUser.uid,
             groupId = currentUser.groups.first().uid,
-            title = "New event",
+            title = title.takeIf { it.isNotBlank() } ?: "New event",
+            eventIconUrl = eventIconUrl,
             fromDateTime = dateTimeFrom,
             toDateTime = dateTimeTo,
         )
@@ -112,14 +138,31 @@ class NewEventScreenViewModel(
             }
         )
     }
+    
+    fun onGameTitleChanged(title: String) {
+        gameTitleState.value = title
+        searchJob?.cancel()
+        if (title.isBlank()) {
+            gameThumbnailUrlState.value = null
+            return
+        }
+        searchJob = viewModelScope.launch {
+            delay(500) // Debounce 500ms
+            val url = gameProvider.getGameThumbnailUrl(title)
+            gameThumbnailUrlState.value = url
+        }
+    }
 
     fun onAction(action: NewEventScreenAction) {
         when (action) {
             NewEventScreenAction.OnBackButtonTap -> onBackButtonTap()
             is NewEventScreenAction.OnEventSaveTap -> onEventSaveTap(
+                title = action.title,
                 dateTimeFrom = action.timeFrom,
                 dateTimeTo = action.timeTo,
+                eventIconUrl = action.eventIconUrl,
             )
+            is NewEventScreenAction.OnGameTitleChanged -> onGameTitleChanged(action.title)
         }
     }
 }

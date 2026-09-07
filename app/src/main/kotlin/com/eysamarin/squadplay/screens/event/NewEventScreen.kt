@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -143,6 +144,31 @@ private fun NewEventScreenMediumLayout(
                 color = DesignSystemTheme.colorScheme.inverseOnSurface,
             )
         }
+        
+        androidx.compose.material3.OutlinedTextField(
+            value = state.data.gameTitle,
+            onValueChange = { onAction(NewEventScreenAction.OnGameTitleChanged(it)) },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Game Title") },
+            singleLine = true,
+            colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+            )
+        )
+        
+        state.data.eventIconUrl?.let { url ->
+            coil3.compose.AsyncImage(
+                model = url,
+                contentDescription = "Game Thumbnail",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            )
+        }
+        
         SquadPlayTimePicker(
             ui = timePickerUI,
             windowSize = windowSize,
@@ -209,10 +235,12 @@ private fun NewEventScreenMediumLayout(
                         && from.minute > (to.minute)
 
                 onAction(NewEventScreenAction.OnEventSaveTap(
+                    title = state.data.gameTitle,
                     timeFrom = from,
                     timeTo = if (isHoursNextDay || isMinutesNextDay) {
                         LocalDateTime(from.date.plus(1, DateTimeUnit.DAY), from.time)
-                    } else to
+                    } else to,
+                    eventIconUrl = state.data.eventIconUrl
                 ))
             },
         )

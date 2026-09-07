@@ -46,8 +46,15 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.option.viewModelScopeFactory
 import org.koin.dsl.module
 
+import com.eysamarin.squadplay.contracts.GameRepository
+import com.eysamarin.squadplay.data.contract.GameRepositoryImpl
+import com.eysamarin.squadplay.data.datasource.RawgDataSource
+import com.eysamarin.squadplay.domain.game.GameProvider
+import com.eysamarin.squadplay.domain.game.GameProviderImpl
+
 class SquadPlayApplication : Application() {
     val appModule = module {
+
         //region data
         single<CredentialManager> { CredentialManager.create(baseContext) }
         single<FirebaseAuthManager> {
@@ -64,6 +71,7 @@ class SquadPlayApplication : Application() {
                 firebaseMessaging = FirebaseMessaging.getInstance(),
             )
         }
+        single<RawgDataSource> { RawgDataSource(BuildConfig.RAWG_API_KEY) }
         //endregion
 
         //region contracts
@@ -76,6 +84,7 @@ class SquadPlayApplication : Application() {
         single<EventRepository> { EventRepositoryImpl(firebaseFirestoreDataSource = get()) }
         single<ProfileRepository> { ProfileRepositoryImpl(firestoreDataSource = get()) }
         single<StringRepository> { StringRepositoryImpl(appContext = get()) }
+        single<GameRepository> { GameRepositoryImpl(rawgDataSource = get()) }
         //endregion
 
         //region domain
@@ -94,6 +103,7 @@ class SquadPlayApplication : Application() {
             )
         }
         single<StringProvider> { StringProviderImpl(stringRepository = get()) }
+        single<GameProvider> { GameProviderImpl(gameRepository = get()) }
         //endregion
 
         //region presentation
