@@ -6,7 +6,7 @@ android-minSdk = "28"
 #noinspection UnusedVersionCatalogEntry
 android-targetSdk = "37"
 
-agp = "9.3.1"
+agp = "9.4.0"
 kotlin = "2.4.10"
 kotlinxSerialization = "1.11.0"
 orgJetbrainsKotlinxCoroutinesCore = "1.11.0"
@@ -16,13 +16,13 @@ junit = "4.13.2"
 junitVersion = "1.3.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
-navigationCompose = "2.9.8"
+navigationCompose = "2.10.0"
 composeBom = "2026.06.01"
 jetbrainsKotlinJvm = "2.4.10"
 koin = "4.2.2"
-firebaseBom = "34.17.0"
+firebaseBom = "34.18.0"
 googleGmsGoogleServices = "4.5.0"
-googleFirebaseCrashlytics = "3.0.7"
+googleFirebaseCrashlytics = "3.0.8"
 credentials = "1.6.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.2.0"
 ioCoilKtCoil3Compose = "3.5.0"
@@ -56,6 +56,7 @@ io-insert-koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit
 io-coil-kt-coil3-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "ioCoilKtCoil3Compose" }
 io-coil-kt-coil3-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "ioCoilKtCoil3NetworkOkHttp" }
 
+#noinspection LoginCredentials
 androidx-credentials-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 com-google-android-libraries-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "comGoogleAndroidLibrariesIdentityGoogleid" }
