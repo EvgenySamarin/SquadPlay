@@ -1,13 +1,11 @@
-# Brief: Biometric Transaction Guard
+# Brief: History Tracking Initial Setup
 
-* **Commit Title**: `feat(security): enforce biometric prompt on high-value transfers`
-* **Domains**: `security`, `payments`
+* **Commit Title**: `chore(security): initialize architectural history tracking and index`
+* **Domains**: `security`, `tooling`
+* **Parent**: `none`
+* **Deprecates**: `none`
 
 ## Affected Capabilities & Side Effects
-
-* **Behavior**: Intercepts transfer requests exceeding threshold amount and displays system
-  biometric prompt before dispatching API call.
-* **Contract Adjustments**: Extended `TransferRepository.submitOrder` interface with optional
-  `BiometricProofToken` argument.
-* **Hotspots**: Downstream payment dispatchers must now supply an authenticated token or catch
-  `BiometricAuthRequiredException`.
+* **Behavior**: Established root architectural history registry and indexing pipeline to prevent AI hallucination and context drift during refactoring.
+* **Contract Adjustments**: Added root `history/INDEX.md` schema, two-tier lineage tracing (`Parent`, `Deprecates`), and task isolation via `.artifacts/`.
+* **Hotspots**: All future feature plans and refactorings must query `history/INDEX.md` through `history-context-resolver` before touching source code.
