@@ -1,70 +1,64 @@
 ---
 name: gitflow-commit-formatter
-description: Formats git commit messages with branch-based prefixes, Conventional Commits types, and links commits to task history. Use this for all commits in the project.
+description: Analyzes staged or working tree diffs and outputs formatted conventional commit messages with branch prefixes and optional traceability footers.
 ---
 
-# Gitflow Commit Formatter Skill
+# Gitflow Commit Formatter
 
-When generating a git commit message, you MUST follow this specific format to maintain consistency 
-with Gitflow, issue tracking, and architectural history.
+## Objective
+Generate atomic, conventional Git commit messages incorporating branch identifiers, standard types, and optional architectural history references.
 
-## Format
+## Input Contract
+* **Mandatory**:
+    * `branch_name`: Name of the active git branch (used to extract `[<cleaned-branch>]` prefix).
+    * `diff_summary`: Unified diff (`git diff`) or line-level modification summary required to verify commit atomicity.
+* **Optional**:
+    * `target_commit_title`: Baseline title agreed upon during planning (`<type>(<scope>): <description>`). If provided and diff is atomic, reuse this subject directly with the branch prefix.
+    * `history_ref_path`: Relative task history path to append as `Ref: <path>` footer (e.g., `history/<domain>/<slug>/`).
+    * `is_breaking`: Boolean indicating breaking contract changes (triggers `!` type suffix and breaking footer).
+    * `breaking_description`: Explanation of what broke and migration instructions.
+
+## Formatting Rules
+1. **Branch Tag**:
+    - Strip prefixes such as `feature/`, `bugfix/`, `hotfix/`, or `release/`.
+    - Wrap the cleaned branch or issue ID in brackets: `[<cleaned-branch>]`.
+2. **Title Line**:
+    - Format: `[<branch>] <type>(<scope>): <imperative summary>`
+    - Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
+    - Use lowercase imperative mood, no ending period.
+    - If `is_breaking` is true, append `!` before the colon (e.g., `[SP-101] feat(api)!: drop legacy endpoint`).
+3. **Traceability Footer**:
+    - If `history_ref_path` is provided, append:
+      ```text
+      Ref: <history_ref_path>
+      ```
+4. **Breaking Change Footer**:
+    - If `is_breaking` is true, separate with a blank line and start with `BREAKING CHANGE: <breaking_description>`.
+
+## Diff Atomicity Check
+1. Inspect the provided changes.
+2. If the diff contains logically disconnected changes (e.g., a bugfix bundled with an unrelated refactor):
+    - Propose splitting the changes into distinct atomic commits with concrete staging recommendations.
+
+## Output Contract
+Return one of the following structures:
+
+### Single Atomic Commit Proposal
 ```text
-[branch-name] <type>(<scope>): <description>
+[<branch>] <type>(<scope>): <description>
 
-[optional body / BREAKING CHANGE: <explanation>]
+[optional BREAKING CHANGE explanation]
 
-[optional reference footer: Ref: history/<domain>/<slug>/]
+[optional Ref: history/<domain>/<slug>/]
 ```
 
-## Instructions
-1. **Identify the Branch Name**: Get the name of the current git branch.
-2. **Clean Branch Name**: Remove category prefixes like `feature/`, `bugfix/`, `hotfix/`, or `release/` from the branch name. Use only the descriptive part or issue ID (e.g., if branch is `feature/SP-123`, use `SP-123`).
-3. **Prefix**: Wrap the cleaned branch name in square brackets at the very beginning of the commit title (e.g., `[SP-123]`).
-4. **Alignment with Feature History Plan**:
-   - If this commit is part of an active session from `history-tracker`, ensure the `<type>(<scope>): <description>` matches or accurately refines the Target Commit Title defined during the `.artifacts` planning stage.
-5. **Type**: Use one of the standard Conventional Commits types:
-   - `feat`: New feature
-   - `fix`: Bug fix
-   - `docs`: Documentation
-   - `style`: Formatting, whitespace, missing semicolons, etc.
-   - `refactor`: Code change that neither fixes a bug nor adds a feature
-   - `perf`: Performance improvements
-   - `test`: Adding missing tests or correcting existing tests
-   - `chore`: Changes to the build process or auxiliary tools
-6. **Scope**: (Optional) Add a scope in parentheses if the change is specific to a module or component (e.g., `app`, `data`, `theme`, `auth`).
-7. **Description**: Use the imperative mood, present tense (e.g., "add feature", "fix bug"). Do not capitalize the first letter and do not end with a period.
-8. **Breaking Changes**: If the changes break backward compatibility, you MUST:
-   - Add a `!` after the type/scope (e.g., `feat(api)!: remove deprecated endpoint`).
-   - Leave a blank line after the title and add a footer starting with `BREAKING CHANGE: ` followed by a description of what was changed and how to migrate.
-9. **History Reference Footer (Traceability)**:
-   - If the commit fulfills a task tracked under `history/<domain>/<slug>/`, append a footer separated by a blank line: `Ref: history/<domain>/<slug>/`.
-10. **Atomic Commits**: Every commit MUST be atomic, meaning it should contain only one logical change or fix.
-11. **Analyze and Propose**:
-    - Before generating the message, analyze all changed files and the specific modifications within them at the line level.
-    - If changes (even within the same file) span multiple unrelated logical features or fixes, you MUST explicitly ask the user: *"I've detected multiple distinct changes. Do you want to include them all in one commit, or should I help you split them into separate atomic commits using Android Studio's line-level staging?"*
-    - If the user prefers to split, propose a clear plan specifying which logical blocks or lines should be staged for each commit (e.g., "Commit 1 (Fix in repository): [branch] fix(data): ..., Commit 2 (New field in model): [branch] feat(models): ...").
-
-
-## Examples
-### Simple Atomic Commit
-
+### Multi-Commit Split Proposal (if changes are not atomic)
 ```text
-[login-fix] fix(auth): resolve null pointer in social login
-```
-
-### Commit with History Reference
-```text
-[SP-456] feat(security): enforce biometric prompt on high-value transfers
-
-Ref: history/security/biometric-transaction-guard/
-```
-
-### Breaking Change with History Reference
-```text
-[SP-789] feat(auth)!: migrate token refresh to encrypted nonce pipeline
-
-BREAKING CHANGE: TokenRefreshRequest requires crypto-signed nonce argument.
-
-Ref: history/auth/token-refresh-pipeline/
+Multiple distinct changes detected:
+- Commit 1:
+  - Staging: `<file or lines>`
+  - Message: `[<branch>] <type>(<scope>): <description>`
+- Commit 2:
+  - Staging: `<file or lines>`
+  - Message: `[<branch>] <type>(<scope>): <description>`
 ```
