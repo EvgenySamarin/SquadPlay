@@ -64,7 +64,7 @@
     <string name="close">Close</string>
     <string name="picktime_license_title">PickTime</string>
     <string name="picktime_license_subtitle">Apache License 2.0 • Copyright 2024 Anhaki</string>
-    <string name="picktime_license_notice">PickTime (com.anhaki.picktime)\nCopyright 2024 Anhaki (https://github.com/anhaki/PickTime-Compose)\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License.\n\nYou may obtain a copy of the License at:\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nModifications Copyright (c) 2026 SquadPlay contributors.</string>
+    <string name="picktime_license_notice">PickTime (com.anhaki.picktime)\nCopyright 2024 Anhaki (https://github.com/anhaki/PickTime-Compose)\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License.\n\nYou may obtain a copy of the License at:\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nModifications Copyright © 2026 SquadPlay contributors.</string>
     <!-- end region -->
 
     <!-- region content description -->

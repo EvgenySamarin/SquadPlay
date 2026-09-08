@@ -65,7 +65,7 @@ import com.anhaki.picktime.utils.PickTimeTextStyle
  * - The `initialMonth` is clamped between 1 and the size of `monthList`.
  * - The `initialYear` is clamped within the given `yearRange`.
  */
-
+@Suppress("unused")
 @Composable
 fun PickDate(
     initialDay: Int,
