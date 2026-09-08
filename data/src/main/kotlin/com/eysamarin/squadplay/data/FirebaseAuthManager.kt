@@ -28,6 +28,8 @@ interface FirebaseAuthManager {
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signOut(): Boolean
     fun getUserUid(): String?
+
+    @Throws(IllegalStateException::class)
     fun getCurrentUserId(): String
 }
 

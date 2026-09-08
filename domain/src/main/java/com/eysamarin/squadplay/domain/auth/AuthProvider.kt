@@ -45,9 +45,9 @@ class AuthProviderImpl(
 
     override suspend fun signOut(): Boolean {
         val currentUserId = authRepository.getCurrentUserId()
-        profileRepository.deleteUserProfile(currentUserId)
-        val isSignOutSuccess = authRepository.signOut()
-
-        return isSignOutSuccess
+        if (currentUserId != null) {
+            profileRepository.deleteUserProfile(currentUserId)
+        }
+        return authRepository.signOut()
     }
 }

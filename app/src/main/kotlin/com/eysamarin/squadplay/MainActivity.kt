@@ -27,23 +27,35 @@ import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.SquadPlayNavigation
 import com.eysamarin.squadplay.ui.PermissionDialog
-import org.koin.androidx.compose.koinViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: LaunchApplicationViewModel by viewModel()
 
     private val permissionsToRequest = arrayOf(
         getPostNotificationsPermissionName()
     )
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val deepLinkUri = intent.data
+        intent.data = null
+        viewModel.handleIncomingIntent(deepLinkUri)
+    }
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        val deepLinkUri = intent?.data
+        intent?.data = null
+        viewModel.handleIncomingIntent(deepLinkUri)
         enableEdgeToEdge()
         setContent {
             DesignSystemTheme {
                 val windowSize = calculateWindowSizeClass(this)
-                val viewModel: LaunchApplicationViewModel = koinViewModel()
                 val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
                 val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
 

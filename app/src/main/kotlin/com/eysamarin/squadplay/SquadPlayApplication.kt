@@ -27,6 +27,8 @@ import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.domain.resource.StringProviderImpl
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.messaging.SnackbarProviderImpl
+import com.eysamarin.squadplay.navigation.DeepLinkManager
+import com.eysamarin.squadplay.navigation.DefaultDeepLinkManager
 import com.eysamarin.squadplay.navigation.DefaultNavigator
 import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
@@ -107,6 +109,7 @@ class SquadPlayApplication : Application() {
         //endregion
 
         //region presentation
+        single<DeepLinkManager> { DefaultDeepLinkManager() }
         single<Navigator> { DefaultNavigator() }
         single<SnackbarProvider> { SnackbarProviderImpl() }
         viewModelOf(::LaunchApplicationViewModel)
