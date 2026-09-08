@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `auth`       | `auth-exit-loading-indicator`     | `feat(auth): show loading indicator on exit until navigation to auth screen`        | `none`                                    | `none`     | `auth/auth-exit-loading-indicator/`      |
 | `settings`   | `settings-app-version`            | `feat(settings): display app version in bottom bar`                                 | `none`                                    | `none`     | `settings/settings-app-version/`         |
 | `ci`         | `cicd-rawg-api-key`               | `ci(workflows): add RAWG_API_KEY secret to android cicd build`                      | `none`                                    | `none`     | `ci/cicd-rawg-api-key/`                  |
 | `event`      | `dual-dial-picker-time-selection` | `refactor(event): use dual dial pickers for new event time selection`               | `rawg-game-parser`                        | `none`     | `event/dual-dial-picker-time-selection/` |
