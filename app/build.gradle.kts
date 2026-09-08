@@ -101,12 +101,14 @@ kotlin {
     jvmToolchain(jdkVersion = 17)
 }
 
+//noinspection LoginCredentials
 dependencies {
     implementation(project(":models"))
     implementation(project(":domain"))
     implementation(project(":data"))
     implementation(project(":contract"))
     implementation(project(":design-system"))
+    implementation(project(":picktime"))
 
     implementation(libs.io.insert.koin.compose)
     implementation(libs.androidx.core.ktx)
@@ -120,8 +122,6 @@ dependencies {
     implementation(libs.androidx.credentials.credentials)
     implementation(libs.androidx.credentials.credentials.play.services.auth)
     implementation(libs.com.google.android.libraries.identity.googleid)
-
-    implementation(libs.com.github.anhaki.pick.time.compose)
 
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics)
@@ -147,7 +147,6 @@ dependencies {
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
