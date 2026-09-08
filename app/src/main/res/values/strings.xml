@@ -11,7 +11,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
-    <string name="select_time">Select time</string>
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="press_again_to_exit">Press again to exit</string>
@@ -44,11 +43,9 @@
     <string name="event_save_failed">Failed to save event</string>
     <string name="new_game_event">New game event</string>
     <string name="greeting_text">Welcome back, %s!</string>
-    <string name="create_new_event">Create new game event for date: %s</string>
-    <string name="from_to_time_warning">If time \'To\' less then time \'From\', event will be scheduled on next day</string>
+    <string name="create_new_event">Create new game event for the date: %s</string>
+    <string name="from_to_time_warning">If time \'To\' less than time \'From\', event will be scheduled on next day</string>
     <string name="schedule_event">Schedule event</string>
-    <string name="time_from_not_set">Time from not set</string>
-    <string name="time_to_not_set">Time to not set</string>
     <string name="invite_new_friend">Invite new friend</string>
     <!-- endregion -->
 
