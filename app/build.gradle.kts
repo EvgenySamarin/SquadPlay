@@ -89,6 +89,10 @@ android {
         compose = true
         buildConfig = true
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 kotlin {
@@ -145,6 +149,7 @@ dependencies {
 
     testImplementation(libs.io.insert.koin.test.junit4)
     testImplementation(libs.junit)
+    testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
 
     androidTestImplementation(libs.androidx.junit)
 

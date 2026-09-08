@@ -1,5 +1,8 @@
 package com.eysamarin.squadplay.screens.profile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,15 +14,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,10 +55,11 @@ import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProfileScreen(
     state: UiState<ProfileScreenUI>,
+    isLoggingOut: Boolean = false,
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (ProfileScreenAction) -> Unit
 ) {
@@ -71,7 +78,10 @@ fun ProfileScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onAction(ProfileScreenAction.OnLogOutTap) }) {
+                    IconButton(
+                        onClick = { if (!isLoggingOut) onAction(ProfileScreenAction.OnLogOutTap) },
+                        enabled = !isLoggingOut,
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_exit_to_app_24),
                             contentDescription = stringResource(R.string.content_description_log_out),
@@ -88,16 +98,40 @@ fun ProfileScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center,
             ) {
-                when (windowSize.widthSizeClass) {
-                    WindowWidthSizeClass.Expanded,
-                    WindowWidthSizeClass.Compact,
-                    WindowWidthSizeClass.Medium -> ProfileScreenMediumLayout(
-                        state, windowSize, onAction
-                    )
+                when (state) {
+                    UiState.Loading -> {
+                        LoadingIndicator()
+                    }
+                    is UiState.Normal -> {
+                        when (windowSize.widthSizeClass) {
+                            WindowWidthSizeClass.Expanded,
+                            WindowWidthSizeClass.Compact,
+                            WindowWidthSizeClass.Medium -> ProfileScreenMediumLayout(
+                                state, windowSize, onAction
+                            )
+                        }
+                    }
+                    else -> Unit
                 }
             }
         }
     )
+
+    if (isLoggingOut) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DesignSystemTheme.colorScheme.surface.copy(alpha = 0.7f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {}
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            LoadingIndicator()
+        }
+    }
 }
 
 @Composable

@@ -68,6 +68,7 @@ com-google-firebase-messaging = { group = "com.google.firebase", name = "firebas
 com-google-android-gms-oss-licenses = {group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "comGoogleAndroidGmsOssLicenses"}
 
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
+org-jetbrains-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
 org-jetbrains-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization"}
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
