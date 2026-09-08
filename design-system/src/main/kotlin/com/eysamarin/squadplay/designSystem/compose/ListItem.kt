@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -53,6 +53,7 @@ data class DSListItemColors(
 @Immutable
 data class DSListItemSizes(
     val minHeight: Dp,
+    val maxHeight: Dp,
     val iconSize: Dp,
     val imageWidth: Dp,
     val horizontalSpacing: Dp,
@@ -81,12 +82,14 @@ object DSListItemDefaults {
     @Composable
     fun sizes(
         minHeight: Dp = 56.dp,
+        maxHeight: Dp = 56.dp,
         iconSize: Dp = 40.dp,
         imageWidth: Dp = 80.dp,
         horizontalSpacing: Dp = 16.dp,
         verticalPadding: Dp = 8.dp,
     ) = DSListItemSizes(
         minHeight = minHeight,
+        maxHeight = maxHeight,
         iconSize = iconSize,
         imageWidth = imageWidth,
         horizontalSpacing = horizontalSpacing,
@@ -119,7 +122,7 @@ fun DSListItem(
 
     Row(
         modifier = modifier
-            .defaultMinSize(minHeight = sizes.minHeight)
+            .heightIn(min = sizes.minHeight, max = sizes.maxHeight)
             .height(IntrinsicSize.Min)
             .background(currentContainerColor)
             .then(
