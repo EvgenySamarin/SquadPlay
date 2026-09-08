@@ -6,10 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -122,8 +119,7 @@ fun DSListItem(
 
     Row(
         modifier = modifier
-            .heightIn(min = sizes.minHeight, max = sizes.maxHeight)
-            .height(IntrinsicSize.Min)
+            .heightIn(min = sizes.minHeight)
             .background(currentContainerColor)
             .then(
                 if (onClick != null) {
@@ -141,10 +137,7 @@ fun DSListItem(
     ) {
         // Leading content
         if (leadingType != null) {
-            Box(
-                modifier = Modifier.fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(contentAlignment = Alignment.Center) {
                 when (leadingType) {
                     DSListItemLeadingType.Monogram -> DSMonogram(
                         text = leadingText ?: "",
@@ -156,10 +149,12 @@ fun DSListItem(
                     DSListItemLeadingType.Image -> {
                         val painter = leadingPainter ?: painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
                         DSListItemImage(
+                            modifier
+                                .heightIn(min = sizes.minHeight, max = sizes.maxHeight)
+                                .width(sizes.imageWidth),
                             painter = painter,
                             contentDescription = leadingContentDescription,
                             alpha = contentAlpha,
-                            sizes = sizes,
                         )
                     }
                 }
@@ -272,17 +267,15 @@ private fun DSMonogram(
 
 @Composable
 private fun DSListItemImage(
+    modifier: Modifier = Modifier,
     painter: Painter,
     contentDescription: String?,
     alpha: Float,
-    sizes: DSListItemSizes,
 ) {
     Image(
         painter = painter,
         contentDescription = contentDescription,
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(sizes.imageWidth),
+        modifier = modifier,
         contentScale = ContentScale.Crop,
         alpha = alpha
     )
