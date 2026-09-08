@@ -250,17 +250,18 @@ private fun NewEventScreenMediumLayout(
             onToTap = { dialPickerTarget = DialPickerTarget.TO },
         )
         Card(
-            modifier = Modifier,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+            ,
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
-            )
+            ),
         ) {
             DialPicker(
                 target = dialPickerTarget,
                 modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
+                    .padding(16.dp),
                 onTimeChange = { timeState, target ->
                     errorText = null
                     when (target) {
