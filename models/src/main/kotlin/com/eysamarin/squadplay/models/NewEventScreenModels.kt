@@ -27,12 +27,6 @@ data class NewEventScreenUI(
     val eventIconUrl: String? = null,
 )
 
-val PREVIEW_TIME_PICKER_UI = TimePickerUI(
-    currentTarget = DialPickerTarget.FROM,
-    timeFrom = LocalDateTime(2025, 4, 1, 12, 0),
-    timeTo = LocalDateTime(2025, 4, 1, 14, 15),
-)
-
 val PREVIEW_NEW_EVENT_SCREEN_UI = NewEventScreenUI(
     title = "New Event",
     selectedDate = Date(

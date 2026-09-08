@@ -1,150 +1,108 @@
 package com.eysamarin.squadplay.ui
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.eysamarin.squadplay.R
+import com.anhaki.picktime.PickHourMinute
+import com.anhaki.picktime.utils.PickTimeFocusIndicator
+import com.anhaki.picktime.utils.PickTimeTextStyle
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
-import com.eysamarin.squadplay.models.DialPickerTarget
-import com.eysamarin.squadplay.models.PREVIEW_TIME_PICKER_UI
-import com.eysamarin.squadplay.models.TimePickerUI
+import com.eysamarin.squadplay.models.PickerTimeUnit
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
-import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
-import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
-import java.util.Locale
+import java.util.Calendar
 
 @Composable
-fun SquadPlayTimePicker(
-    ui: TimePickerUI,
+fun TimePicker(
+    title: String,
     windowSize: WindowSizeClass,
+    onTimeChange: (PickerTimeUnit) -> Unit,
     modifier: Modifier = Modifier,
-    onFromTap: () -> Unit = {},
-    onToTap: () -> Unit = {},
 ) {
-    Column(modifier = modifier) {
+    val currentTime = Calendar.getInstance()
+    val currentHour = currentTime[Calendar.HOUR_OF_DAY]
+    val currentMinute = currentTime[Calendar.MINUTE]
+
+    var hour by remember { mutableIntStateOf(currentHour) }
+    var minute by remember { mutableIntStateOf(currentMinute) }
+
+    LaunchedEffect(hour, minute) {
+        onTimeChange(PickerTimeUnit(hour, minute))
+    }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Text(
-            text = stringResource(R.string.select_time),
+            modifier = Modifier.padding(start = 16.dp),
+            text = title,
             style = adaptiveBodyByHeight(windowSize),
-            color = DesignSystemTheme.colorScheme.onSurface
+            color = DesignSystemTheme.colorScheme.outline,
         )
         Card(
-            modifier = Modifier.padding(top = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
             ),
-            border = if (ui.errorText != null) BorderStroke(width = 1.dp, color = DesignSystemTheme.colorScheme.error) else null,
         ) {
-            Row(
-                modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TimeUnit(
-                    windowSize = windowSize,
-                    label = stringResource(R.string.from),
-                    timeString = ui.timeFrom?.let { buildTimeString(it.hour, it.minute) }
-                        ?: "--:--",
-                    selected = ui.currentTarget == DialPickerTarget.FROM,
-                    onTap = onFromTap,
+            PickHourMinute(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                initialHour = currentHour,
+                onHourChange = { hour = it },
+                initialMinute = currentMinute,
+                onMinuteChange = { minute = it },
+                containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
+                unselectedTextStyle = with(DesignSystemTheme.typography.bodyLarge) {
+                    PickTimeTextStyle(
+                        color = DesignSystemTheme.colorScheme.outline,
+                        fontSize = fontSize,
+                        fontFamily = fontFamily ?: FontFamily.Default,
+                        fontWeight = fontWeight ?: FontWeight.Normal,
+                    )
+                },
+                selectedTextStyle = with(DesignSystemTheme.typography.headlineLarge) {
+                    PickTimeTextStyle(
+                        color = DesignSystemTheme.colorScheme.onPrimaryContainer,
+                        fontSize = fontSize,
+                        fontFamily = fontFamily ?: FontFamily.Default,
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                focusIndicator = PickTimeFocusIndicator(
+                    enabled = true,
+                    widthFull = false,
+                    shape = RoundedCornerShape(20.dp),
+                    background = DesignSystemTheme.colorScheme.primaryContainer,
                 )
-                Icon(
-                    painter = painterResource(R.drawable.ic_keyboard_arrow_right_24),
-                    contentDescription = stringResource(R.string.content_description_next),
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-                TimeUnit(
-                    windowSize = windowSize,
-                    label = stringResource(R.string.to),
-                    timeString = ui.timeTo?.let { buildTimeString(it.hour, it.minute) }
-                        ?: "--:--",
-                    selected = ui.currentTarget == DialPickerTarget.TO,
-                    onTap = onToTap,
-                )
-            }
-        }
-        ui.errorText?.let {
-            Text(
-                modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),
-                text = it,
-                style = adaptiveBodyByHeight(windowSize),
-                color = DesignSystemTheme.colorScheme.error,
             )
         }
-    }
-}
-
-private fun buildTimeString(hour: Int, minute: Int): String = buildString {
-    append(String.format(Locale.getDefault(), "%02d", hour))
-    append(":")
-    append(String.format(Locale.getDefault(), "%02d", minute))
-}
-
-
-@Composable
-private fun TimeUnit(
-    selected: Boolean = false,
-    windowSize: WindowSizeClass,
-    label: String,
-    timeString: String,
-    enabled: Boolean = true,
-    onTap: () -> Unit = {},
-) {
-    Column(
-        modifier = Modifier
-            .clickable(enabled = enabled) {
-                onTap()
-            },
-    ) {
-        Text(
-            text = label,
-            style = adaptiveLabelByHeight(windowSize),
-            color = DesignSystemTheme.colorScheme.outline,
-        )
-        Text(
-            modifier = Modifier.padding(top = 6.dp),
-            text = timeString,
-            style = adaptiveHeadlineByHeight(windowSize),
-            color = if(selected) DesignSystemTheme.colorScheme.primary else DesignSystemTheme.colorScheme.onSurface,
-        )
     }
 }
 
 @DarkLightModePreview
 @Composable
-fun TimePickerPreview() {
+private fun TimePickerPreview() {
     DesignSystemTheme {
-        Column {
-            Spacer(Modifier.padding(top = 24.dp))
-            SquadPlayTimePicker(
-                ui = PREVIEW_TIME_PICKER_UI,
-                windowSize = WINDOWS_SIZE_MEDIUM,
-                modifier = Modifier.fillMaxWidth()
-            )
-            SquadPlayTimePicker(
-                ui = PREVIEW_TIME_PICKER_UI.copy(errorText = "Time from cannot be more then time to"),
-                windowSize = WINDOWS_SIZE_MEDIUM,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        TimePicker(
+            title = "From",
+            windowSize = WINDOWS_SIZE_MEDIUM,
+            onTimeChange = { _ -> },
+        )
     }
 }

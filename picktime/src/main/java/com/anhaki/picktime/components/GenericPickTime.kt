@@ -48,6 +48,7 @@ import com.anhaki.picktime.utils.PickTimeTextStyle
 
 @Composable
 internal fun GenericPickTime(
+    modifier: Modifier = Modifier,
     selectedTextStyle: PickTimeTextStyle,
     verticalSpace: Dp,
     containerColor: Color,
@@ -58,7 +59,7 @@ internal fun GenericPickTime(
     var minContainerWidth by remember { mutableStateOf<Dp?>(null) }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .background(containerColor),
         contentAlignment = Alignment.Center
     ) {

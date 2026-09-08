@@ -50,18 +50,6 @@ data class Date(
     }
 }
 
-data class TimePickerUI(
-    val currentTarget: DialPickerTarget = DialPickerTarget.FROM,
-    val timeFrom: LocalDateTime? = null,
-    val timeTo: LocalDateTime? = null,
-    val errorText: String? = null,
-)
-
-enum class DialPickerTarget {
-    FROM,
-    TO
-}
-
 data class Event(
     val uid: String,
     val creatorId: String,

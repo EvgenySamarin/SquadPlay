@@ -60,6 +60,7 @@ import com.anhaki.picktime.utils.TimeFormat
 
 @Composable
 fun PickHourMinute(
+    modifier: Modifier = Modifier,
     initialHour: Int,
     onHourChange: (Int) -> Unit,
     initialMinute: Int,
@@ -123,6 +124,7 @@ fun PickHourMinute(
     } else selectedTextStyle
 
     GenericPickTime(
+        modifier = modifier,
         selectedTextStyle = adjustedSelectedTextStyle,
         verticalSpace = verticalSpace,
         containerColor = containerColor,
