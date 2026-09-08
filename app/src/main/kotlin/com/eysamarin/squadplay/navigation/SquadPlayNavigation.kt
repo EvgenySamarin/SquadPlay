@@ -124,12 +124,14 @@ fun SquadPlayNavigation(
                 }
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()
                 val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
 
                 RootScreenBackHandler(snackbarHostState = snackbarHostState)
 
                 HomeScreen(
                     state = uiState,
+                    isLoggingOut = isLoggingOut,
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     confirmInviteDialogState = confirmInviteDialogState,
                     windowSize = windowSize,
@@ -157,10 +159,12 @@ fun SquadPlayNavigation(
                 val viewModel: ProfileScreenViewModel = koinViewModel()
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()
                 val inviteLinkState by viewModel.inviteLinkState.collectAsStateWithLifecycle()
 
                 ProfileScreen(
                     state = uiState,
+                    isLoggingOut = isLoggingOut,
                     windowSize = windowSize,
                     onAction = viewModel::onAction,
                 )

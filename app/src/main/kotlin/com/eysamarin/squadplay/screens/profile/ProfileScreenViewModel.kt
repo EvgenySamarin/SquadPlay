@@ -32,6 +32,9 @@ class ProfileScreenViewModel(
     val uiState: StateFlow<UiState<ProfileScreenUI>>
         field = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
 
+    val isLoggingOut: StateFlow<Boolean>
+        field = MutableStateFlow<Boolean>(false)
+
     val inviteLinkState: StateFlow<UiState<String>>
         field = MutableStateFlow<UiState<String>>(UiState.Empty)
 
@@ -106,10 +109,13 @@ class ProfileScreenViewModel(
 
     fun onLogOutTap() = viewModelScope.launch {
         Log.d("TAG", "onLogOutTap")
+        if (isLoggingOut.value) return@launch
+        isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
             navigator.navigateToAuthGraph()
         } else {
+            isLoggingOut.value = false
             Log.d("TAG", "cannot log out")
         }
     }

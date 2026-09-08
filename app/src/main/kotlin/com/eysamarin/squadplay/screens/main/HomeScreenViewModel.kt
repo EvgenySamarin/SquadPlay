@@ -50,6 +50,9 @@ class HomeScreenViewModel(
     val uiState: StateFlow<UiState<HomeScreenUI>>
         field = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
 
+    val isLoggingOut: StateFlow<Boolean>
+        field = MutableStateFlow<Boolean>(false)
+
     val confirmInviteDialogState: StateFlow<UiState<String>>
         field = MutableStateFlow<UiState<String>>(UiState.Empty)
 
@@ -170,10 +173,13 @@ class HomeScreenViewModel(
 
     fun onLogOutTap() = viewModelScope.launch {
         Log.d("TAG", "onLogOutTap")
+        if (isLoggingOut.value) return@launch
+        isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
             navigator.navigateToAuthGraph()
         } else {
+            isLoggingOut.value = false
             Log.d("TAG", "cannot log out")
         }
     }
