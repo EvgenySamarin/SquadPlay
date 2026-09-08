@@ -62,13 +62,13 @@ fun TimePicker(
             ),
         ) {
             PickHourMinute(
-                modifier = Modifier.padding(horizontal = 12.dp),
+                modifier = Modifier.padding(horizontal = 8.dp),
                 initialHour = currentHour,
                 onHourChange = { hour = it },
                 initialMinute = currentMinute,
                 onMinuteChange = { minute = it },
                 containerColor = DesignSystemTheme.colorScheme.surfaceContainer,
-                unselectedTextStyle = with(DesignSystemTheme.typography.bodyLarge) {
+                unselectedTextStyle = with(DesignSystemTheme.typography.bodyMedium) {
                     PickTimeTextStyle(
                         color = DesignSystemTheme.colorScheme.outline,
                         fontSize = fontSize,
@@ -76,7 +76,7 @@ fun TimePicker(
                         fontWeight = fontWeight ?: FontWeight.Normal,
                     )
                 },
-                selectedTextStyle = with(DesignSystemTheme.typography.headlineLarge) {
+                selectedTextStyle = with(DesignSystemTheme.typography.headlineSmallEmphasized) {
                     PickTimeTextStyle(
                         color = DesignSystemTheme.colorScheme.onPrimaryContainer,
                         fontSize = fontSize,
