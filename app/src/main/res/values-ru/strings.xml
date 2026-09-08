@@ -56,6 +56,7 @@
     <!-- region Settings screen -->
     <string name="settings_screen_title">About app</string>
     <string name="settings_screen_licenses_title">Лицензии</string>
+    <string name="settings_screen_version">Версия %1$s (%2$s)</string>
     <string name="close">Закрыть</string>
     <string name="picktime_license_title">PickTime</string>
     <string name="picktime_license_subtitle">Apache License 2.0 • Copyright 2024 Anhaki</string>
