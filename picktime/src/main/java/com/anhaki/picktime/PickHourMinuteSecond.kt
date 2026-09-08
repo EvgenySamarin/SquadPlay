@@ -57,7 +57,7 @@ import com.anhaki.picktime.utils.PickTimeTextStyle
  *
  * Note: The function internally clamps [initialHour] between 0–23, [initialMinute] between 0–59 and [initialSecond] between 0-59.
  */
-
+@Suppress("unused")
 @Composable
 fun PickHourMinuteSecond(
     initialHour: Int,

@@ -22,6 +22,7 @@ enum class PickDateField {
     DAY, MONTH, YEAR
 }
 
+@Suppress("unused")
 enum class PickDateOrder(val order: List<PickDateField>) {
     DMY(listOf(PickDateField.DAY, PickDateField.MONTH, PickDateField.YEAR)),
     MDY(listOf(PickDateField.MONTH, PickDateField.DAY, PickDateField.YEAR)),

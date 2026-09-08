@@ -231,7 +231,7 @@ internal fun <T> Wheel(
             )
         ) {
             if (!isLooping) {
-                for (x in 1..extraRow) {
+                repeat((1..extraRow).count()) {
                     item {
                         Text(
                             modifier = Modifier.height(unselectedTextLineHeightDp).fillMaxWidth(),
