@@ -8,6 +8,6 @@ interface AuthRepository {
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signOut(): Boolean
-    fun getCurrentUserId(): String
+    fun getCurrentUserId(): String?
     suspend fun isUserExists(): Boolean
 }

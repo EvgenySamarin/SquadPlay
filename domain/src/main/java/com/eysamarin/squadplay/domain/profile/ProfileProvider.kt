@@ -6,6 +6,7 @@ import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 interface ProfileProvider {
     fun getUserInfoFlow(): Flow<User?>
@@ -27,6 +28,9 @@ class ProfileProviderImpl(
 
     override fun getUserInfoFlow(): Flow<User?> {
         val userUid = authRepository.getCurrentUserId()
+
+        if (userUid.isNullOrBlank()) return flowOf(null)
+
         return profileRepository.getUserInfoFlow(userUid)
     }
 

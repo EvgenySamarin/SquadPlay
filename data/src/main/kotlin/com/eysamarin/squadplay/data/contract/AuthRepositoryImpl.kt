@@ -1,5 +1,6 @@
 package com.eysamarin.squadplay.data.contract
 
+import android.util.Log
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
@@ -11,7 +12,13 @@ class AuthRepositoryImpl(
     val profileRepository: ProfileRepository,
 ) : AuthRepository {
 
-    override fun getCurrentUserId(): String = firebaseAuthManager.getCurrentUserId()
+    override fun getCurrentUserId(): String? = try {
+        firebaseAuthManager.getCurrentUserId()
+    } catch (userNotSignIn: IllegalStateException) {
+        Log.w("TAG", "Cannot get current user id, cause: ${userNotSignIn.message}")
+        null
+    }
+
     override suspend fun isUserExists(): Boolean = firebaseAuthManager.getUserUid()?.let {
         profileRepository.isUserProfileExists(it)
     } == true

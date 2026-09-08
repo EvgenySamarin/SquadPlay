@@ -17,6 +17,7 @@ import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.navigation.DeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,6 +44,7 @@ class HomeScreenViewModel(
     private val authProvider: AuthProvider,
     private val profileProvider: ProfileProvider,
     private val stringProvider: StringProvider,
+    private val deepLinkManager: DeepLinkManager,
 ) : ViewModel() {
 
     val uiState: StateFlow<UiState<HomeScreenUI>>
@@ -66,10 +68,20 @@ class HomeScreenViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
+        viewModelScope.launch {
+            deepLinkManager.pendingInviteGroupId
+                .filterNotNull()
+                .collect { inviteGroupId ->
+                    deepLinkManager.consumePendingInviteGroupId()
+                    onJoinGroupDeepLinkRetrieved(inviteGroupId)
+                }
+        }
+
         profileProvider.getUserInfoFlow()
             .onEach {
+                Log.d("TAG", "new user fetched: $it")
                 if (it == null) {
-                    navigator.navigate(Destination.AuthScreen)
+                    navigator.navigateToAuthGraph()
                 }
             }
             .filterNotNull()
@@ -77,8 +89,7 @@ class HomeScreenViewModel(
                 Log.d("TAG", "user info received: $it")
                 userInfoState.emit(it)
             }
-            .map { it.groups.firstOrNull() }
-            .filterNotNull()
+            .mapNotNull { it.groups.firstOrNull() }
             .flatMapLatest { eventProvider.getEventsFlow(it.uid) }
             .onEach {
                 Log.d("TAG", "events received: [${it.firstOrNull()}]...")

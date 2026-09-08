@@ -47,7 +47,7 @@ class ProfileScreenViewModel(
         profileProvider.getUserInfoFlow()
             .onEach {
                 if (it == null) {
-                    navigator.navigate(Destination.AuthScreen)
+                    navigator.navigateToAuthGraph()
                 }
             }
             .filterNotNull()
