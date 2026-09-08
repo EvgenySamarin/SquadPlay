@@ -27,7 +27,6 @@ credentials = "1.6.0"
 comGoogleAndroidLibrariesIdentityGoogleid = "1.2.0"
 ioCoilKtCoil3Compose = "3.5.0"
 ioCoilKtCoil3NetworkOkHttp = "3.5.0"
-pickTimeCompose = "1.1.5"
 kotlinxDatetime = "0.8.0"
 googleAndroidGmsOssLicenses = "0.13.0"
 comGoogleAndroidGmsOssLicenses = "17.5.1"
@@ -46,7 +45,6 @@ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graph
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material3-windowSize = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
@@ -60,8 +58,6 @@ io-coil-kt-coil3-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-net
 androidx-credentials-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 com-google-android-libraries-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "comGoogleAndroidLibrariesIdentityGoogleid" }
-
-com-github-anhaki-pick-time-compose = { group = "com.github.anhaki", name = "PickTime-Compose", version.ref = "pickTimeCompose" }
 
 com-google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 com-google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
