@@ -42,8 +42,10 @@ sealed interface Destination {
     }
     @Serializable
     data class EventDetailsScreen(
+        val eventId: String,
         val title: String,
         val date: String,
         val imageUrl: String? = null,
+        val isYourEvent: Boolean = false,
     ) : Destination
 }

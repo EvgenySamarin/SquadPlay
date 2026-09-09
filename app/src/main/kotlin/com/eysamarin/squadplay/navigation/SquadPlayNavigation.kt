@@ -161,13 +161,14 @@ fun SquadPlayNavigation(
             composable<Destination.EventDetailsScreen> { backStackEntry ->
                 val viewModel: EventDetailsScreenViewModel = koinViewModel()
                 val args = backStackEntry.toRoute<Destination.EventDetailsScreen>()
+                LaunchedEffect(args) {
+                    viewModel.initData(args)
+                }
+
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
                 EventDetailsScreen(
-                    state = EventDetailsScreenUI(
-                        title = args.title,
-                        date = args.date,
-                        imageUrl = args.imageUrl,
-                    ),
+                    state = uiState,
                     windowSize = windowSize,
                     onAction = viewModel::onAction,
                 )

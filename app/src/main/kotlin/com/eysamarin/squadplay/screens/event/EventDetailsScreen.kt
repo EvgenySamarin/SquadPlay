@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.screens.main.ConfirmationDialog
 import com.eysamarin.squadplay.ui.ImageTopBar
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
@@ -84,6 +85,19 @@ fun EventDetailsScreen(
             imageUrl = state.imageUrl,
             headerHeight = headerHeight,
             onBackTap = { onAction(EventDetailsScreenAction.OnBackButtonTap) },
+            actions = {
+                if (state.isYourEvent) {
+                    IconButton(
+                        onClick = { onAction(EventDetailsScreenAction.OnDeleteTap) }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_delete_24),
+                            contentDescription = stringResource(R.string.content_description_delete),
+                            tint = Color.White,
+                        )
+                    }
+                }
+            }
         )
 
         Surface(
@@ -123,6 +137,16 @@ fun EventDetailsScreen(
                 }
             }
         }
+    }
+
+    if (state.showDeleteConfirmation) {
+        ConfirmationDialog(
+            windowSize = windowSize,
+            title = stringResource(R.string.delete_event_dialog_title),
+            text = stringResource(R.string.delete_event_dialog_message),
+            onConfirmTap = { onAction(EventDetailsScreenAction.OnConfirmDeleteTap) },
+            onDismiss = { onAction(EventDetailsScreenAction.OnDismissDeleteDialog) },
+        )
     }
 }
 

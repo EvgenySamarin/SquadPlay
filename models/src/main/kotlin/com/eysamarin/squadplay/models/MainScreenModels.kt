@@ -14,7 +14,6 @@ sealed interface HomeScreenAction {
     class OnPrevMonthTap(val yearMonth: LocalDate) : HomeScreenAction
     class OnNextMonthTap(val yearMonth: LocalDate) : HomeScreenAction
     class OnDateTap(val date: Date) : HomeScreenAction
-    class OnDeleteEventTap(val eventId: String): HomeScreenAction
     class OnEventTap(val event: EventUI) : HomeScreenAction
 }
 

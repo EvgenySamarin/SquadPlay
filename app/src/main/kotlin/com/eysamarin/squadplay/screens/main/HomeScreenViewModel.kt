@@ -268,18 +268,6 @@ class HomeScreenViewModel(
         confirmInviteDialogState.emit(UiState.Empty)
     }
 
-    fun onDeleteEventTap(eventId: String) = viewModelScope.launch {
-        Log.d("TAG", "onDeleteEventTap: $eventId")
-
-        eventProvider.deleteEvent(eventId).also { isSuccess ->
-            if (isSuccess) {
-                Log.d("TAG", "event deleted successfully")
-            } else {
-                Log.w("TAG", "failed to delete event")
-            }
-        }
-    }
-
     fun onEventTap(event: EventUI) = viewModelScope.launch {
         Log.d("TAG", "onEventTap: ${event.eventId}")
         val matchingEvent = eventsState.value.firstOrNull { it.uid == event.eventId }
@@ -292,9 +280,11 @@ class HomeScreenViewModel(
         }
         navigator.navigate(
             Destination.EventDetailsScreen(
+                eventId = event.eventId,
                 title = event.title,
                 date = dateText,
                 imageUrl = event.iconUrl,
+                isYourEvent = event.isYourEvent,
             )
         )
     }
@@ -313,7 +303,6 @@ class HomeScreenViewModel(
             }
 
             HomeScreenAction.OnJoinGroupDialogDismiss -> onJoinGroupDialogDismiss()
-            is HomeScreenAction.OnDeleteEventTap -> onDeleteEventTap(action.eventId)
             is HomeScreenAction.OnEventTap -> onEventTap(action.event)
         }
     }

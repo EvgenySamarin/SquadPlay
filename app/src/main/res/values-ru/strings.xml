@@ -66,6 +66,8 @@
     <!-- region Event Details screen -->
     <string name="event_details_screen_title">Детали события</string>
     <string name="event_details_date_label">Дата и время</string>
+    <string name="delete_event_dialog_title">Удалить событие</string>
+    <string name="delete_event_dialog_message">Вы уверены, что хотите удалить это событие?</string>
     <!-- endregion -->
 
     <!-- region content description -->
@@ -74,5 +76,6 @@
     <string name="content_description_back">Назад</string>
     <string name="content_description_next">Далее</string>
     <string name="content_description_settings">Настройки</string>
+    <string name="content_description_delete">Удалить</string>
     <!-- endregion -->
 </resources>
