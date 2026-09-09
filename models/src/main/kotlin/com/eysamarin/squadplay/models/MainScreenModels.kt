@@ -21,6 +21,7 @@ data class HomeScreenUI(
     val user: User,
     val calendarUI: CalendarUI,
     val gameEventsOnDate: List<EventUI> = emptyList(),
+    val isCreateEventButtonVisible: Boolean = true,
 )
 
 data class CalendarUI(
