@@ -30,10 +30,13 @@ import androidx.navigation.toRoute
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Date
+import com.eysamarin.squadplay.models.EventDetailsScreenUI
 import com.eysamarin.squadplay.models.SettingsScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
+import com.eysamarin.squadplay.screens.event.EventDetailsScreen
+import com.eysamarin.squadplay.screens.event.EventDetailsScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreen
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
 import com.eysamarin.squadplay.screens.main.HomeScreen
@@ -151,6 +154,20 @@ fun SquadPlayNavigation(
 
                 NewEventScreen(
                     state = uiState,
+                    windowSize = windowSize,
+                    onAction = viewModel::onAction,
+                )
+            }
+            composable<Destination.EventDetailsScreen> { backStackEntry ->
+                val viewModel: EventDetailsScreenViewModel = koinViewModel()
+                val args = backStackEntry.toRoute<Destination.EventDetailsScreen>()
+
+                EventDetailsScreen(
+                    state = EventDetailsScreenUI(
+                        title = args.title,
+                        date = args.date,
+                        imageUrl = args.imageUrl,
+                    ),
                     windowSize = windowSize,
                     onAction = viewModel::onAction,
                 )

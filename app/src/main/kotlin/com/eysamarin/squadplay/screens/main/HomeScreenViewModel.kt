@@ -280,6 +280,25 @@ class HomeScreenViewModel(
         }
     }
 
+    fun onEventTap(event: EventUI) = viewModelScope.launch {
+        Log.d("TAG", "onEventTap: ${event.eventId}")
+        val matchingEvent = eventsState.value.firstOrNull { it.uid == event.eventId }
+        val dateText = if (matchingEvent != null && !event.subtitle.isNullOrBlank()) {
+            "${matchingEvent.fromDateTime.date}, ${event.subtitle}"
+        } else if (matchingEvent != null) {
+            matchingEvent.fromDateTime.date.toString()
+        } else {
+            event.subtitle.orEmpty()
+        }
+        navigator.navigate(
+            Destination.EventDetailsScreen(
+                title = event.title,
+                date = dateText,
+                imageUrl = event.iconUrl,
+            )
+        )
+    }
+
     fun onAction(action: HomeScreenAction) {
         when (action) {
             is HomeScreenAction.OnDateTap -> onDateTap(action.date)
@@ -295,6 +314,7 @@ class HomeScreenViewModel(
 
             HomeScreenAction.OnJoinGroupDialogDismiss -> onJoinGroupDialogDismiss()
             is HomeScreenAction.OnDeleteEventTap -> onDeleteEventTap(action.eventId)
+            is HomeScreenAction.OnEventTap -> onEventTap(action.event)
         }
     }
 

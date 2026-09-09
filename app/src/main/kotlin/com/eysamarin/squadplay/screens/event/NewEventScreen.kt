@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.ui.ImageTopBar
 import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
@@ -95,7 +96,11 @@ fun NewEventScreen(
             .fillMaxSize()
             .background(DesignSystemTheme.colorScheme.background)
     ) {
-        ImageTopBar(headerHeight, state, onAction)
+        ImageTopBar(
+            imageUrl = state.data.eventIconUrl,
+            headerHeight = headerHeight,
+            onBackTap = { onAction(NewEventScreenAction.OnBackButtonTap) }
+        )
 
         Surface(
             modifier = Modifier
@@ -119,64 +124,6 @@ fun NewEventScreen(
             }
         }
     }}
-
-@Composable
-private fun ImageTopBar(
-    headerHeight: Dp,
-    state: UiState.Normal<NewEventScreenUI>,
-    onAction: (NewEventScreenAction) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(headerHeight)
-    ) {
-        AsyncImage(
-            model = state.data.eventIconUrl,
-            placeholder = painterResource(R.drawable.placeholder),
-            fallback = painterResource(R.drawable.placeholder),
-            error = painterResource(R.drawable.placeholder),
-            contentDescription = "Game Thumbnail",
-            modifier = Modifier
-                .fillMaxSize()
-                .drawWithContent {
-                    drawContent()
-
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.75f),
-                                Color.Black.copy(alpha = 0.35f),
-                                Color.Transparent
-                            ),
-                            startY = 0f,
-                            endY = size.height * 0.55f
-                        )
-                    )
-                },
-            contentScale = ContentScale.Crop
-        )
-    }
-
-    TopAppBar(
-        title = {},
-        navigationIcon = {
-            IconButton(
-                onClick = { onAction(NewEventScreenAction.OnBackButtonTap) }
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_back_24),
-                    contentDescription = stringResource(R.string.content_description_back),
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
-        ),
-        windowInsets = WindowInsets.statusBars
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -32,6 +32,7 @@ import com.eysamarin.squadplay.navigation.DefaultDeepLinkManager
 import com.eysamarin.squadplay.navigation.DefaultNavigator
 import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
+import com.eysamarin.squadplay.screens.event.EventDetailsScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
 import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
@@ -115,6 +116,7 @@ class SquadPlayApplication : Application() {
         viewModelOf(::LaunchApplicationViewModel)
         viewModelOf(::HomeScreenViewModel)
         viewModelOf(::NewEventScreenViewModel)
+        viewModelOf(::EventDetailsScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
         viewModelOf(::RegistrationScreenViewModel)
         viewModelOf(::ProfileScreenViewModel)
