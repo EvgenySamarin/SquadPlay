@@ -1,11 +1,17 @@
 package com.eysamarin.squadplay.screens.main
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +19,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -70,6 +78,15 @@ fun HomeScreen(
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (HomeScreenAction) -> Unit,
 ) {
+    val mediumListState = rememberLazyListState()
+    val expandedCalendarListState = rememberLazyListState()
+    val expandedEventsListState = rememberLazyListState()
+
+    val isScrolling = when (windowSize.widthSizeClass) {
+        WindowWidthSizeClass.Expanded -> expandedCalendarListState.isScrollInProgress || expandedEventsListState.isScrollInProgress
+        else -> mediumListState.isScrollInProgress
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -101,11 +118,18 @@ fun HomeScreen(
                         when (windowSize.widthSizeClass) {
                             WindowWidthSizeClass.Compact,
                             WindowWidthSizeClass.Medium -> HomeScreenMediumLayout(
-                                state, windowSize, onAction
+                                state = state,
+                                windowSize = windowSize,
+                                lazyListState = mediumListState,
+                                onAction = onAction,
                             )
 
                             WindowWidthSizeClass.Expanded -> MainScreenExpandedLayout(
-                                state, windowSize, onAction
+                                state = state,
+                                windowSize = windowSize,
+                                calendarListState = expandedCalendarListState,
+                                eventsListState = expandedEventsListState,
+                                onAction = onAction,
                             )
                         }
                     }
@@ -115,19 +139,25 @@ fun HomeScreen(
         },
         snackbarHost = snackbarHost,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    onAction(HomeScreenAction.OnAddGameEventTap)
-                },
-                shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
-                containerColor = DesignSystemTheme.colorScheme.secondary,
-                contentColor = DesignSystemTheme.colorScheme.onSecondary,
+            AnimatedVisibility(
+                visible = !isScrolling,
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_add_24),
-                    contentDescription = stringResource(R.string.content_description_add_game),
-                )
-                Text(text = stringResource(R.string.new_game_event))
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        onAction(HomeScreenAction.OnAddGameEventTap)
+                    },
+                    shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
+                    containerColor = DesignSystemTheme.colorScheme.secondary,
+                    contentColor = DesignSystemTheme.colorScheme.onSecondary,
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add_24),
+                        contentDescription = stringResource(R.string.content_description_add_game),
+                    )
+                    Text(text = stringResource(R.string.new_game_event))
+                }
             }
         },
         containerColor = DesignSystemTheme.colorScheme.surface,
@@ -168,6 +198,7 @@ fun HomeScreen(
 private fun HomeScreenMediumLayout(
     state: UiState<HomeScreenUI>,
     windowSize: WindowSizeClass,
+    lazyListState: LazyListState = rememberLazyListState(),
     onAction: (HomeScreenAction) -> Unit = {},
 ) {
     if (state !is UiState.Normal) return
@@ -185,7 +216,11 @@ private fun HomeScreenMediumLayout(
             }
         )
         Spacer(Modifier.height(16.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = PaddingValues(bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             item {
                 Calendar(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -233,6 +268,8 @@ private fun HomeScreenMediumLayout(
 private fun MainScreenExpandedLayout(
     state: UiState<HomeScreenUI>,
     windowSize: WindowSizeClass,
+    calendarListState: LazyListState = rememberLazyListState(),
+    eventsListState: LazyListState = rememberLazyListState(),
     onAction: (HomeScreenAction) -> Unit = {},
 ) {
     if (state !is UiState.Normal) return
@@ -243,7 +280,11 @@ private fun MainScreenExpandedLayout(
             .fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        LazyColumn(modifier = Modifier.weight(1f)) {
+        LazyColumn(
+            state = calendarListState,
+            contentPadding = PaddingValues(bottom = 80.dp),
+            modifier = Modifier.weight(1f)
+        ) {
             item {
                 Calendar(
                     ui = state.data.calendarUI,
@@ -261,7 +302,11 @@ private fun MainScreenExpandedLayout(
             })
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            LazyColumn(
+                state = eventsListState,
+                contentPadding = PaddingValues(bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 items(items = state.data.gameEventsOnDate) { item ->
                     DSListItem(
                         modifier = Modifier.fillMaxWidth(),
