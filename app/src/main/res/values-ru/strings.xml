@@ -77,5 +77,6 @@
     <string name="content_description_next">Далее</string>
     <string name="content_description_settings">Настройки</string>
     <string name="content_description_delete">Удалить</string>
+    <string name="content_description_your_event">Ваше событие</string>
     <!-- endregion -->
 </resources>
