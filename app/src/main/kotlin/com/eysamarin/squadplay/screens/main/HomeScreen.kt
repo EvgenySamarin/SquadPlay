@@ -1,5 +1,10 @@
 package com.eysamarin.squadplay.screens.main
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -134,22 +139,28 @@ fun HomeScreen(
         },
         snackbarHost = snackbarHost,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text(text = stringResource(R.string.new_game_event)) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add_24),
-                        contentDescription = stringResource(R.string.content_description_add_game),
-                    )
-                },
-                onClick = {
-                    onAction(HomeScreenAction.OnAddGameEventTap)
-                },
-                expanded = !isScrolling,
-                shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
-                containerColor = DesignSystemTheme.colorScheme.secondary,
-                contentColor = DesignSystemTheme.colorScheme.onSecondary,
-            )
+            AnimatedVisibility(
+                visible = (state as? UiState.Normal)?.data?.isCreateEventButtonVisible == true,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+            ) {
+                ExtendedFloatingActionButton(
+                    text = { Text(text = stringResource(R.string.new_game_event)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_add_24),
+                            contentDescription = stringResource(R.string.content_description_add_game),
+                        )
+                    },
+                    onClick = {
+                        onAction(HomeScreenAction.OnAddGameEventTap)
+                    },
+                    expanded = !isScrolling,
+                    shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
+                    containerColor = DesignSystemTheme.colorScheme.secondary,
+                    contentColor = DesignSystemTheme.colorScheme.onSecondary,
+                )
+            }
         },
         containerColor = DesignSystemTheme.colorScheme.surface,
     )

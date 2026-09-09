@@ -48,11 +48,17 @@ class HomeScreenEventNavigationTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        HomeScreenViewModel.defaultIoDispatcher = testDispatcher
+        HomeScreenViewModel.defaultTodayProvider = { LocalDate(2026, 9, 9) }
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        HomeScreenViewModel.defaultIoDispatcher = Dispatchers.IO
+        HomeScreenViewModel.defaultTodayProvider = {
+            java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
+        }
     }
 
     @Test
@@ -143,6 +149,112 @@ class HomeScreenEventNavigationTest {
         assertEquals(1, fakeNavigator.navigateUpCalls)
     }
 
+    @Test
+    fun homeScreenViewModel_pastDateSelected_hidesButtonAndBlocksNavigation() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val pastDate = Date(dayOfMonth = 8, monthNumber = 9, countEvents = 0, isSelected = true, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(pastDate))
+        val viewModel = createHomeScreenViewModel(fakeNavigator, calendarProvider)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is UiState.Normal)
+        val data = (state as UiState.Normal).data
+        assertFalse(data.isCreateEventButtonVisible)
+
+        viewModel.onAction(HomeScreenAction.OnAddGameEventTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(fakeNavigator.navigatedDestinations.isEmpty())
+    }
+
+    @Test
+    fun homeScreenViewModel_todaySelected_showsButtonAndAllowsNavigation() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val todayDate = Date(dayOfMonth = 9, monthNumber = 9, countEvents = 0, isSelected = true, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(todayDate))
+        val viewModel = createHomeScreenViewModel(fakeNavigator, calendarProvider)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is UiState.Normal)
+        val data = (state as UiState.Normal).data
+        assertTrue(data.isCreateEventButtonVisible)
+
+        viewModel.onAction(HomeScreenAction.OnAddGameEventTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeNavigator.navigatedDestinations.size)
+        assertTrue(fakeNavigator.navigatedDestinations.first() is Destination.NewEventScreen)
+    }
+
+    @Test
+    fun homeScreenViewModel_futureDateSelected_showsButtonAndAllowsNavigation() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val futureDate = Date(dayOfMonth = 10, monthNumber = 9, countEvents = 0, isSelected = true, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(futureDate))
+        val viewModel = createHomeScreenViewModel(fakeNavigator, calendarProvider)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is UiState.Normal)
+        val data = (state as UiState.Normal).data
+        assertTrue(data.isCreateEventButtonVisible)
+
+        viewModel.onAction(HomeScreenAction.OnAddGameEventTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeNavigator.navigatedDestinations.size)
+        assertTrue(fakeNavigator.navigatedDestinations.first() is Destination.NewEventScreen)
+    }
+
+    @Test
+    fun homeScreenViewModel_onDateTap_updatesCreateEventButtonVisibility() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val todayDate = Date(dayOfMonth = 9, monthNumber = 9, countEvents = 0, isSelected = true, enabled = true)
+        val pastDate = Date(dayOfMonth = 8, monthNumber = 9, countEvents = 0, isSelected = false, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(todayDate, pastDate))
+        val viewModel = createHomeScreenViewModel(fakeNavigator, calendarProvider)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var data = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(data.isCreateEventButtonVisible)
+
+        // Tap past date
+        viewModel.onAction(HomeScreenAction.OnDateTap(pastDate))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertFalse(data.isCreateEventButtonVisible)
+
+        // Tap today
+        viewModel.onAction(HomeScreenAction.OnDateTap(todayDate))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(data.isCreateEventButtonVisible)
+    }
+
+    private fun createHomeScreenViewModel(
+        fakeNavigator: FakeNavigator,
+        calendarProvider: FakeCalendarUIProvider,
+    ): HomeScreenViewModel {
+        return HomeScreenViewModel(
+            navigator = fakeNavigator,
+            authProvider = FakeAuthProvider(),
+            calendarUIProvider = calendarProvider,
+            eventProvider = FakeEventProvider(),
+            snackbar = FakeSnackbarProvider(),
+            profileProvider = FakeProfileProvider(),
+            stringProvider = FakeStringProvider(),
+            deepLinkManager = DefaultDeepLinkManager(),
+        )
+    }
+
     private class FakeNavigator : Navigator {
         val navigatedDestinations = mutableListOf<Destination>()
         var navigateUpCalls = 0
@@ -176,11 +288,19 @@ class HomeScreenEventNavigationTest {
         override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>> = flowOf(emptyList())
     }
 
-    private class FakeCalendarUIProvider : CalendarUIProvider {
+    private class FakeCalendarUIProvider(
+        var initialDates: List<Date> = emptyList(),
+    ) : CalendarUIProvider {
         override fun provideCalendarUIBy(yearMonth: LocalDate): CalendarUI {
-            return CalendarUI(daysOfWeek = emptyList(), yearMonth = yearMonth, dates = emptyList())
+            return CalendarUI(daysOfWeek = emptyList(), yearMonth = yearMonth, dates = initialDates)
         }
-        override fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI = target
+        override fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI {
+            return target.copy(
+                dates = target.dates.map {
+                    it.copy(isSelected = it.dayOfMonth == selectedDate.dayOfMonth && it.monthNumber == selectedDate.monthNumber)
+                }
+            )
+        }
         override fun mergedCalendarWithEvents(
             calendar: CalendarUI,
             events: List<Event>,

@@ -20,6 +20,7 @@ import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.navigation.DeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +48,16 @@ class HomeScreenViewModel(
     private val deepLinkManager: DeepLinkManager,
 ) : ViewModel() {
 
+    companion object {
+        internal var defaultIoDispatcher: CoroutineDispatcher = Dispatchers.IO
+        internal var defaultTodayProvider: () -> LocalDate = {
+            java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
+        }
+    }
+
+    internal var ioDispatcher: CoroutineDispatcher = defaultIoDispatcher
+    internal var todayProvider: () -> LocalDate = defaultTodayProvider
+
     val uiState: StateFlow<UiState<HomeScreenUI>>
         field = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
 
@@ -62,7 +73,7 @@ class HomeScreenViewModel(
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
     private val calendarUIState = MutableStateFlow<CalendarUI>(
-        calendarUIProvider.provideCalendarUIBy(yearMonth = java.time.LocalDate.now().run { LocalDate(year, monthValue, 1) })
+        calendarUIProvider.provideCalendarUIBy(yearMonth = todayProvider().run { LocalDate(year, month.number, 1) })
     )
 
     init {
@@ -152,22 +163,33 @@ class HomeScreenViewModel(
                     isYourEvent = it.creatorId == userInfo.uid
                 )
             }
-            Triple(userInfo, eventBasedCalendar, eventsBySelectedDate)
+            val today = todayProvider()
+            val dayOfMonth = selectedDate?.dayOfMonth
+            val isCreateEventButtonVisible = if (selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
+                val selectedLocalDate = LocalDate(
+                    year = eventBasedCalendar.yearMonth.year,
+                    monthNumber = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
+                    dayOfMonth = dayOfMonth,
+                )
+                selectedLocalDate >= today
+            } else {
+                false
+            }
+            HomeScreenUI(
+                user = userInfo,
+                calendarUI = eventBasedCalendar,
+                gameEventsOnDate = eventsBySelectedDate,
+                isCreateEventButtonVisible = isCreateEventButtonVisible,
+            )
         }
             .filterNotNull()
-            .onEach { (userInfo, calendar, eventsBySelectedDate) ->
+            .onEach { homeScreenUI ->
                 Log.d("TAG", "updateMainScreenUI")
                 uiState.update {
-                    UiState.Normal(
-                        HomeScreenUI(
-                            user = userInfo,
-                            calendarUI = calendar,
-                            gameEventsOnDate = eventsBySelectedDate
-                        )
-                    )
+                    UiState.Normal(homeScreenUI)
                 }
             }
-            .flowOn(Dispatchers.IO)
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
     }
 
@@ -222,8 +244,20 @@ class HomeScreenViewModel(
         val calendarUi = calendarUIState.value
         val selectedDate = calendarUi.dates.firstOrNull { it.enabled && it.isSelected }
 
-        if (selectedDate == null) {
+        val dayOfMonth = selectedDate?.dayOfMonth
+        if (selectedDate == null || dayOfMonth == null) {
             Log.w("TAG", "selected date is null cannot add game event")
+            return@launch
+        }
+
+        val today = todayProvider()
+        val selectedLocalDate = LocalDate(
+            year = calendarUi.yearMonth.year,
+            monthNumber = selectedDate.monthNumber ?: calendarUi.yearMonth.month.number,
+            dayOfMonth = dayOfMonth,
+        )
+        if (selectedLocalDate < today) {
+            Log.w("TAG", "selected date is in the past cannot add game event")
             return@launch
         }
 
