@@ -245,6 +245,7 @@ private fun HomeScreenMediumLayout(
                         onTrailingIconClick = if (item.isYourEvent) {
                             { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) }
                         } else null,
+                        onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
                         sizes = DSListItemDefaults.sizes(
                             maxHeight = 72.dp
                         )
@@ -315,6 +316,7 @@ private fun MainScreenExpandedLayout(
                         onTrailingIconClick = if (item.isYourEvent) {
                             { onAction(HomeScreenAction.OnDeleteEventTap(item.eventId)) }
                         } else null,
+                        onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
                         sizes = DSListItemDefaults.sizes(
                             imageWidth = 150.dp,
                             maxHeight = 100.dp

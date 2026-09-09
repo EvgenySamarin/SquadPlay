@@ -40,4 +40,10 @@ sealed interface Destination {
             val DateType = serializableNavType(serializer<Date>())
         }
     }
+    @Serializable
+    data class EventDetailsScreen(
+        val title: String,
+        val date: String,
+        val imageUrl: String? = null,
+    ) : Destination
 }

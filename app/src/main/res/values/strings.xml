@@ -65,6 +65,11 @@
     <string name="picktime_license_notice">PickTime (com.anhaki.picktime)\nCopyright 2024 Anhaki (https://github.com/anhaki/PickTime-Compose)\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License.\n\nYou may obtain a copy of the License at:\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nModifications Copyright © 2026 SquadPlay contributors.</string>
     <!-- end region -->
 
+    <!-- region Event Details screen -->
+    <string name="event_details_screen_title">Event Details</string>
+    <string name="event_details_date_label">Date &amp; Time</string>
+    <!-- endregion -->
+
     <!-- region content description -->
     <string name="content_description_log_out">log out</string>
     <string name="content_description_add_game">Add game event</string>
