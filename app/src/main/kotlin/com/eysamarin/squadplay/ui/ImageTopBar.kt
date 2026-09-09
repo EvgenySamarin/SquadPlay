@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ fun ImageTopBar(
     modifier: Modifier = Modifier,
     headerHeight: Dp = 220.dp,
     contentDescription: String? = "Game Thumbnail",
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -78,6 +80,7 @@ fun ImageTopBar(
                 )
             }
         },
+        actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent
         ),

@@ -35,6 +35,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -83,19 +84,62 @@ class HomeScreenEventNavigationTest {
         val destination = fakeNavigator.navigatedDestinations.first()
         assertTrue(destination is Destination.EventDetailsScreen)
         val eventDetailsScreen = destination as Destination.EventDetailsScreen
+        assertEquals("test-event-1", eventDetailsScreen.eventId)
         assertEquals("Apex Legends", eventDetailsScreen.title)
         assertEquals("from 18:00 to 20:00", eventDetailsScreen.date)
         assertEquals("https://example.com/image.jpg", eventDetailsScreen.imageUrl)
+        assertTrue(eventDetailsScreen.isYourEvent)
     }
 
     @Test
     fun eventDetailsScreenViewModel_onBackButtonTap_navigatesUp() = runTest(testDispatcher) {
         val fakeNavigator = FakeNavigator()
-        val viewModel = EventDetailsScreenViewModel(navigator = fakeNavigator)
+        val viewModel = EventDetailsScreenViewModel(
+            navigator = fakeNavigator,
+            eventProvider = FakeEventProvider(),
+        )
 
         viewModel.onAction(EventDetailsScreenAction.OnBackButtonTap)
         testDispatcher.scheduler.advanceUntilIdle()
 
+        assertEquals(1, fakeNavigator.navigateUpCalls)
+    }
+
+    @Test
+    fun eventDetailsScreenViewModel_deleteFlow_showsConfirmationAndDeletesOnConfirm() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val fakeEventProvider = FakeEventProvider()
+        val viewModel = EventDetailsScreenViewModel(
+            navigator = fakeNavigator,
+            eventProvider = fakeEventProvider,
+        )
+
+        viewModel.initData(
+            Destination.EventDetailsScreen(
+                eventId = "event-to-delete",
+                title = "Apex Legends",
+                date = "18:00 - 20:00",
+                imageUrl = null,
+                isYourEvent = true,
+            )
+        )
+
+        assertFalse(viewModel.uiState.value.showDeleteConfirmation)
+
+        viewModel.onAction(EventDetailsScreenAction.OnDeleteTap)
+        assertTrue(viewModel.uiState.value.showDeleteConfirmation)
+
+        viewModel.onAction(EventDetailsScreenAction.OnDismissDeleteDialog)
+        assertFalse(viewModel.uiState.value.showDeleteConfirmation)
+
+        viewModel.onAction(EventDetailsScreenAction.OnDeleteTap)
+        assertTrue(viewModel.uiState.value.showDeleteConfirmation)
+
+        viewModel.onAction(EventDetailsScreenAction.OnConfirmDeleteTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.showDeleteConfirmation)
+        assertEquals("event-to-delete", fakeEventProvider.deletedEventId)
         assertEquals(1, fakeNavigator.navigateUpCalls)
     }
 
@@ -145,9 +189,13 @@ class HomeScreenEventNavigationTest {
     }
 
     private class FakeEventProvider : EventProvider {
+        var deletedEventId: String? = null
         override suspend fun saveEventData(event: Event): Boolean = true
         override fun getEventsFlow(groupId: String): Flow<List<Event>> = flowOf(emptyList())
-        override suspend fun deleteEvent(eventId: String): Boolean = true
+        override suspend fun deleteEvent(eventId: String): Boolean {
+            deletedEventId = eventId
+            return true
+        }
     }
 
     private class FakeSnackbarProvider : SnackbarProvider {
