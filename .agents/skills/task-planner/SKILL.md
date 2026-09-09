@@ -20,9 +20,10 @@ Generate an isolated, reviewable task implementation plan inside `.artifacts/` p
     * `context_invariants`: Architectural constraints, interfaces, or hotspots gathered from history context resolution (defaults to `none`).
 
 ## Execution Algorithm
-1. Establish target path: `.artifacts/<feature-slug>/plan.md`.
-2. Generate the planning file strictly adhering to the **Plan Schema** below.
-3. Save the document to `.artifacts/<feature-slug>/plan.md`.
+1. Be sure that current git branch is not `trunk`, `main`, `master` or `develop`, if so, create separate branch for this task.
+2. Establish target path: `.artifacts/<feature-slug>/plan.md`.
+3. Generate the planning file strictly adhering to the **Plan Schema** below.
+4. Save the document to `.artifacts/<feature-slug>/plan.md`.
 
 ## Plan Schema (`.artifacts/<feature-slug>/plan.md`)
 ```markdown
