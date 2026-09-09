@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `event`      | `event-details-delete-dialog`     | `feat(event): move event deletion to EventDetailsScreen with confirmation dialog`   | `event-details-screen`                    | `none`     | `event/event-details-delete-dialog/`      |
 | `event`      | `event-details-screen`            | `feat(event): introduce EventDetailsScreen for selected event overview`             | `dual-dial-picker-time-selection`         | `none`     | `event/event-details-screen/`            |
 | `home`       | `home-fab-hide-on-scroll`         | `fix(home): collapse floating action button on scroll`                              | `none`                                    | `none`     | `home/home-fab-hide-on-scroll/`          |
 | `auth`       | `auth-exit-loading-indicator`     | `feat(auth): show loading indicator on exit until navigation to auth screen`        | `none`                                    | `none`     | `auth/auth-exit-loading-indicator/`      |
