@@ -239,6 +239,12 @@ private fun HomeScreenMediumLayout(
                         } else {
                             painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
                         },
+                        trailingIconPainter = if (item.isYourEvent) {
+                            painterResource(R.drawable.ic_star_24)
+                        } else null,
+                        trailingIconContentDescription = if (item.isYourEvent) {
+                            stringResource(R.string.content_description_your_event)
+                        } else null,
                         onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
                         sizes = DSListItemDefaults.sizes(
                             maxHeight = 72.dp
@@ -304,6 +310,12 @@ private fun MainScreenExpandedLayout(
                         } else {
                             painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
                         },
+                        trailingIconPainter = if (item.isYourEvent) {
+                            painterResource(R.drawable.ic_star_24)
+                        } else null,
+                        trailingIconContentDescription = if (item.isYourEvent) {
+                            stringResource(R.string.content_description_your_event)
+                        } else null,
                         onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
                         sizes = DSListItemDefaults.sizes(
                             imageWidth = 150.dp,

@@ -79,5 +79,6 @@
     <string name="content_description_next">Next</string>
     <string name="content_description_settings">Settings</string>
     <string name="content_description_delete">Delete</string>
+    <string name="content_description_your_event">Your event</string>
     <!-- endregion -->
 </resources>
