@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `home`       | `home-fab-hide-on-scroll`         | `fix(home): collapse floating action button on scroll`                              | `none`                                    | `none`     | `home/home-fab-hide-on-scroll/`          |
 | `auth`       | `auth-exit-loading-indicator`     | `feat(auth): show loading indicator on exit until navigation to auth screen`        | `none`                                    | `none`     | `auth/auth-exit-loading-indicator/`      |
 | `settings`   | `settings-app-version`            | `feat(settings): display app version in bottom bar`                                 | `none`                                    | `none`     | `settings/settings-app-version/`         |
 | `ci`         | `cicd-rawg-api-key`               | `ci(workflows): add RAWG_API_KEY secret to android cicd build`                      | `none`                                    | `none`     | `ci/cicd-rawg-api-key/`                  |
