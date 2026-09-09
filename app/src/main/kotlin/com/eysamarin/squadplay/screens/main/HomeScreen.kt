@@ -1,10 +1,5 @@
 package com.eysamarin.squadplay.screens.main
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -139,26 +134,22 @@ fun HomeScreen(
         },
         snackbarHost = snackbarHost,
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = !isScrolling,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
-            ) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        onAction(HomeScreenAction.OnAddGameEventTap)
-                    },
-                    shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
-                    containerColor = DesignSystemTheme.colorScheme.secondary,
-                    contentColor = DesignSystemTheme.colorScheme.onSecondary,
-                ) {
+            ExtendedFloatingActionButton(
+                text = { Text(text = stringResource(R.string.new_game_event)) },
+                icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_add_24),
                         contentDescription = stringResource(R.string.content_description_add_game),
                     )
-                    Text(text = stringResource(R.string.new_game_event))
-                }
-            }
+                },
+                onClick = {
+                    onAction(HomeScreenAction.OnAddGameEventTap)
+                },
+                expanded = !isScrolling,
+                shape = SquircleShape(cornerSmoothing = CornerSmoothing.High),
+                containerColor = DesignSystemTheme.colorScheme.secondary,
+                contentColor = DesignSystemTheme.colorScheme.onSecondary,
+            )
         },
         containerColor = DesignSystemTheme.colorScheme.surface,
     )
