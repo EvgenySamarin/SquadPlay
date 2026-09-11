@@ -7,11 +7,15 @@ sealed interface ProfileScreenAction {
     data class OnCreateInviteLinkTap(val groupId: String) : ProfileScreenAction
     object OnLogOutTap : ProfileScreenAction
     object OnSettingsTap : ProfileScreenAction
+    object OnCreateNewGroupTap : ProfileScreenAction
+    object OnDismissCreateGroupBottomSheet : ProfileScreenAction
+    data class OnConfirmCreateGroup(val title: String) : ProfileScreenAction
 }
 
 data class ProfileScreenUI(
     val user: User,
     val groupSections: List<UserGroupSection>,
+    val isCreateGroupBottomSheetVisible: Boolean = false,
 )
 
 val PREVIEW_USER = User(

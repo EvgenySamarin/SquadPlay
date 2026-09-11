@@ -159,6 +159,87 @@ class ProfileScreenViewModelTest {
         assertTrue(viewModel.inviteLinkState.value is UiState.Empty)
     }
 
+    @Test
+    fun onCreateNewGroupTap_setsBottomSheetVisibleToTrue() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val viewModel = createViewModel(profileProvider = FakeProfileProvider(userInfo = user))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var state = viewModel.uiState.value as UiState.Normal
+        assertEquals(false, state.data.isCreateGroupBottomSheetVisible)
+
+        viewModel.onAction(ProfileScreenAction.OnCreateNewGroupTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        state = viewModel.uiState.value as UiState.Normal
+        assertEquals(true, state.data.isCreateGroupBottomSheetVisible)
+    }
+
+    @Test
+    fun onDismissCreateGroupBottomSheet_setsBottomSheetVisibleToFalseWithoutCreatingGroup() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val fakeProfileProvider = FakeProfileProvider(userInfo = user)
+        val viewModel = createViewModel(profileProvider = fakeProfileProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnCreateNewGroupTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        var state = viewModel.uiState.value as UiState.Normal
+        assertEquals(true, state.data.isCreateGroupBottomSheetVisible)
+
+        viewModel.onAction(ProfileScreenAction.OnDismissCreateGroupBottomSheet)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        state = viewModel.uiState.value as UiState.Normal
+        assertEquals(false, state.data.isCreateGroupBottomSheetVisible)
+        assertEquals(0, fakeProfileProvider.createNewUserGroupCalls)
+    }
+
+    @Test
+    fun onConfirmCreateGroup_dismissesBottomSheet_createsGroupWithTitle_andTracksAnalyticsEvent() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val fakeProfileProvider = FakeProfileProvider(userInfo = user)
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = fakeAnalyticsProvider,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnCreateNewGroupTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        var state = viewModel.uiState.value as UiState.Normal
+        assertEquals(true, state.data.isCreateGroupBottomSheetVisible)
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmCreateGroup("Squad"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        state = viewModel.uiState.value as UiState.Normal
+        assertEquals(false, state.data.isCreateGroupBottomSheetVisible)
+        assertEquals(1, fakeProfileProvider.createNewUserGroupCalls)
+        assertEquals("user-1", fakeProfileProvider.lastCreatedGroupUserId)
+        assertEquals("Squad", fakeProfileProvider.lastCreatedGroupTitle)
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.GroupCreated("new-group-id")))
+    }
+
     private fun createViewModel(
         profileProvider: ProfileProvider = FakeProfileProvider(),
         navigator: Navigator = FakeNavigator(),
@@ -178,6 +259,8 @@ class ProfileScreenViewModelTest {
         var sections: List<UserGroupSection> = emptyList(),
     ) : ProfileProvider {
         var createNewUserGroupCalls = 0
+        var lastCreatedGroupUserId: String? = null
+        var lastCreatedGroupTitle: String? = null
         var lastInviteGroupId: String? = null
 
         override fun getUserInfoFlow(): Flow<User?> = flowOf(userInfo)
@@ -190,8 +273,10 @@ class ProfileScreenViewModelTest {
         override suspend fun joinGroup(userId: String, groupId: String): Boolean = true
         override suspend fun getGroupInfo(groupId: String): Group? = null
 
-        override suspend fun createNewUserGroup(userId: String): String {
+        override suspend fun createNewUserGroup(userId: String, title: String): String {
             createNewUserGroupCalls++
+            lastCreatedGroupUserId = userId
+            lastCreatedGroupTitle = title
             return "new-group-id"
         }
 

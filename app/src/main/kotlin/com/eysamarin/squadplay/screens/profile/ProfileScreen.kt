@@ -1,5 +1,6 @@
 package com.eysamarin.squadplay.screens.profile
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,13 +20,20 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +60,6 @@ import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
-import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
@@ -120,6 +127,14 @@ fun ProfileScreen(
         }
     )
 
+    if (state is UiState.Normal && state.data.isCreateGroupBottomSheetVisible) {
+        CreateGroupBottomSheet(
+            windowSize = windowSize,
+            onDismiss = { onAction(ProfileScreenAction.OnDismissCreateGroupBottomSheet) },
+            onConfirm = { title -> onAction(ProfileScreenAction.OnConfirmCreateGroup(title)) },
+        )
+    }
+
     if (isLoggingOut) {
         Box(
             modifier = Modifier
@@ -185,6 +200,13 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
+            IconButton(onClick = { onAction(ProfileScreenAction.OnCreateNewGroupTap) }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_group_add_24),
+                    contentDescription = stringResource(R.string.content_description_create_new_group),
+                    tint = DesignSystemTheme.colorScheme.onSurfaceVariant
+                )
+            }
             IconButton(onClick = { onAction(ProfileScreenAction.OnSettingsTap) }){
                 Icon(
                     painter = painterResource(R.drawable.ic_settings_24),
@@ -272,7 +294,7 @@ private fun GroupHeader(
             color = DesignSystemTheme.colorScheme.onSurface
         )
         DSButton(
-            iconPainter = painterResource(R.drawable.ic_group_add_24),
+            iconPainter = painterResource(R.drawable.ic_share_24),
             text = stringResource(R.string.share_invite_link),
             variant = ButtonStyle.Text,
             onTap = {
@@ -318,6 +340,69 @@ private fun MemberRow(
                 text = member.username,
                 style = adaptiveTitleByHeight(windowSize),
                 color = DesignSystemTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateGroupBottomSheet(
+    windowSize: WindowSizeClass,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var groupTitle by rememberSaveable { mutableStateOf("") }
+    val trimmedTitle = groupTitle.trim()
+    val words = remember(trimmedTitle) {
+        if (trimmedTitle.isEmpty()) emptyList() else trimmedTitle.split("\\s+".toRegex())
+    }
+    val hasError = words.size > 1
+    val isButtonEnabled = words.size == 1
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = DesignSystemTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.create_new_group_title),
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface,
+            )
+            OutlinedTextField(
+                value = groupTitle,
+                onValueChange = { groupTitle = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.group_title_label)) },
+                isError = hasError,
+                supportingText = {
+                    if (hasError) {
+                        Text(stringResource(R.string.error_single_word_title))
+                    }
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                    unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                )
+            )
+            DSButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.add_group),
+                enabled = isButtonEnabled,
+                onTap = {
+                    if (isButtonEnabled) {
+                        onConfirm(trimmedTitle)
+                    }
+                }
             )
         }
     }

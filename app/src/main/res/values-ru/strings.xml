@@ -51,6 +51,12 @@
     <string name="share_invite_link">Пригласить</string>
     <string name="friends_list">Список друзей:</string>
     <string name="group">Группа: %s</string>
+    <string name="no_groups_found">Группы не найдены</string>
+    <string name="no_group_members">Других участников пока нет</string>
+    <string name="add_group">Добавить группу</string>
+    <string name="create_new_group_title">Создать новую группу</string>
+    <string name="group_title_label">Название группы</string>
+    <string name="error_single_word_title">Название должно состоять из одного слова</string>
     <!-- endregion -->
 
     <!-- region Settings screen -->
@@ -76,6 +82,7 @@
     <string name="content_description_back">Назад</string>
     <string name="content_description_next">Далее</string>
     <string name="content_description_settings">Настройки</string>
+    <string name="content_description_create_new_group">Создать новую группу</string>
     <string name="content_description_delete">Удалить</string>
     <string name="content_description_your_event">Ваше событие</string>
     <!-- endregion -->
