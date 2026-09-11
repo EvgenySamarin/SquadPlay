@@ -1,6 +1,5 @@
 package com.eysamarin.squadplay.screens.profile
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
