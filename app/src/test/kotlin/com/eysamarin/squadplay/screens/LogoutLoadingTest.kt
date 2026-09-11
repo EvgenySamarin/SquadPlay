@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.screens
 
 import androidx.navigation.NavOptionsBuilder
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
@@ -108,6 +109,8 @@ class LogoutLoadingTest {
             navigator = fakeNavigator,
             profileProvider = FakeProfileProvider(),
             authProvider = fakeAuth,
+            analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
         )
 
         assertFalse(viewModel.isLoggingOut.value)
@@ -141,6 +144,7 @@ class LogoutLoadingTest {
             stringProvider = FakeStringProvider(),
             deepLinkManager = com.eysamarin.squadplay.navigation.DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
         )
     }
 
@@ -224,5 +228,12 @@ class LogoutLoadingTest {
             trackedScreens.add(screenName)
         }
         override fun setUserId(userId: String?) {}
+    }
+
+    private class FakeAppLogger : AppLogger {
+        override fun d(tag: String?, message: () -> String) {}
+        override fun i(tag: String?, message: () -> String) {}
+        override fun w(tag: String?, throwable: Throwable?, message: () -> String) {}
+        override fun e(tag: String?, throwable: Throwable?, message: () -> String) {}
     }
 }

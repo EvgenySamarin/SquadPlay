@@ -8,12 +8,13 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import org.koin.android.ext.android.inject
 
 /**
  * Without cloud functions or any BE we no need to store newToken.
@@ -21,14 +22,16 @@ import com.google.firebase.messaging.RemoteMessage
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class SquadPlayMessagingService: FirebaseMessagingService() {
 
+    private val logger: AppLogger by inject()
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        Log.d("FCM", "From: ${remoteMessage.from}")
+        logger.d(tag = "FCM") { "From: ${remoteMessage.from}" }
         if (remoteMessage.data.isNotEmpty()) {
-            Log.d("FCM", "Message data payload: ${remoteMessage.data}")
+            logger.d(tag = "FCM") { "Message data payload: ${remoteMessage.data}" }
         }
 
         remoteMessage.notification?.let {
-            Log.d("FCM", "Message Notification Body: ${it.body}")
+            logger.d(tag = "FCM") { "Message Notification Body: ${it.body}" }
             createNotification(title = it.title, body = it.body)
         }
     }
@@ -39,7 +42,7 @@ class SquadPlayMessagingService: FirebaseMessagingService() {
                     this, Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                Log.e("FCM", "Notification permission is not granted")
+                logger.e(tag = "FCM") { "Notification permission is not granted" }
                 return
             }
         }

@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.screens
 
 import androidx.navigation.NavOptionsBuilder
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
@@ -76,6 +77,7 @@ class HomeScreenEventNavigationTest {
             stringProvider = FakeStringProvider(),
             deepLinkManager = DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
         )
 
         val eventUI = EventUI(
@@ -107,6 +109,7 @@ class HomeScreenEventNavigationTest {
             navigator = fakeNavigator,
             eventProvider = FakeEventProvider(),
             analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
         )
 
         viewModel.onAction(EventDetailsScreenAction.OnBackButtonTap)
@@ -123,6 +126,7 @@ class HomeScreenEventNavigationTest {
             navigator = fakeNavigator,
             eventProvider = fakeEventProvider,
             analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
         )
 
         viewModel.initData(
@@ -258,6 +262,7 @@ class HomeScreenEventNavigationTest {
             stringProvider = FakeStringProvider(),
             deepLinkManager = DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
         )
     }
 
@@ -352,5 +357,12 @@ class HomeScreenEventNavigationTest {
             trackedScreens.add(screenName)
         }
         override fun setUserId(userId: String?) {}
+    }
+
+    private class FakeAppLogger : AppLogger {
+        override fun d(tag: String?, message: () -> String) {}
+        override fun i(tag: String?, message: () -> String) {}
+        override fun w(tag: String?, throwable: Throwable?, message: () -> String) {}
+        override fun e(tag: String?, throwable: Throwable?, message: () -> String) {}
     }
 }

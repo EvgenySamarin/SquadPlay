@@ -1,7 +1,7 @@
 package com.eysamarin.squadplay
 
 import android.app.Application
-import android.util.Log
+import org.koin.android.ext.android.getKoin
 import androidx.credentials.CredentialManager
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.EventRepository
@@ -154,15 +154,17 @@ class SquadPlayApplication : Application() {
             modules(appModule)
         }
 
+        val logger = getKoin().get<AppLogger>()
+
         FirebaseMessaging.getInstance().register()
             .addOnFailureListener { exception ->
-                Log.e("TAG", "Failed to retrieve Firebase Messaging token", exception)
+                logger.e(tag = "FCM", throwable = exception) { "Failed to retrieve Firebase Messaging token" }
             }
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("TAG", "Token was successfully registered")
+                    logger.d(tag = "FCM") { "Token was successfully registered" }
                 } else {
-                    Log.e("TAG", "Failed to retrieve Firebase Messaging token", task.exception)
+                    logger.e(tag = "FCM", throwable = task.exception) { "Failed to retrieve Firebase Messaging token" }
                 }
             }
     }

@@ -1,9 +1,9 @@
 package com.eysamarin.squadplay.screens.event
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
@@ -20,6 +20,7 @@ class EventDetailsScreenViewModel(
     private val navigator: Navigator,
     private val eventProvider: EventProvider,
     private val analyticsProvider: AnalyticsProvider,
+    private val logger: AppLogger,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -47,30 +48,26 @@ class EventDetailsScreenViewModel(
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
-        Log.d("TAG", "onBackButtonTap")
         navigator.navigateUp()
     }
 
     fun onDeleteTap() {
-        Log.d("TAG", "onDeleteTap")
         _uiState.update { it.copy(showDeleteConfirmation = true) }
     }
 
     fun onDismissDeleteDialog() {
-        Log.d("TAG", "onDismissDeleteDialog")
         _uiState.update { it.copy(showDeleteConfirmation = false) }
     }
 
     fun onConfirmDeleteTap() = viewModelScope.launch {
         val eventId = _uiState.value.eventId
-        Log.d("TAG", "onConfirmDeleteTap: $eventId")
         _uiState.update { it.copy(showDeleteConfirmation = false) }
         val isSuccess = eventProvider.deleteEvent(eventId)
         if (isSuccess) {
             analyticsProvider.trackEvent(AnalyticsEvent.EventDeleted(eventId = eventId))
             navigator.navigateUp()
         } else {
-            Log.w("TAG", "failed to delete event $eventId")
+            logger.w { "Failed to delete event $eventId" }
         }
     }
 

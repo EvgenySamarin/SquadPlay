@@ -1,8 +1,8 @@
 package com.eysamarin.squadplay.screens.registration
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.RegistrationScreenAction
@@ -15,10 +15,10 @@ class RegistrationScreenViewModel(
     private val navigator: Navigator,
     private val snackbar: SnackbarProvider,
     private val authProvider: AuthProvider,
+    private val logger: AppLogger,
 ) : ViewModel() {
 
     fun onConfirmTap(email: String, password: String) = viewModelScope.launch {
-        Log.d("TAG", "onConfirmTap")
         val signUpState = authProvider.signUpWithEmailPassword(email, password)
 
         when (signUpState) {
@@ -26,7 +26,7 @@ class RegistrationScreenViewModel(
             UiState.Loading -> Unit
 
             is UiState.Error -> {
-                Log.w("TAG", signUpState.description)
+                logger.w { "Sign up error: ${signUpState.description}" }
                 snackbar.showMessage(signUpState.description)
             }
 
@@ -35,7 +35,6 @@ class RegistrationScreenViewModel(
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
-        Log.d("TAG", "onBackButtonTap")
         navigator.navigateUp()
     }
 
