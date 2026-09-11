@@ -61,6 +61,11 @@ sealed interface AnalyticsEvent {
         override val eventName: String = "invite_shared"
     }
 
+    data class ShareInviteClicked(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "share_invite_clicked"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
     data object OssLicensesClicked : AnalyticsEvent {
         override val eventName: String = "oss_licenses_clicked"
     }
