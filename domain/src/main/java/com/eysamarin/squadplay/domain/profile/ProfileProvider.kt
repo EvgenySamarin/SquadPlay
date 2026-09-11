@@ -5,6 +5,7 @@ import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -18,7 +19,7 @@ interface ProfileProvider {
      * @return created group uid
      */
     suspend fun createNewUserGroup(userId: String): String
-    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
+    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
 }
 
 class ProfileProviderImpl(
@@ -50,7 +51,7 @@ class ProfileProviderImpl(
         return profileRepository.joinGroup(userId = userId, groupId = groupId)
     }
 
-    override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>> {
+    override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> {
         return profileRepository.getGroupsMembersInfoFlow(groups)
     }
 }

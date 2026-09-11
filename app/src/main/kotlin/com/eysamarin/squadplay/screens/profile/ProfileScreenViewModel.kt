@@ -12,17 +12,17 @@ import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -43,7 +43,7 @@ class ProfileScreenViewModel(
         field = MutableStateFlow<UiState<String>>(UiState.Empty)
 
     private val userInfoFlow = MutableStateFlow<User?>(null)
-    private val userFriendsFlow = MutableStateFlow<List<Friend>>(emptyList())
+    private val userGroupsFlow = MutableStateFlow<List<UserGroupSection>>(emptyList())
 
     init {
         collectUserInfo()
@@ -62,24 +62,27 @@ class ProfileScreenViewModel(
                 logger.d { "User info received: $it" }
                 userInfoFlow.emit(it)
             }
-            .map { it.groups }
-            .filter { it.isNotEmpty() }
-            .flatMapLatest { groups -> profileProvider.getGroupsMembersInfoFlow(groups) }
+            .flatMapLatest { user ->
+                if (user.groups.isEmpty()) {
+                    flowOf(emptyList())
+                } else {
+                    profileProvider.getGroupsMembersInfoFlow(user.groups)
+                }
+            }
             .onEach {
-                logger.d { "User friends received: $it" }
-                userFriendsFlow.emit(it)
+                logger.d { "User group sections received: $it" }
+                userGroupsFlow.emit(it)
             }
             .launchIn(viewModelScope)
 
-
-        combine(userInfoFlow, userFriendsFlow) { userInfo, friends ->
+        combine(userInfoFlow, userGroupsFlow) { userInfo, groupSections ->
             userInfo?.let {
-                userInfo to friends
+                userInfo to groupSections
             }
         }
             .filterNotNull()
-            .onEach { (userInfo, friends) ->
-                uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo, friends = friends)))
+            .onEach { (userInfo, groupSections) ->
+                uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo, groupSections = groupSections)))
             }
             .launchIn(viewModelScope)
     }
@@ -88,20 +91,7 @@ class ProfileScreenViewModel(
         navigator.navigateUp()
     }
 
-    fun onCreateInviteGroupLinkTap() = viewModelScope.launch {
-        val currentUiState = uiState.value
-        if (currentUiState !is UiState.Normal) return@launch
-
-        val user = currentUiState.data.user
-        val groupId = if (user.groups.isEmpty()) {
-            val newGroupId = profileProvider.createNewUserGroup(user.uid)
-            analyticsProvider.trackEvent(AnalyticsEvent.GroupCreated(newGroupId))
-            newGroupId
-        } else {
-            //right now supported only one group
-            user.groups.first().uid
-        }
-
+    fun onCreateInviteGroupLinkTap(groupId: String) = viewModelScope.launch {
         val inviteLink = profileProvider.createNewInviteLink(inviteGroupId = groupId)
         inviteLinkState.emit(UiState.Normal(inviteLink))
     }
@@ -130,7 +120,7 @@ class ProfileScreenViewModel(
     fun onAction(action: ProfileScreenAction) {
         when (action) {
             ProfileScreenAction.OnBackButtonTap -> onBackButtonTap()
-            ProfileScreenAction.OnCreateInviteLinkTap -> onCreateInviteGroupLinkTap()
+            is ProfileScreenAction.OnCreateInviteLinkTap -> onCreateInviteGroupLinkTap(action.groupId)
             ProfileScreenAction.OnLogOutTap -> onLogOutTap()
             ProfileScreenAction.OnSettingsTap -> onSettingsTap()
         }

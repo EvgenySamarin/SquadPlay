@@ -6,6 +6,7 @@ import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -54,7 +55,7 @@ class ProfileRepositoryImpl(
 
     override fun getGroupsMembersInfoFlow(
         groups: List<Group>
-    ): Flow<List<Friend>> = firestoreDataSource.getGroupsMembersInfoFlow(groups)
+    ): Flow<List<UserGroupSection>> = firestoreDataSource.getGroupsMembersInfoFlow(groups)
         .catch {
             logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get groups member info cause: ${it.message}" }
         }

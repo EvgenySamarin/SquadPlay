@@ -23,3 +23,9 @@ data class Friend(
     val groupTitleFrom: String,
     val photoUrl: String?,
 )
+
+data class UserGroupSection(
+    val groupId: String,
+    val title: String,
+    val members: List<Friend>,
+)

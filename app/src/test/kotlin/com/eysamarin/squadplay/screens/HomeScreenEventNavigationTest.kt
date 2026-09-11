@@ -20,6 +20,7 @@ import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import com.eysamarin.squadplay.navigation.DefaultDeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.NavigationAction
@@ -296,7 +297,7 @@ class HomeScreenEventNavigationTest {
         override suspend fun joinGroup(userId: String, groupId: String): Boolean = true
         override suspend fun getGroupInfo(groupId: String): Group? = null
         override suspend fun createNewUserGroup(userId: String): String = ""
-        override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>> = flowOf(emptyList())
+        override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> = flowOf(emptyList())
     }
 
     private class FakeCalendarUIProvider(

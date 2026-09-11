@@ -45,6 +45,7 @@ import com.eysamarin.squadplay.models.PREVIEW_PROFILE_SCREEN_UI
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
+import com.eysamarin.squadplay.models.UserGroupSection
 import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
@@ -182,11 +183,6 @@ private fun ProfileScreenMediumLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            DSButton(
-                text = stringResource(R.string.share_invite_link),
-                onTap = {
-                    onAction(ProfileScreenAction.OnCreateInviteLinkTap)
-                })
             IconButton(onClick = { onAction(ProfileScreenAction.OnSettingsTap) }){
                 Icon(
                     painter = painterResource(R.drawable.ic_settings_24),
@@ -195,68 +191,130 @@ private fun ProfileScreenMediumLayout(
                 )
             }
         }
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f, false),
-            text = stringResource(R.string.friends_list),
-            style = adaptiveBodyByHeight(windowSize),
-            color = DesignSystemTheme.colorScheme.onSurfaceVariant
-        )
 
-        FriendsList(state.data.friends, windowSize)
+        GroupsList(
+            groupSections = state.data.groupSections,
+            windowSize = windowSize,
+            onAction = onAction,
+        )
     }
 }
 
 @Composable
-private fun FriendsList(friends: List<Friend>, windowSize: WindowSizeClass) {
-    if (friends.isEmpty()) {
+private fun GroupsList(
+    groupSections: List<UserGroupSection>,
+    windowSize: WindowSizeClass,
+    onAction: (ProfileScreenAction) -> Unit,
+) {
+    if (groupSections.isEmpty()) {
         EmptyContent(windowSize, modifier = Modifier.fillMaxSize())
         return
     }
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(friends) { friend ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (friend.photoUrl != null) {
-                    AsyncImage(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
-                        model = friend.photoUrl,
-                        contentDescription = null,
-                    )
-                } else {
-                    Icon(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
-                        painter = painterResource(R.drawable.default_avatar),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                }
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        groupSections.forEach { section ->
+            item(key = section.groupId) {
+                GroupHeader(
+                    title = section.title,
+                    groupId = section.groupId,
+                    windowSize = windowSize,
+                    onAction = onAction,
+                )
+            }
+            if (section.members.isEmpty()) {
+                item(key = "${section.groupId}_empty") {
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = friend.username,
-                        style = adaptiveTitleByHeight(windowSize),
-                        color = DesignSystemTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.group, friend.groupTitleFrom),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, bottom = 8.dp),
+                        text = stringResource(R.string.no_group_members),
                         style = adaptiveLabelByHeight(windowSize),
                         color = DesignSystemTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            } else {
+                items(
+                    items = section.members,
+                    key = { member -> "${section.groupId}_${member.uid}" }
+                ) { member ->
+                    MemberRow(
+                        member = member,
+                        windowSize = windowSize,
+                    )
+                }
             }
+            item(key = "${section.groupId}_divider") {
+                HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupHeader(
+    title: String,
+    groupId: String,
+    windowSize: WindowSizeClass,
+    onAction: (ProfileScreenAction) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = adaptiveHeadlineByHeight(windowSize),
+            color = DesignSystemTheme.colorScheme.onSurface
+        )
+        DSButton(
+            text = stringResource(R.string.share_invite_link),
+            onTap = {
+                onAction(ProfileScreenAction.OnCreateInviteLinkTap(groupId))
+            }
+        )
+    }
+}
+
+@Composable
+private fun MemberRow(
+    member: Friend,
+    windowSize: WindowSizeClass,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (member.photoUrl != null) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                model = member.photoUrl,
+                contentDescription = null,
+            )
+        } else {
+            Icon(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                painter = painterResource(R.drawable.default_avatar),
+                contentDescription = null,
+                tint = Color.Unspecified
+            )
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = member.username,
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface
+            )
         }
     }
 }

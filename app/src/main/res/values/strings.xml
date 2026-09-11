@@ -53,6 +53,8 @@
     <string name="share_invite_link">Share invite link</string>
     <string name="friends_list">Friends list:</string>
     <string name="group">Group: %s</string>
+    <string name="no_groups_found">No groups found</string>
+    <string name="no_group_members">No other members yet</string>
     <!-- endregion -->
 
     <!-- region Settings screen -->
