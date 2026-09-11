@@ -1,5 +1,7 @@
 package com.eysamarin.squadplay.contracts
 
+import com.eysamarin.squadplay.models.Date
+
 sealed interface AnalyticsEvent {
     val eventName: String
     val params: Map<String, Any?> get() = emptyMap()
@@ -42,9 +44,17 @@ sealed interface AnalyticsEvent {
             get() = eventId?.let { mapOf("event_id" to it) } ?: emptyMap()
     }
 
-    data class CalendarDateSelected(val date: String) : AnalyticsEvent {
+    data class CalendarDateSelected(val date: Date) : AnalyticsEvent {
         override val eventName: String = "calendar_date_selected"
-        override val params: Map<String, Any?> = mapOf("date" to date)
+        override val params: Map<String, Any?> = mapOf("date" to date.toAnalyticsString())
+
+        private fun Date.toAnalyticsString(): String {
+            return if (dayOfMonth != null && monthNumber != null) {
+                "%02d-%02d".format(monthNumber, dayOfMonth)
+            } else {
+                "none"
+            }
+        }
     }
 
     data object InviteShared : AnalyticsEvent {
