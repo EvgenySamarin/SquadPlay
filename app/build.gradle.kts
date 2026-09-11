@@ -128,10 +128,13 @@ dependencies {
     implementation(libs.com.google.android.libraries.identity.googleid)
 
     implementation(platform(libs.com.google.firebase.bom))
+    implementation(libs.com.google.firebase.analytics)
     implementation(libs.com.google.firebase.crashlytics)
     implementation(libs.com.google.firebase.firestore)
     implementation(libs.com.google.firebase.auth)
     implementation(libs.com.google.firebase.messaging)
+
+    implementation(libs.jakewharton.timber)
 
     implementation(libs.com.google.android.gms.oss.licenses)
 

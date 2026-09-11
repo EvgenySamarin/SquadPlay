@@ -3,6 +3,8 @@ package com.eysamarin.squadplay.screens.event
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
 import com.eysamarin.squadplay.models.EventDetailsScreenUI
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 class EventDetailsScreenViewModel(
     private val navigator: Navigator,
     private val eventProvider: EventProvider,
+    private val analyticsProvider: AnalyticsProvider,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -64,6 +67,7 @@ class EventDetailsScreenViewModel(
         _uiState.update { it.copy(showDeleteConfirmation = false) }
         val isSuccess = eventProvider.deleteEvent(eventId)
         if (isSuccess) {
+            analyticsProvider.trackEvent(AnalyticsEvent.EventDeleted(eventId = eventId))
             navigator.navigateUp()
         } else {
             Log.w("TAG", "failed to delete event $eventId")

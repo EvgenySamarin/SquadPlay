@@ -54,6 +54,15 @@ import com.eysamarin.squadplay.data.contract.GameRepositoryImpl
 import com.eysamarin.squadplay.data.datasource.RawgDataSource
 import com.eysamarin.squadplay.domain.game.GameProvider
 import com.eysamarin.squadplay.domain.game.GameProviderImpl
+import com.eysamarin.squadplay.contracts.AnalyticsTracker
+import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.data.contract.FirebaseAnalyticsTracker
+import com.eysamarin.squadplay.data.logging.CrashReportingTree
+import com.eysamarin.squadplay.data.logging.TimberAppLogger
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProviderImpl
+import com.google.firebase.analytics.FirebaseAnalytics
+import timber.log.Timber
 
 class SquadPlayApplication : Application() {
     val appModule = module {
@@ -75,6 +84,7 @@ class SquadPlayApplication : Application() {
             )
         }
         single<RawgDataSource> { RawgDataSource(BuildConfig.RAWG_API_KEY) }
+        single<FirebaseAnalytics> { FirebaseAnalytics.getInstance(applicationContext) }
         //endregion
 
         //region contracts
@@ -88,6 +98,8 @@ class SquadPlayApplication : Application() {
         single<ProfileRepository> { ProfileRepositoryImpl(firestoreDataSource = get()) }
         single<StringRepository> { StringRepositoryImpl(appContext = get()) }
         single<GameRepository> { GameRepositoryImpl(rawgDataSource = get()) }
+        single<AnalyticsTracker> { FirebaseAnalyticsTracker(firebaseAnalytics = get()) }
+        single<AppLogger> { TimberAppLogger() }
         //endregion
 
         //region domain
@@ -107,6 +119,7 @@ class SquadPlayApplication : Application() {
         }
         single<StringProvider> { StringProviderImpl(stringRepository = get()) }
         single<GameProvider> { GameProviderImpl(gameRepository = get()) }
+        single<AnalyticsProvider> { AnalyticsProviderImpl(tracker = get(), logger = get()) }
         //endregion
 
         //region presentation
@@ -127,6 +140,12 @@ class SquadPlayApplication : Application() {
     @OptIn(KoinViewModelScopeApi::class)
     override fun onCreate() {
         super.onCreate()
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        } else {
+            Timber.plant(CrashReportingTree())
+        }
 
         startKoin {
             viewModelScopeFactory()

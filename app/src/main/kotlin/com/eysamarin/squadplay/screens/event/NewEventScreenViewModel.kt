@@ -25,6 +25,8 @@ import kotlinx.datetime.LocalDateTime
 import java.util.UUID
 
 
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.game.GameProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,6 +38,7 @@ class NewEventScreenViewModel(
     private val eventProvider: EventProvider,
     private val stringProvider: StringProvider,
     private val gameProvider: GameProvider,
+    private val analyticsProvider: AnalyticsProvider,
 ) : ViewModel() {
     val uiState: StateFlow<UiState<NewEventScreenUI>>
         field = MutableStateFlow<UiState<NewEventScreenUI>>(UiState.Loading)
@@ -128,6 +131,7 @@ class NewEventScreenViewModel(
         )
         val isSuccess = eventProvider.saveEventData(eventData)
         if (isSuccess) {
+            analyticsProvider.trackEvent(AnalyticsEvent.EventSaved(eventId = eventData.uid))
             navigator.navigateUp()
         }
         snackbar.showMessage(
