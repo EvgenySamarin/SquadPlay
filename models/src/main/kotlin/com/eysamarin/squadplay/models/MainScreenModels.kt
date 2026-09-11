@@ -38,6 +38,7 @@ data class Date(
     val isSelected: Boolean,
     val enabled: Boolean,
     val hasUserEvents: Boolean = false,
+    val year: Int? = null,
 ) {
     companion object {
         val Empty = Date(
@@ -47,6 +48,7 @@ data class Date(
             isSelected = false,
             enabled = false,
             hasUserEvents = false,
+            year = null,
         )
     }
 }
