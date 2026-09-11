@@ -126,7 +126,11 @@ class ProfileScreenViewModelTest {
         )
 
         val fakeProfileProvider = FakeProfileProvider(userInfo = user)
-        val viewModel = createViewModel(profileProvider = fakeProfileProvider)
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = fakeAnalyticsProvider,
+        )
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onAction(ProfileScreenAction.OnCreateInviteLinkTap("target-group-123"))
@@ -134,6 +138,7 @@ class ProfileScreenViewModelTest {
 
         assertEquals(0, fakeProfileProvider.createNewUserGroupCalls)
         assertEquals("target-group-123", fakeProfileProvider.lastInviteGroupId)
+        assertEquals(listOf(AnalyticsEvent.ShareInviteClicked("target-group-123")), fakeAnalyticsProvider.trackedEvents)
 
         val inviteState = viewModel.inviteLinkState.value
         assertTrue(inviteState is UiState.Normal)
@@ -157,12 +162,13 @@ class ProfileScreenViewModelTest {
     private fun createViewModel(
         profileProvider: ProfileProvider = FakeProfileProvider(),
         navigator: Navigator = FakeNavigator(),
+        analyticsProvider: AnalyticsProvider = FakeAnalyticsProvider(),
     ): ProfileScreenViewModel {
         return ProfileScreenViewModel(
             navigator = navigator,
             profileProvider = profileProvider,
             authProvider = FakeAuthProvider(),
-            analyticsProvider = FakeAnalyticsProvider(),
+            analyticsProvider = analyticsProvider,
             logger = FakeAppLogger(),
         )
     }
@@ -209,7 +215,10 @@ class ProfileScreenViewModelTest {
     }
 
     private class FakeAnalyticsProvider : AnalyticsProvider {
-        override fun trackEvent(event: AnalyticsEvent) {}
+        val trackedEvents = mutableListOf<AnalyticsEvent>()
+        override fun trackEvent(event: AnalyticsEvent) {
+            trackedEvents.add(event)
+        }
         override fun trackScreenView(screenName: String) {}
         override fun setUserId(userId: String?) {}
     }

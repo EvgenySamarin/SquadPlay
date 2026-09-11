@@ -92,6 +92,7 @@ class ProfileScreenViewModel(
     }
 
     fun onCreateInviteGroupLinkTap(groupId: String) = viewModelScope.launch {
+        analyticsProvider.trackEvent(AnalyticsEvent.ShareInviteClicked(groupId))
         val inviteLink = profileProvider.createNewInviteLink(inviteGroupId = groupId)
         inviteLinkState.emit(UiState.Normal(inviteLink))
     }
