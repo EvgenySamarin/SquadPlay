@@ -48,7 +48,7 @@
     <!-- endregion -->
 
     <!-- region profile screen -->
-    <string name="share_invite_link">Создать приглашение</string>
+    <string name="share_invite_link">Пригласить</string>
     <string name="friends_list">Список друзей:</string>
     <string name="group">Группа: %s</string>
     <!-- endregion -->
