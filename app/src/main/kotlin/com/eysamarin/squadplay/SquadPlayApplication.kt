@@ -75,6 +75,7 @@ class SquadPlayApplication : Application() {
                 webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID,
                 credentialManager = get(),
                 appContext = applicationContext,
+                logger = get(),
             )
         }
         single<FirebaseFirestoreDataSource> {
@@ -84,7 +85,12 @@ class SquadPlayApplication : Application() {
                 logger = get(),
             )
         }
-        single<RawgDataSource> { RawgDataSource(BuildConfig.RAWG_API_KEY) }
+        single<RawgDataSource> {
+            RawgDataSource(
+                apiKey = BuildConfig.RAWG_API_KEY,
+                logger = get(),
+            )
+        }
         single<FirebaseAnalytics> { FirebaseAnalytics.getInstance(applicationContext) }
         //endregion
 
@@ -93,10 +99,21 @@ class SquadPlayApplication : Application() {
             AuthRepositoryImpl(
                 firebaseAuthManager = get(),
                 profileRepository = get(),
+                logger = get(),
             )
         }
-        single<EventRepository> { EventRepositoryImpl(firebaseFirestoreDataSource = get()) }
-        single<ProfileRepository> { ProfileRepositoryImpl(firestoreDataSource = get()) }
+        single<EventRepository> {
+            EventRepositoryImpl(
+                firebaseFirestoreDataSource = get(),
+                logger = get(),
+            )
+        }
+        single<ProfileRepository> {
+            ProfileRepositoryImpl(
+                firestoreDataSource = get(),
+                logger = get(),
+            )
+        }
         single<StringRepository> { StringRepositoryImpl(appContext = get()) }
         single<GameRepository> { GameRepositoryImpl(rawgDataSource = get()) }
         single<AnalyticsTracker> { FirebaseAnalyticsTracker(firebaseAnalytics = get()) }

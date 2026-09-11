@@ -1,7 +1,6 @@
 package com.eysamarin.squadplay.data
 
 import android.content.Context
-import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
@@ -9,6 +8,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -38,11 +38,12 @@ class FirebaseAuthManagerImpl(
     private val webClientId: String,
     private val credentialManager: CredentialManager,
     private val appContext: Context,
+    private val logger: AppLogger,
 ) : FirebaseAuthManager {
 
     override fun getUserUid(): String? {
         val currentUser = firebaseAuth.currentUser
-        Log.d("TAG", "currentUser: $currentUser")
+        logger.d(tag = "Auth") { "currentUser: $currentUser" }
         return currentUser?.uid
     }
 
@@ -59,15 +60,14 @@ class FirebaseAuthManagerImpl(
             val firebaseUser = result.user
             if (firebaseUser == null) return UiState.Error("User does not exist")
 
-            Log.d("TAG", "signUpWithEmailPassword:success")
+            logger.d(tag = "Auth") { "signUpWithEmailPassword:success" }
 
             UiState.Normal(firebaseUser.toAppUser())
-        } catch (exception: FirebaseAuthWeakPasswordException){
-            Log.w("TAG", "signUpWithEmailPassword:failure", exception)
+        } catch (exception: FirebaseAuthWeakPasswordException) {
+            logger.w(tag = "Auth", throwable = exception) { "signUpWithEmailPassword:failure - weak password" }
             UiState.Error(exception.message ?: "Password is too weak")
-        }
-        catch (exception: Exception) {
-            Log.w("TAG", "signUpWithEmailPassword:failure", exception)
+        } catch (exception: Exception) {
+            logger.w(tag = "Auth", throwable = exception) { "signUpWithEmailPassword:failure" }
             UiState.Error("Unexpected exception occurred")
         }
     }
@@ -82,14 +82,14 @@ class FirebaseAuthManagerImpl(
             val firebaseUser = result.user
             if (firebaseUser == null) return UiState.Error("User does not exist")
 
-            Log.d("TAG", "signInWithEmailPassword:success")
+            logger.d(tag = "Auth") { "signInWithEmailPassword:success" }
 
             UiState.Normal(firebaseUser.toAppUser())
         } catch (exception: FirebaseAuthInvalidCredentialsException) {
-            Log.w("TAG", "signInWithEmailPassword:failure", exception)
+            logger.w(tag = "Auth", throwable = exception) { "signInWithEmailPassword:failure - invalid credentials" }
             UiState.Error("Cannot login, please check your email or password")
         } catch (exception: Exception) {
-            Log.w("TAG", "signInWithEmailPassword:failure", exception)
+            logger.w(tag = "Auth", throwable = exception) { "signInWithEmailPassword:failure" }
             UiState.Error("Unexpected exception occurred")
         }
     }
@@ -120,10 +120,9 @@ class FirebaseAuthManagerImpl(
                 .getCredential(context = appContext, request = request)
                 .credential
         } catch (e: GetCredentialException) {
-            Log.e(
-                "TAG",
+            logger.e(tag = "Auth") {
                 "Couldn't retrieve user's credentials with authorized account filtered = $filterByAuthorizedAccounts: ${e.localizedMessage}"
-            )
+            }
             null
         }
     }
@@ -133,7 +132,7 @@ class FirebaseAuthManagerImpl(
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
             firebaseAuthWithGoogle(googleIdTokenCredential.idToken)
         } else {
-            Log.w("TAG", "Credential is not of type Google ID!")
+            logger.w(tag = "Auth") { "Credential is not of type Google ID!" }
             null
         }
     }
@@ -147,11 +146,11 @@ class FirebaseAuthManagerImpl(
             val firebaseUser = result.user
             if (firebaseUser == null) return null
 
-            Log.d("TAG", "signInWithCredential:success")
+            logger.d(tag = "Auth") { "signInWithCredential:success" }
 
             firebaseUser.toAppUser()
         } catch (e: Exception) {
-            Log.w("TAG", "signInWithCredential:failure", e)
+            logger.w(tag = "Auth", throwable = e) { "signInWithCredential:failure" }
             null
         }
     }
@@ -171,10 +170,10 @@ class FirebaseAuthManagerImpl(
         return try {
             val clearRequest = ClearCredentialStateRequest()
             credentialManager.clearCredentialState(clearRequest)
-            Log.w("TAG", "User credentials cleared")
+            logger.d(tag = "Auth") { "User credentials cleared" }
             true
         } catch (e: ClearCredentialException) {
-            Log.e("TAG", "Couldn't clear user credentials: ${e.localizedMessage}")
+            logger.e(tag = "Auth") { "Couldn't clear user credentials: ${e.localizedMessage}" }
             false
         }
     }

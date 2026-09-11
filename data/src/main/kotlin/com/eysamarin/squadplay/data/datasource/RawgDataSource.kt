@@ -1,6 +1,6 @@
 package com.eysamarin.squadplay.data.datasource
 
-import android.util.Log
+import com.eysamarin.squadplay.contracts.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -21,7 +21,10 @@ data class RawgResponse(
     val results: List<RawgGameResult>
 )
 
-class RawgDataSource(private val apiKey: String) {
+class RawgDataSource(
+    private val apiKey: String,
+    private val logger: AppLogger,
+) {
     private val json = Json { ignoreUnknownKeys = true }
 
     suspend fun getGameThumbnail(gameName: String): String? = withContext(Dispatchers.IO) {
@@ -41,7 +44,7 @@ class RawgDataSource(private val apiKey: String) {
                 return@withContext response.results.firstOrNull()?.background_image
             }
         } catch (e: Exception) {
-            Log.e("RawgDataSource", "Failed to get game thumbnail", e)
+            logger.e(tag = "RawgDataSource", throwable = e) { "Failed to get game thumbnail" }
         }
         return@withContext null
     }
