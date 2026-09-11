@@ -44,6 +44,7 @@ class ProfileScreenViewModel(
 
     private val userInfoFlow = MutableStateFlow<User?>(null)
     private val userGroupsFlow = MutableStateFlow<List<UserGroupSection>>(emptyList())
+    private val isCreateGroupBottomSheetVisibleFlow = MutableStateFlow(false)
 
     init {
         collectUserInfo()
@@ -75,14 +76,26 @@ class ProfileScreenViewModel(
             }
             .launchIn(viewModelScope)
 
-        combine(userInfoFlow, userGroupsFlow) { userInfo, groupSections ->
+        combine(
+            userInfoFlow,
+            userGroupsFlow,
+            isCreateGroupBottomSheetVisibleFlow
+        ) { userInfo, groupSections, isBottomSheetVisible ->
             userInfo?.let {
-                userInfo to groupSections
+                Triple(userInfo, groupSections, isBottomSheetVisible)
             }
         }
             .filterNotNull()
-            .onEach { (userInfo, groupSections) ->
-                uiState.emit(UiState.Normal(ProfileScreenUI(user = userInfo, groupSections = groupSections)))
+            .onEach { (userInfo, groupSections, isBottomSheetVisible) ->
+                uiState.emit(
+                    UiState.Normal(
+                        ProfileScreenUI(
+                            user = userInfo,
+                            groupSections = groupSections,
+                            isCreateGroupBottomSheetVisible = isBottomSheetVisible,
+                        )
+                    )
+                )
             }
             .launchIn(viewModelScope)
     }
@@ -95,6 +108,23 @@ class ProfileScreenViewModel(
         analyticsProvider.trackEvent(AnalyticsEvent.ShareInviteClicked(groupId))
         val inviteLink = profileProvider.createNewInviteLink(inviteGroupId = groupId)
         inviteLinkState.emit(UiState.Normal(inviteLink))
+    }
+
+    fun onCreateNewGroupTap() {
+        isCreateGroupBottomSheetVisibleFlow.value = true
+    }
+
+    fun onDismissCreateGroupBottomSheet() {
+        isCreateGroupBottomSheetVisibleFlow.value = false
+    }
+
+    fun onConfirmCreateGroup(title: String) = viewModelScope.launch {
+        isCreateGroupBottomSheetVisibleFlow.value = false
+        val currentUiState = uiState.value
+        if (currentUiState !is UiState.Normal) return@launch
+        val userId = currentUiState.data.user.uid
+        val newGroupId = profileProvider.createNewUserGroup(userId, title)
+        analyticsProvider.trackEvent(AnalyticsEvent.GroupCreated(newGroupId))
     }
 
     fun hideShareLink() = viewModelScope.launch {
@@ -122,6 +152,9 @@ class ProfileScreenViewModel(
         when (action) {
             ProfileScreenAction.OnBackButtonTap -> onBackButtonTap()
             is ProfileScreenAction.OnCreateInviteLinkTap -> onCreateInviteGroupLinkTap(action.groupId)
+            ProfileScreenAction.OnCreateNewGroupTap -> onCreateNewGroupTap()
+            ProfileScreenAction.OnDismissCreateGroupBottomSheet -> onDismissCreateGroupBottomSheet()
+            is ProfileScreenAction.OnConfirmCreateGroup -> onConfirmCreateGroup(action.title)
             ProfileScreenAction.OnLogOutTap -> onLogOutTap()
             ProfileScreenAction.OnSettingsTap -> onSettingsTap()
         }

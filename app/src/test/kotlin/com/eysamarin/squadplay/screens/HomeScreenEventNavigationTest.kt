@@ -296,7 +296,7 @@ class HomeScreenEventNavigationTest {
         override fun createNewInviteLink(inviteGroupId: String): String = ""
         override suspend fun joinGroup(userId: String, groupId: String): Boolean = true
         override suspend fun getGroupInfo(groupId: String): Group? = null
-        override suspend fun createNewUserGroup(userId: String): String = ""
+        override suspend fun createNewUserGroup(userId: String, title: String): String = ""
         override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> = flowOf(emptyList())
     }
 

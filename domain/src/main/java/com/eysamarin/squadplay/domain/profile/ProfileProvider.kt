@@ -18,7 +18,7 @@ interface ProfileProvider {
     /**
      * @return created group uid
      */
-    suspend fun createNewUserGroup(userId: String): String
+    suspend fun createNewUserGroup(userId: String, title: String = "Friends"): String
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
 }
 
@@ -35,8 +35,8 @@ class ProfileProviderImpl(
         return profileRepository.getUserInfoFlow(userUid)
     }
 
-    override suspend fun createNewUserGroup(userId: String): String {
-        return profileRepository.createNewUserGroup(userId, "Friends")
+    override suspend fun createNewUserGroup(userId: String, title: String): String {
+        return profileRepository.createNewUserGroup(userId, title)
     }
 
     override fun createNewInviteLink(inviteGroupId: String): String {
