@@ -43,6 +43,7 @@ import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.PREVIEW_PROFILE_SCREEN_UI
+import com.eysamarin.squadplay.models.PREVIEW_PROFILE_SCREEN_UI_EMPTY
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -330,6 +331,18 @@ fun ProfileScreenPhonePreview() {
     DesignSystemTheme {
         ProfileScreen(
             state = UiState.Normal(PREVIEW_PROFILE_SCREEN_UI),
+            onAction = {}
+        )
+    }
+}
+
+@PhoneDarkModePreview
+@PhoneLightModePreview
+@Composable
+fun ProfileScreenEmptyPhonePreview() {
+    DesignSystemTheme {
+        ProfileScreen(
+            state = UiState.Normal(PREVIEW_PROFILE_SCREEN_UI_EMPTY),
             onAction = {}
         )
     }

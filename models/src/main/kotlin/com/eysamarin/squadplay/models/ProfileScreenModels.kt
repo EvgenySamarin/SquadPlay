@@ -68,3 +68,4 @@ val PREVIEW_GROUP_SECTIONS = listOf(
 )
 
 val PREVIEW_PROFILE_SCREEN_UI = ProfileScreenUI(user = PREVIEW_USER, groupSections = PREVIEW_GROUP_SECTIONS)
+val PREVIEW_PROFILE_SCREEN_UI_EMPTY = ProfileScreenUI(user = PREVIEW_USER, groupSections = emptyList())

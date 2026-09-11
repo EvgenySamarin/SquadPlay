@@ -355,7 +355,7 @@ class FirebaseFirestoreDataSourceImpl(
             return@callbackFlow
         }
 
-        val members = groups.map { group -> group.members }.flatten().distinct()
+        val members = groups.flatMap { group -> group.members }.distinct()
 
         if (members.isEmpty()) {
             logger.d(tag = "Firestore") { "Members list is empty" }
