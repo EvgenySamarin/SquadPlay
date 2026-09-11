@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `home`       | `home-event-filter-by-year`       | `fix(home): filter events by year on selected date and optimize EventUI mapping`   | `home-fab-hide-on-past-date`             | `none`     | `home/home-event-filter-by-year/`        |
 | `profile`    | `profile-groups-sections`         | `feat(profile): display user groups and members in separate sections`               | `none`                                    | `none`     | `profile/profile-groups-sections/`       |
 | `app`        | `remove-ad-id-permission`         | `fix(app): remove AD_ID permission from manifest`                                   | `none`                                    | `none`     | `app/remove-ad-id-permission/`           |
 | `home`       | `home-fab-hide-on-past-date`      | `feat(home): hide new game event button when past date is selected`                 | `home-event-user-star-indicator`          | `none`     | `home/home-fab-hide-on-past-date/`       |
