@@ -152,35 +152,12 @@ class HomeScreenViewModel(
             )
 
             val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
-            val eventsBySelectedDate = if (selectedDate == null || selectedDate.dayOfMonth == null || selectedDate.monthNumber == null) {
-                emptyList()
-            } else {
-                val selectedDay = selectedDate.dayOfMonth
-                val selectedMonth = selectedDate.monthNumber
-                val selectedYear = selectedDate.year ?: eventBasedCalendar.yearMonth.year
-                val currentUserId = userInfo.uid
-
-                events.mapNotNull { event ->
-                    val fromDate = event.fromDateTime
-                    if (fromDate.day == selectedDay &&
-                        fromDate.month.number == selectedMonth &&
-                        fromDate.year == selectedYear
-                    ) {
-                        EventUI(
-                            eventId = event.uid,
-                            title = event.title,
-                            subtitle = stringProvider.fromToDate(
-                                fromDate = formatTime(fromDate.hour, fromDate.minute),
-                                toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
-                            ),
-                            iconUrl = event.eventIconUrl,
-                            isYourEvent = event.creatorId == currentUserId
-                        )
-                    } else {
-                        null
-                    }
-                }
-            }
+            val eventsBySelectedDate = getEventsBySelectedDate(
+                events = events,
+                selectedDate = selectedDate,
+                calendarYear = eventBasedCalendar.yearMonth.year,
+                currentUserId = userInfo.uid,
+            )
             val today = todayProvider()
             val dayOfMonth = selectedDate?.dayOfMonth
             val isCreateEventButtonVisible = if (selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
@@ -362,5 +339,38 @@ class HomeScreenViewModel(
         val h = if (hour < 10) "0$hour" else hour.toString()
         val m = if (minute < 10) "0$minute" else minute.toString()
         return "$h:$m"
+    }
+
+    private fun getEventsBySelectedDate(
+        events: List<Event>,
+        selectedDate: Date?,
+        calendarYear: Int,
+        currentUserId: String,
+    ): List<EventUI> {
+        if (selectedDate == null || events.isEmpty()) return emptyList()
+        val selectedDay = selectedDate.dayOfMonth ?: return emptyList()
+        val selectedMonth = selectedDate.monthNumber ?: return emptyList()
+        val selectedYear = selectedDate.year ?: calendarYear
+
+        return events.mapNotNull { event ->
+            val fromDate = event.fromDateTime
+            if (fromDate.day == selectedDay &&
+                fromDate.month.number == selectedMonth &&
+                fromDate.year == selectedYear
+            ) {
+                EventUI(
+                    eventId = event.uid,
+                    title = event.title,
+                    subtitle = stringProvider.fromToDate(
+                        fromDate = formatTime(fromDate.hour, fromDate.minute),
+                        toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
+                    ),
+                    iconUrl = event.eventIconUrl,
+                    isYourEvent = event.creatorId == currentUserId
+                )
+            } else {
+                null
+            }
+        }
     }
 }
