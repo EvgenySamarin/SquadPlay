@@ -31,6 +31,8 @@ kotlinxDatetime = "0.8.0"
 googleAndroidGmsOssLicenses = "0.13.0"
 comGoogleAndroidGmsOssLicenses = "17.5.1"
 timber = "5.0.1"
+sentry = "6.22.0"
+ioSentryAndroid = "8.56.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +56,8 @@ io-insert-koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit
 
 io-coil-kt-coil3-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "ioCoilKtCoil3Compose" }
 io-coil-kt-coil3-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "ioCoilKtCoil3NetworkOkHttp" }
+
+io-sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "ioSentryAndroid" }
 
 #noinspection LoginCredentials
 androidx-credentials-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
@@ -85,3 +89,4 @@ google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.
 google-android-gms-oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "googleAndroidGmsOssLicenses" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+io-sentry-android-gradle = { id = "io.sentry.android.gradle", version.ref = "sentry" }

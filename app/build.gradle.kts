@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.android.gms.oss.licenses)
+    alias(libs.plugins.io.sentry.android.gradle)
 }
 
 android {
@@ -32,6 +33,7 @@ android {
         val firebaseDbUrl = System.getenv("FIREBASE_DATABASE_URL") ?: properties.getProperty("FIREBASE_DATABASE_URL") ?: ""
         val googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: properties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
         val rawgApiKey = System.getenv("RAWG_API_KEY") ?: properties.getProperty("RAWG_API_KEY") ?: ""
+        val sentryDsn = System.getenv("SENTRY_DSN") ?: properties.getProperty("SENTRY_DSN") ?: ""
 
         buildConfigField(
             type = "String",
@@ -47,6 +49,11 @@ android {
             "String",
             "RAWG_API_KEY",
             "\"$rawgApiKey\""
+        )
+        buildConfigField(
+            "String",
+            "SENTRY_DSN",
+            "\"$sentryDsn\""
         )
     }
 
@@ -122,6 +129,7 @@ dependencies {
 
     implementation(libs.io.coil.kt.coil3.compose)
     implementation(libs.io.coil.kt.coil3.network.okhttp)
+    implementation(libs.io.sentry.android)
 
     implementation(libs.androidx.credentials.credentials)
     implementation(libs.androidx.credentials.credentials.play.services.auth)
