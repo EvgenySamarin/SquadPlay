@@ -44,22 +44,49 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         calendar: CalendarUI,
         events: List<Event>,
         currentUserId: String
-    ): CalendarUI = calendar.copy(
-        dates = calendar.dates.map { date ->
-            val eventsOnDate = events.filter { event ->
-                val fromDayOfMonth = event.fromDateTime.day
-                val fromMonthOfYear = event.fromDateTime.month.ordinal + 1
-
-                val isSameDay = fromDayOfMonth == date.dayOfMonth
-                        && fromMonthOfYear == date.monthNumber
-                isSameDay
-            }
-            date.copy(
-                countEvents = eventsOnDate.count(),
-                hasUserEvents = eventsOnDate.any { it.creatorId == currentUserId }
+    ): CalendarUI {
+        if (events.isEmpty()) {
+            return calendar.copy(
+                dates = calendar.dates.map { date ->
+                    if (date.countEvents == 0 && !date.hasUserEvents) date
+                    else date.copy(countEvents = 0, hasUserEvents = false)
+                }
             )
-        },
-    )
+        }
+
+        data class DateEventSummary(val count: Int, val hasUserEvents: Boolean)
+        val eventsByDate = mutableMapOf<Triple<Int, Int, Int>, DateEventSummary>()
+        for (event in events) {
+            val key = Triple(event.fromDateTime.year, event.fromDateTime.month.number, event.fromDateTime.day)
+            val current = eventsByDate[key]
+            val isUserEvent = event.creatorId == currentUserId
+            eventsByDate[key] = if (current == null) {
+                DateEventSummary(count = 1, hasUserEvents = isUserEvent)
+            } else {
+                DateEventSummary(
+                    count = current.count + 1,
+                    hasUserEvents = current.hasUserEvents || isUserEvent
+                )
+            }
+        }
+
+        return calendar.copy(
+            dates = calendar.dates.map { date ->
+                val day = date.dayOfMonth
+                val month = date.monthNumber
+                val year = date.year ?: calendar.yearMonth.year
+                if (day != null && month != null) {
+                    val summary = eventsByDate[Triple(year, month, day)]
+                    date.copy(
+                        countEvents = summary?.count ?: 0,
+                        hasUserEvents = summary?.hasUserEvents ?: false
+                    )
+                } else {
+                    date.copy(countEvents = 0, hasUserEvents = false)
+                }
+            }
+        )
+    }
 
     override fun provideCalendarUIBy(yearMonth: LocalDate): CalendarUI {
         val dates = dataSource.getDates(yearMonth)
@@ -104,7 +131,7 @@ class CalendarDataSource {
                 }
             }
             .toList()
-    }
+        }
 
     fun getDates(yearMonth: LocalDate): List<Date> {
         val today = java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
@@ -116,6 +143,7 @@ class CalendarDataSource {
                     isSelected = date == today && date.month.number == yearMonth.month.number,
                     enabled = date.month.number == yearMonth.month.number,
                     countEvents = 0,
+                    year = date.year,
                 )
             }
     }

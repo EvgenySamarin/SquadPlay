@@ -37,6 +37,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -249,17 +251,139 @@ class HomeScreenEventNavigationTest {
         assertTrue(data.isCreateEventButtonVisible)
     }
 
+    @Test
+    fun homeScreenViewModel_eventsOnSelectedDate_filtersByYear_doesNotShowEventsFromOtherYears() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "group-1", title = "Squad 1", members = listOf("user-1")))
+        )
+        val event2026 = Event(
+            uid = "event-2026",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Apex Tournament",
+            eventIconUrl = "https://example.com/apex.png",
+            fromDateTime = LocalDateTime(2026, 9, 9, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 16, 0),
+        )
+        val date2026 = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 1, isSelected = true, enabled = true)
+        val date2027 = Date(dayOfMonth = 9, monthNumber = 9, year = 2027, countEvents = 0, isSelected = false, enabled = true)
+
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(date2026, date2027))
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(events = listOf(event2026))
+
+        val viewModel = createHomeScreenViewModel(
+            fakeNavigator = fakeNavigator,
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(1, data.gameEventsOnDate.size)
+        assertEquals("event-2026", data.gameEventsOnDate.first().eventId)
+        assertEquals("Apex Tournament", data.gameEventsOnDate.first().title)
+        assertEquals("from 14:00 to 16:00", data.gameEventsOnDate.first().subtitle)
+
+        // Navigate / select date in next year (2027)
+        viewModel.onAction(HomeScreenAction.OnDateTap(date2027))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(data.gameEventsOnDate.isEmpty())
+    }
+
+    @Test
+    fun homeScreenViewModel_eventsOnSelectedDate_whenNoDateSelected_returnsEmptyList() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "group-1", title = "Squad 1", members = listOf("user-1")))
+        )
+        val event2026 = Event(
+            uid = "event-2026",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Apex Tournament",
+            fromDateTime = LocalDateTime(2026, 9, 9, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 16, 0),
+        )
+        val unselectedDate = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 1, isSelected = false, enabled = true)
+
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(unselectedDate))
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(events = listOf(event2026))
+
+        val viewModel = createHomeScreenViewModel(
+            fakeNavigator = fakeNavigator,
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val data = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(data.gameEventsOnDate.isEmpty())
+    }
+
+    @Test
+    fun calendarUIProviderImpl_mergedCalendarWithEvents_matchesEventsByYear() {
+        val provider = CalendarUIProviderImpl()
+        val event2026 = Event(
+            uid = "event-1",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Match",
+            fromDateTime = LocalDateTime(2026, 9, 9, 10, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 12, 0),
+        )
+        val calendar2027 = CalendarUI(
+            daysOfWeek = emptyList(),
+            yearMonth = LocalDate(2027, 9, 1),
+            dates = listOf(
+                Date(dayOfMonth = 9, monthNumber = 9, year = 2027, countEvents = 0, isSelected = false, enabled = true)
+            )
+        )
+        val merged2027 = provider.mergedCalendarWithEvents(calendar2027, listOf(event2026), "user-1")
+        assertEquals(0, merged2027.dates.first().countEvents)
+        assertFalse(merged2027.dates.first().hasUserEvents)
+
+        val calendar2026 = CalendarUI(
+            daysOfWeek = emptyList(),
+            yearMonth = LocalDate(2026, 9, 1),
+            dates = listOf(
+                Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 0, isSelected = false, enabled = true)
+            )
+        )
+        val merged2026 = provider.mergedCalendarWithEvents(calendar2026, listOf(event2026), "user-1")
+        assertEquals(1, merged2026.dates.first().countEvents)
+        assertTrue(merged2026.dates.first().hasUserEvents)
+    }
+
     private fun createHomeScreenViewModel(
-        fakeNavigator: FakeNavigator,
-        calendarProvider: FakeCalendarUIProvider,
+        fakeNavigator: FakeNavigator = FakeNavigator(),
+        calendarProvider: FakeCalendarUIProvider = FakeCalendarUIProvider(),
+        profileProvider: FakeProfileProvider = FakeProfileProvider(),
+        eventProvider: FakeEventProvider = FakeEventProvider(),
     ): HomeScreenViewModel {
         return HomeScreenViewModel(
             navigator = fakeNavigator,
             authProvider = FakeAuthProvider(),
             calendarUIProvider = calendarProvider,
-            eventProvider = FakeEventProvider(),
+            eventProvider = eventProvider,
             snackbar = FakeSnackbarProvider(),
-            profileProvider = FakeProfileProvider(),
+            profileProvider = profileProvider,
             stringProvider = FakeStringProvider(),
             deepLinkManager = DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
@@ -289,10 +413,10 @@ class HomeScreenEventNavigationTest {
         override suspend fun isUserExists(): Boolean = true
     }
 
-    private class FakeProfileProvider : ProfileProvider {
-        override fun getUserInfoFlow(): Flow<User?> = flowOf(
-            User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList())
-        )
+    private class FakeProfileProvider(
+        var user: User? = User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList())
+    ) : ProfileProvider {
+        override fun getUserInfoFlow(): Flow<User?> = flowOf(user)
         override fun createNewInviteLink(inviteGroupId: String): String = ""
         override suspend fun joinGroup(userId: String, groupId: String): Boolean = true
         override suspend fun getGroupInfo(groupId: String): Group? = null
@@ -309,7 +433,11 @@ class HomeScreenEventNavigationTest {
         override fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI {
             return target.copy(
                 dates = target.dates.map {
-                    it.copy(isSelected = it.dayOfMonth == selectedDate.dayOfMonth && it.monthNumber == selectedDate.monthNumber)
+                    it.copy(
+                        isSelected = it.dayOfMonth == selectedDate.dayOfMonth
+                                && it.monthNumber == selectedDate.monthNumber
+                                && (selectedDate.year == null || it.year == selectedDate.year)
+                    )
                 }
             )
         }
@@ -320,10 +448,12 @@ class HomeScreenEventNavigationTest {
         ): CalendarUI = calendar
     }
 
-    private class FakeEventProvider : EventProvider {
+    private class FakeEventProvider(
+        var events: List<Event> = emptyList()
+    ) : EventProvider {
         var deletedEventId: String? = null
         override suspend fun saveEventData(event: Event): Boolean = true
-        override fun getEventsFlow(groupId: String): Flow<List<Event>> = flowOf(emptyList())
+        override fun getEventsFlow(groupId: String): Flow<List<Event>> = flowOf(events)
         override suspend fun deleteEvent(eventId: String): Boolean {
             deletedEventId = eventId
             return true
@@ -340,7 +470,7 @@ class HomeScreenEventNavigationTest {
         override val alreadyInSquad: String = ""
         override fun squadNotFound(groupId: String): String = ""
         override fun wantToJoinSquad(groupTitle: String): String = ""
-        override fun fromToDate(fromDate: String, toDate: String): String = ""
+        override fun fromToDate(fromDate: String, toDate: String): String = "from $fromDate to $toDate"
         override val youHaveNoSquad: String = ""
         override val eventSaved: String = ""
         override val eventSaveFailed: String = ""
