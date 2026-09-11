@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface EventProvider {
     suspend fun saveEventData(event: Event): Boolean
-    fun getEventsFlow(groupId: String): Flow<List<Event>>
+    fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>>
     suspend fun deleteEvent(eventId: String): Boolean
 }
 
@@ -17,8 +17,8 @@ class EventProviderImpl(
     override suspend fun saveEventData(event: Event): Boolean = eventRepository
         .saveEventData(event)
 
-    override fun getEventsFlow(groupId: String): Flow<List<Event>> = eventRepository
-        .getEventsFlow(groupId)
+    override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = eventRepository
+        .getEventsFlow(groupIds)
 
     override suspend fun deleteEvent(eventId: String): Boolean = eventRepository
         .deleteEvent(eventId)

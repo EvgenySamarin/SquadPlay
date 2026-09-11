@@ -242,6 +242,7 @@ private fun HomeScreenMediumLayout(
             } else {
                 items(items = state.data.gameEventsOnDate) { item ->
                     DSListItem(
+                        overline = item.groupTitle,
                         headline = item.title,
                         supportingText = item.subtitle,
                         leadingType = DSListItemLeadingType.Image,
@@ -313,6 +314,7 @@ private fun MainScreenExpandedLayout(
                 items(items = state.data.gameEventsOnDate) { item ->
                     DSListItem(
                         modifier = Modifier.fillMaxWidth(),
+                        overline = item.groupTitle,
                         headline = item.title,
                         supportingText = item.subtitle,
                         leadingType = DSListItemLeadingType.Image,
