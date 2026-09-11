@@ -1,10 +1,12 @@
 package com.eysamarin.squadplay
 
 import android.app.Application
-import org.koin.android.ext.android.getKoin
 import androidx.credentials.CredentialManager
+import com.eysamarin.squadplay.contracts.AnalyticsTracker
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.EventRepository
+import com.eysamarin.squadplay.contracts.GameRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.contracts.StringRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
@@ -12,19 +14,29 @@ import com.eysamarin.squadplay.data.FirebaseAuthManagerImpl
 import com.eysamarin.squadplay.data.StringRepositoryImpl
 import com.eysamarin.squadplay.data.contract.AuthRepositoryImpl
 import com.eysamarin.squadplay.data.contract.EventRepositoryImpl
+import com.eysamarin.squadplay.data.contract.FirebaseAnalyticsTracker
+import com.eysamarin.squadplay.data.contract.GameRepositoryImpl
 import com.eysamarin.squadplay.data.contract.ProfileRepositoryImpl
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
+import com.eysamarin.squadplay.data.datasource.RawgDataSource
+import com.eysamarin.squadplay.data.logging.CrashReportingTree
+import com.eysamarin.squadplay.data.logging.TimberAppLogger
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProviderImpl
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.auth.AuthProviderImpl
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.event.EventProviderImpl
+import com.eysamarin.squadplay.domain.game.GameProvider
+import com.eysamarin.squadplay.domain.game.GameProviderImpl
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProviderImpl
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.domain.resource.StringProviderImpl
+import com.eysamarin.squadplay.logging.SentryLoggingTree
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.messaging.SnackbarProviderImpl
 import com.eysamarin.squadplay.navigation.DeepLinkManager
@@ -38,9 +50,12 @@ import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import io.sentry.android.core.SentryAndroid
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.annotation.KoinViewModelScopeApi
@@ -48,22 +63,6 @@ import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.option.viewModelScopeFactory
 import org.koin.dsl.module
-
-import com.eysamarin.squadplay.contracts.GameRepository
-import com.eysamarin.squadplay.data.contract.GameRepositoryImpl
-import com.eysamarin.squadplay.data.datasource.RawgDataSource
-import com.eysamarin.squadplay.domain.game.GameProvider
-import com.eysamarin.squadplay.domain.game.GameProviderImpl
-import com.eysamarin.squadplay.contracts.AnalyticsTracker
-import com.eysamarin.squadplay.contracts.AppLogger
-import com.eysamarin.squadplay.data.contract.FirebaseAnalyticsTracker
-import com.eysamarin.squadplay.data.logging.CrashReportingTree
-import com.eysamarin.squadplay.data.logging.TimberAppLogger
-import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
-import com.eysamarin.squadplay.domain.analytics.AnalyticsProviderImpl
-import com.eysamarin.squadplay.logging.SentryLoggingTree
-import com.google.firebase.analytics.FirebaseAnalytics
-import io.sentry.android.core.SentryAndroid
 import timber.log.Timber
 
 class SquadPlayApplication : Application() {
@@ -157,6 +156,7 @@ class SquadPlayApplication : Application() {
         //endregion
     }
 
+    @Suppress("UnstableApiUsage")
     @OptIn(KoinViewModelScopeApi::class)
     override fun onCreate() {
         super.onCreate()
