@@ -197,7 +197,7 @@ class LogoutLoadingTest {
 
     private class FakeEventProvider : EventProvider {
         override suspend fun saveEventData(event: Event): Boolean = true
-        override fun getEventsFlow(groupId: String): Flow<List<Event>> = flowOf(emptyList())
+        override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = flowOf(emptyList())
         override suspend fun deleteEvent(eventId: String): Boolean = true
     }
 
