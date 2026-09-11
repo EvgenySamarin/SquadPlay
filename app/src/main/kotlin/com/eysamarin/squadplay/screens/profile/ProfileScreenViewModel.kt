@@ -1,8 +1,10 @@
 package com.eysamarin.squadplay.screens.profile
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.models.Friend
@@ -28,6 +30,8 @@ class ProfileScreenViewModel(
     private val navigator: Navigator,
     private val profileProvider: ProfileProvider,
     private val authProvider: AuthProvider,
+    private val analyticsProvider: AnalyticsProvider,
+    private val logger: AppLogger,
 ) : ViewModel() {
     val uiState: StateFlow<UiState<ProfileScreenUI>>
         field = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
@@ -55,14 +59,14 @@ class ProfileScreenViewModel(
             }
             .filterNotNull()
             .onEach {
-                Log.d("TAG", "user info received: $it")
+                logger.d { "User info received: $it" }
                 userInfoFlow.emit(it)
             }
             .map { it.groups }
             .filter { it.isNotEmpty() }
             .flatMapLatest { groups -> profileProvider.getGroupsMembersInfoFlow(groups) }
             .onEach {
-                Log.d("TAG", "user friends received: $it")
+                logger.d { "User friends received: $it" }
                 userFriendsFlow.emit(it)
             }
             .launchIn(viewModelScope)
@@ -81,18 +85,18 @@ class ProfileScreenViewModel(
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
-        Log.d("TAG", "onBackButtonTap")
         navigator.navigateUp()
     }
 
     fun onCreateInviteGroupLinkTap() = viewModelScope.launch {
-        Log.d("TAG", "onCreateInviteLinkTap")
         val currentUiState = uiState.value
         if (currentUiState !is UiState.Normal) return@launch
 
         val user = currentUiState.data.user
         val groupId = if (user.groups.isEmpty()) {
-            profileProvider.createNewUserGroup(user.uid)
+            val newGroupId = profileProvider.createNewUserGroup(user.uid)
+            analyticsProvider.trackEvent(AnalyticsEvent.GroupCreated(newGroupId))
+            newGroupId
         } else {
             //right now supported only one group
             user.groups.first().uid
@@ -103,25 +107,23 @@ class ProfileScreenViewModel(
     }
 
     fun hideShareLink() = viewModelScope.launch {
-        Log.d("TAG", "hideShareLink")
         inviteLinkState.emit(UiState.Empty)
     }
 
     fun onLogOutTap() = viewModelScope.launch {
-        Log.d("TAG", "onLogOutTap")
         if (isLoggingOut.value) return@launch
         isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
+            analyticsProvider.trackEvent(AnalyticsEvent.SignOut)
             navigator.navigateToAuthGraph()
         } else {
             isLoggingOut.value = false
-            Log.d("TAG", "cannot log out")
+            logger.w { "Failed to sign out" }
         }
     }
 
     fun onSettingsTap() = viewModelScope.launch {
-        Log.d("TAG", "onSettingsTap")
         navigator.navigate(Destination.SettingsScreen)
     }
 

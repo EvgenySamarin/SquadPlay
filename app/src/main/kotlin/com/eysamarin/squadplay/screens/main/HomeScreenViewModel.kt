@@ -1,8 +1,10 @@
 package com.eysamarin.squadplay.screens.main
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
@@ -37,9 +39,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 
-import com.eysamarin.squadplay.contracts.AnalyticsEvent
-import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
-
 class HomeScreenViewModel(
     private val navigator: Navigator,
     private val snackbar: SnackbarProvider,
@@ -50,6 +49,7 @@ class HomeScreenViewModel(
     private val stringProvider: StringProvider,
     private val deepLinkManager: DeepLinkManager,
     private val analyticsProvider: AnalyticsProvider,
+    private val logger: AppLogger,
 ) : ViewModel() {
 
     companion object {
@@ -97,20 +97,20 @@ class HomeScreenViewModel(
 
         profileProvider.getUserInfoFlow()
             .onEach {
-                Log.d("TAG", "new user fetched: $it")
+                logger.d { "New user fetched: $it" }
                 if (it == null) {
                     navigator.navigateToAuthGraph()
                 }
             }
             .filterNotNull()
             .onEach {
-                Log.d("TAG", "user info received: $it")
+                logger.d { "User info received: $it" }
                 userInfoState.emit(it)
             }
             .mapNotNull { it.groups.firstOrNull() }
             .flatMapLatest { eventProvider.getEventsFlow(it.uid) }
             .onEach {
-                Log.d("TAG", "events received: [${it.firstOrNull()}]...")
+                logger.d { "Events received: [${it.firstOrNull()}]..." }
                 eventsState.emit(it)
             }
             .launchIn(viewModelScope)
@@ -124,14 +124,14 @@ class HomeScreenViewModel(
             .onEach { (user, inviteGroupId) ->
                 if (user.groups.map { it.uid }.contains(inviteGroupId)) {
                     snackbar.showMessage(stringProvider.alreadyInSquad)
-                    Log.w("TAG", "You're already in this squad")
+                    logger.w { "You're already in this squad" }
                     return@onEach
                 }
 
                 val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
                 if (groupInfo == null) {
                     snackbar.showMessage(stringProvider.squadNotFound(inviteGroupId))
-                    Log.w("TAG", "Group with uid: $inviteGroupId not found")
+                    logger.w { "Group with uid: $inviteGroupId not found" }
                     return@onEach
                 }
                 confirmInviteDialogState.emit(UiState.Normal(stringProvider.wantToJoinSquad(groupInfo.title)))
@@ -188,7 +188,6 @@ class HomeScreenViewModel(
         }
             .filterNotNull()
             .onEach { homeScreenUI ->
-                Log.d("TAG", "updateMainScreenUI")
                 uiState.update {
                     UiState.Normal(homeScreenUI)
                 }
@@ -198,7 +197,6 @@ class HomeScreenViewModel(
     }
 
     fun onLogOutTap() = viewModelScope.launch {
-        Log.d("TAG", "onLogOutTap")
         if (isLoggingOut.value) return@launch
         isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
@@ -207,32 +205,29 @@ class HomeScreenViewModel(
             navigator.navigateToAuthGraph()
         } else {
             isLoggingOut.value = false
-            Log.d("TAG", "cannot log out")
+            logger.w { "Failed to sign out" }
         }
     }
 
     fun onAvatarTap() = viewModelScope.launch {
-        Log.d("TAG", "onAvatarTap")
         navigator.navigate(Destination.ProfileScreen)
     }
 
     fun onNextMonthTap(nextMonth: LocalDate) = viewModelScope.launch {
-        Log.d("TAG", "onNextMonthTap: $nextMonth")
+        logger.d { "onNextMonthTap: $nextMonth" }
 
         val nextMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = nextMonth)
         calendarUIState.emit(nextMonthCalendarUI)
     }
 
     fun onPreviousMonthTap(prevMonth: LocalDate) = viewModelScope.launch {
-        Log.d("TAG", "onPreviousMonthTap: $prevMonth")
+        logger.d { "onPreviousMonthTap: $prevMonth" }
 
         val prevMonthCalendarUI = calendarUIProvider.provideCalendarUIBy(yearMonth = prevMonth)
         calendarUIState.emit(prevMonthCalendarUI)
     }
 
     fun onDateTap(date: Date) = viewModelScope.launch {
-        Log.d("TAG", "onDateTap: $date, updating game events")
-
         val currentCalendar = calendarUIState.value
 
         val updatedCalendarUI = calendarUIProvider.updateCalendarBySelectedDate(
@@ -245,14 +240,12 @@ class HomeScreenViewModel(
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
-        Log.d("TAG", "onAddGameEventTap show polling dialog state")
-
         val calendarUi = calendarUIState.value
         val selectedDate = calendarUi.dates.firstOrNull { it.enabled && it.isSelected }
 
         val dayOfMonth = selectedDate?.dayOfMonth
         if (selectedDate == null || dayOfMonth == null) {
-            Log.w("TAG", "selected date is null cannot add game event")
+            logger.w { "Selected date is null, cannot add game event" }
             return@launch
         }
 
@@ -263,7 +256,7 @@ class HomeScreenViewModel(
             dayOfMonth = dayOfMonth,
         )
         if (selectedLocalDate < today) {
-            Log.w("TAG", "selected date is in the past cannot add game event")
+            logger.w { "Selected date is in the past, cannot add game event" }
             return@launch
         }
 
@@ -277,19 +270,17 @@ class HomeScreenViewModel(
     fun onJoinGroupDeepLinkRetrieved(inviteGroupId: String?) = viewModelScope.launch {
         if (inviteGroupId == null) return@launch
 
-        Log.d("TAG", "onInviteGroupDeepLinkRetrieved: $inviteGroupId")
+        logger.d { "Invite group deep link retrieved: $inviteGroupId" }
         inviteGroupIdState.emit(inviteGroupId)
     }
 
     fun onJoinGroupDialogConfirm() = viewModelScope.launch {
-        Log.d("TAG", "onJoinGroupDialogConfirm")
-
         val inviteGroupId = inviteGroupIdState.value ?: run {
-            Log.w("TAG", "groupId is null, cannot join group")
+            logger.w { "groupId is null, cannot join group" }
             return@launch
         }
         val currentUser = userInfoState.value ?: run {
-            Log.w("TAG", "currentUser is null, cannot join group")
+            logger.w { "currentUser is null, cannot join group" }
             return@launch
         }
 
@@ -298,6 +289,8 @@ class HomeScreenViewModel(
         )
         if (isSuccess) {
             analyticsProvider.trackEvent(AnalyticsEvent.JoinGroup(inviteGroupId))
+        } else {
+            logger.w { "Failed to join group $inviteGroupId" }
         }
         snackbar.showMessage(
             if (isSuccess) {
@@ -313,7 +306,7 @@ class HomeScreenViewModel(
     }
 
     fun onEventTap(event: EventUI) = viewModelScope.launch {
-        Log.d("TAG", "onEventTap: ${event.eventId}")
+        logger.d { "onEventTap: ${event.eventId}" }
         val matchingEvent = eventsState.value.firstOrNull { it.uid == event.eventId }
         val dateText = if (matchingEvent != null && !event.subtitle.isNullOrBlank()) {
             "${matchingEvent.fromDateTime.date}, ${event.subtitle}"

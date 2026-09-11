@@ -1,9 +1,9 @@
 package com.eysamarin.squadplay.screens.auth
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
@@ -20,24 +20,22 @@ class AuthScreenViewModel(
     private val authProvider: AuthProvider,
     private val stringProvider: StringProvider,
     private val analyticsProvider: AnalyticsProvider,
+    private val logger: AppLogger,
 ) : ViewModel() {
 
     fun onSignInWithGoogleTap() = viewModelScope.launch {
-        Log.d("TAG", "onSignUpTap")
         analyticsProvider.trackEvent(AnalyticsEvent.SignInGoogleClicked)
         val isSuccess = authProvider.signInWithGoogle()
         if (isSuccess) {
             analyticsProvider.trackEvent(AnalyticsEvent.SignInSuccess)
             navigator.navigateToHomeGraph()
         } else {
+            logger.w { "Failed to sign in with Google" }
             snackbar.showMessage(stringProvider.cannotSignText)
-            Log.d("TAG", "cannot sign in")
         }
     }
 
     fun onSignInTap(email: String, password: String) = viewModelScope.launch {
-        Log.d("TAG", "onSignInTap: $email, $password")
-
         val signInState = authProvider.signInWithEmailPassword(email, password)
 
         when (signInState) {
@@ -45,7 +43,7 @@ class AuthScreenViewModel(
             UiState.Loading -> Unit
 
             is UiState.Error -> {
-                Log.w("TAG", signInState.description)
+                logger.w { "Sign in error: ${signInState.description}" }
                 snackbar.showMessage(signInState.description)
             }
 
@@ -57,7 +55,6 @@ class AuthScreenViewModel(
     }
 
     fun onSignUpTap() = viewModelScope.launch {
-        Log.d("TAG", "onSignUpTap")
         navigator.navigate(Destination.RegistrationScreen)
     }
 

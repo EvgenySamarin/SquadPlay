@@ -1,9 +1,12 @@
 package com.eysamarin.squadplay.screens.event
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
+import com.eysamarin.squadplay.domain.game.GameProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
@@ -14,6 +17,8 @@ import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -24,13 +29,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import java.util.UUID
 
-
-import com.eysamarin.squadplay.contracts.AnalyticsEvent
-import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
-import com.eysamarin.squadplay.domain.game.GameProvider
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-
 class NewEventScreenViewModel(
     private val navigator: Navigator,
     private val snackbar: SnackbarProvider,
@@ -39,6 +37,7 @@ class NewEventScreenViewModel(
     private val stringProvider: StringProvider,
     private val gameProvider: GameProvider,
     private val analyticsProvider: AnalyticsProvider,
+    private val logger: AppLogger,
 ) : ViewModel() {
     val uiState: StateFlow<UiState<NewEventScreenUI>>
         field = MutableStateFlow<UiState<NewEventScreenUI>>(UiState.Loading)
@@ -67,7 +66,7 @@ class NewEventScreenViewModel(
             }
             .filterNotNull()
             .onEach {
-                Log.d("TAG", "user info received: $it")
+                logger.d { "User info received: $it" }
                 userInfoState.emit(it)
             }
             .launchIn(viewModelScope)
@@ -103,19 +102,17 @@ class NewEventScreenViewModel(
     }
 
     fun onBackButtonTap() = viewModelScope.launch {
-        Log.d("TAG", "onBackButtonTap")
         navigator.navigateUp()
     }
 
     fun onEventSaveTap(title: String, dateTimeFrom: LocalDateTime, dateTimeTo: LocalDateTime, eventIconUrl: String?) = viewModelScope.launch {
-        Log.d("TAG", "onEventSaveTap for dates: $dateTimeFrom - $dateTimeTo")
         val currentUser = userInfoState.value ?: run {
-            Log.w("TAG", "currentUser is null cannot save event")
+            logger.w { "Current user is null, cannot save event" }
             return@launch
         }
 
         if (currentUser.groups.isEmpty()) {
-            Log.d("TAG", "currentUser has no groups cannot save event")
+            logger.w { "Current user has no groups, cannot save event" }
             snackbar.showMessage(stringProvider.youHaveNoSquad)
             return@launch
         }
@@ -133,6 +130,8 @@ class NewEventScreenViewModel(
         if (isSuccess) {
             analyticsProvider.trackEvent(AnalyticsEvent.EventSaved(eventId = eventData.uid))
             navigator.navigateUp()
+        } else {
+            logger.w { "Failed to save event data for user ${currentUser.uid}" }
         }
         snackbar.showMessage(
             if (isSuccess) {
