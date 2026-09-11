@@ -20,6 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -35,7 +37,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun isUserProfileExists(userId: String): Boolean
     suspend fun deleteUserProfile(userId: String)
     suspend fun saveEvent(event: Event): Boolean
-    fun getEventsFlow(groupId: String): Flow<List<Event>>
+    fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>>
     suspend fun subscribeToGroupTopic(groupId: String)
     suspend fun deleteEvent(eventId: String): Boolean
 
@@ -138,12 +140,28 @@ class FirebaseFirestoreDataSourceImpl(
         false
     }
 
-    override fun getEventsFlow(groupId: String): Flow<List<Event>> = callbackFlow {
+    override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> {
+        if (groupIds.isEmpty()) {
+            logger.d(tag = "Firestore") { "groupIds is empty, returning empty events flow" }
+            return flowOf(emptyList())
+        }
+        if (groupIds.size <= 30) {
+            return getEventsFlowForGroupIdsChunk(groupIds.toList())
+        }
+        val flows = groupIds.chunked(30).map { chunk ->
+            getEventsFlowForGroupIdsChunk(chunk)
+        }
+        return combine(flows) { chunkLists ->
+            chunkLists.flatMap { it }
+        }
+    }
+
+    private fun getEventsFlowForGroupIdsChunk(groupIds: List<String>): Flow<List<Event>> = callbackFlow {
         val eventsCollectionRef = firebaseFirestore.collection(EVENTS_COLLECTION)
 
-        logger.d(tag = "Firestore") { "Subscribe on events flow for groupId: $groupId" }
+        logger.d(tag = "Firestore") { "Subscribe on events flow for groupIds: $groupIds" }
         val listenerRegistration = eventsCollectionRef
-            .whereEqualTo("groupId", groupId)
+            .whereIn("groupId", groupIds)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     logger.e(tag = "Firestore", throwable = error) { "Error getting events: ${error.message}" }
@@ -152,7 +170,7 @@ class FirebaseFirestoreDataSourceImpl(
                 }
 
                 if (snapshot == null || snapshot.isEmpty) {
-                    logger.w(tag = "Firestore") { "Events snapshot is null or empty for groupId: $groupId" }
+                    logger.w(tag = "Firestore") { "Events snapshot is null or empty for groupIds: $groupIds" }
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
@@ -194,7 +212,7 @@ class FirebaseFirestoreDataSourceImpl(
             }
 
         awaitClose {
-            logger.d(tag = "Firestore") { "Close getEventsFlow for groupId: $groupId" }
+            logger.d(tag = "Firestore") { "Close getEventsFlow for groupIds: $groupIds" }
             listenerRegistration.remove()
         }
     }

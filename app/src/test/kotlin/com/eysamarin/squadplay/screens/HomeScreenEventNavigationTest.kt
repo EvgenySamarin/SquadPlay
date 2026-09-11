@@ -30,6 +30,7 @@ import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -371,6 +372,155 @@ class HomeScreenEventNavigationTest {
         assertTrue(merged2026.dates.first().hasUserEvents)
     }
 
+    @Test
+    fun homeScreenViewModel_fetchesEventsForAllUserGroups() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(
+                Group(uid = "group-alpha", title = "Alpha Squad", members = listOf("user-1")),
+                Group(uid = "group-beta", title = "Beta Squad", members = listOf("user-1")),
+            )
+        )
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider()
+
+        createHomeScreenViewModel(
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(setOf("group-alpha", "group-beta"), eventProvider.requestedGroupIds)
+    }
+
+    @Test
+    fun homeScreenViewModel_eventsOnSelectedDate_populatesGroupTitleFromUserGroups() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(
+                Group(uid = "group-alpha", title = "Alpha Squad", members = listOf("user-1")),
+                Group(uid = "group-beta", title = "Beta Squad", members = listOf("user-1")),
+            )
+        )
+        val selectedDate = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 2, isSelected = true, enabled = true)
+        val event1 = Event(
+            uid = "event-1",
+            creatorId = "user-2",
+            groupId = "group-alpha",
+            title = "Alpha Scrim",
+            fromDateTime = LocalDateTime(2026, 9, 9, 10, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 12, 0),
+        )
+        val event2 = Event(
+            uid = "event-2",
+            creatorId = "user-1",
+            groupId = "group-beta",
+            title = "Beta Tournament",
+            fromDateTime = LocalDateTime(2026, 9, 9, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 16, 0),
+        )
+
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(selectedDate))
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(events = listOf(event1, event2))
+
+        val viewModel = createHomeScreenViewModel(
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(2, data.gameEventsOnDate.size)
+
+        val item1 = data.gameEventsOnDate.first { it.eventId == "event-1" }
+        assertEquals("Alpha Squad", item1.groupTitle)
+        assertEquals("Alpha Scrim", item1.title)
+        assertFalse(item1.isYourEvent)
+
+        val item2 = data.gameEventsOnDate.first { it.eventId == "event-2" }
+        assertEquals("Beta Squad", item2.groupTitle)
+        assertEquals("Beta Tournament", item2.title)
+        assertTrue(item2.isYourEvent)
+    }
+
+    @Test
+    fun homeScreenViewModel_whenUserHasNoGroups_passesEmptyGroupIdsList() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = emptyList()
+        )
+        val selectedDate = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 0, isSelected = true, enabled = true)
+
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(selectedDate))
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(events = emptyList())
+
+        val viewModel = createHomeScreenViewModel(
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(emptySet<String>(), eventProvider.requestedGroupIds)
+        val data = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(data.gameEventsOnDate.isEmpty())
+    }
+
+    @Test
+    fun homeScreenViewModel_whenGroupOrderChanges_doesNotRefetchEventsDueToSetEquality() = runTest(testDispatcher) {
+        val userFlow = MutableStateFlow(
+            User(
+                uid = "user-1",
+                username = "tester",
+                email = "tester@test.com",
+                photoUrl = null,
+                groups = listOf(
+                    Group(uid = "group-alpha", title = "Alpha Squad", members = listOf("user-1")),
+                    Group(uid = "group-beta", title = "Beta Squad", members = listOf("user-1")),
+                )
+            )
+        )
+        val profileProvider = FakeProfileProvider(userFlow = userFlow)
+        val eventProvider = FakeEventProvider()
+
+        createHomeScreenViewModel(
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(1, eventProvider.getEventsFlowCallCount)
+
+        userFlow.value = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(
+                Group(uid = "group-beta", title = "Beta Squad", members = listOf("user-1")),
+                Group(uid = "group-alpha", title = "Alpha Squad", members = listOf("user-1")),
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, eventProvider.getEventsFlowCallCount)
+    }
+
     private fun createHomeScreenViewModel(
         fakeNavigator: FakeNavigator = FakeNavigator(),
         calendarProvider: FakeCalendarUIProvider = FakeCalendarUIProvider(),
@@ -414,9 +564,10 @@ class HomeScreenEventNavigationTest {
     }
 
     private class FakeProfileProvider(
-        var user: User? = User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList())
+        var user: User? = User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList()),
+        val userFlow: Flow<User?>? = null,
     ) : ProfileProvider {
-        override fun getUserInfoFlow(): Flow<User?> = flowOf(user)
+        override fun getUserInfoFlow(): Flow<User?> = userFlow ?: flowOf(user)
         override fun createNewInviteLink(inviteGroupId: String): String = ""
         override suspend fun joinGroup(userId: String, groupId: String): Boolean = true
         override suspend fun getGroupInfo(groupId: String): Group? = null
@@ -452,8 +603,14 @@ class HomeScreenEventNavigationTest {
         var events: List<Event> = emptyList()
     ) : EventProvider {
         var deletedEventId: String? = null
+        var requestedGroupIds: Set<String>? = null
+        var getEventsFlowCallCount = 0
         override suspend fun saveEventData(event: Event): Boolean = true
-        override fun getEventsFlow(groupId: String): Flow<List<Event>> = flowOf(events)
+        override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> {
+            getEventsFlowCallCount++
+            requestedGroupIds = groupIds
+            return flowOf(events)
+        }
         override suspend fun deleteEvent(eventId: String): Boolean {
             deletedEventId = eventId
             return true

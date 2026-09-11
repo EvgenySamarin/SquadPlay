@@ -15,6 +15,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventUI
+import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -28,10 +29,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -107,8 +110,9 @@ class HomeScreenViewModel(
                 logger.d { "User info received: $it" }
                 userInfoState.emit(it)
             }
-            .mapNotNull { it.groups.firstOrNull() }
-            .flatMapLatest { eventProvider.getEventsFlow(it.uid) }
+            .map { user -> user.groups.map { it.uid }.toSet() }
+            .distinctUntilChanged()
+            .flatMapLatest { groupIds -> eventProvider.getEventsFlow(groupIds) }
             .onEach {
                 logger.d { "Events received: [${it.firstOrNull()}]..." }
                 eventsState.emit(it)
@@ -157,6 +161,7 @@ class HomeScreenViewModel(
                 selectedDate = selectedDate,
                 calendarYear = eventBasedCalendar.yearMonth.year,
                 currentUserId = userInfo.uid,
+                userGroups = userInfo.groups,
             )
             val today = todayProvider()
             val dayOfMonth = selectedDate?.dayOfMonth
@@ -346,11 +351,14 @@ class HomeScreenViewModel(
         selectedDate: Date?,
         calendarYear: Int,
         currentUserId: String,
+        userGroups: List<Group> = emptyList(),
     ): List<EventUI> {
         if (selectedDate == null || events.isEmpty()) return emptyList()
         val selectedDay = selectedDate.dayOfMonth ?: return emptyList()
         val selectedMonth = selectedDate.monthNumber ?: return emptyList()
         val selectedYear = selectedDate.year ?: calendarYear
+
+        val groupsById = userGroups.associateBy { it.uid }
 
         return events.mapNotNull { event ->
             val fromDate = event.fromDateTime
@@ -361,6 +369,7 @@ class HomeScreenViewModel(
                 EventUI(
                     eventId = event.uid,
                     title = event.title,
+                    groupTitle = groupsById[event.groupId]?.title,
                     subtitle = stringProvider.fromToDate(
                         fromDate = formatTime(fromDate.hour, fromDate.minute),
                         toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),

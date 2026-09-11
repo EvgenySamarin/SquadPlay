@@ -15,8 +15,8 @@ class EventRepositoryImpl(
     override suspend fun saveEventData(event: Event): Boolean = firebaseFirestoreDataSource
         .saveEvent(event)
 
-    override fun getEventsFlow(groupId: String): Flow<List<Event>> = firebaseFirestoreDataSource
-        .getEventsFlow(groupId)
+    override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = firebaseFirestoreDataSource
+        .getEventsFlow(groupIds)
         .catch {
             logger.e(tag = "EventRepository", throwable = it) { "Cannot get events flow cause: ${it.message}" }
         }

@@ -266,7 +266,7 @@ class NewEventScreenViewModelTest {
             lastSavedEvent = event
             return true
         }
-        override fun getEventsFlow(groupId: String): Flow<List<Event>> = emptyFlow()
+        override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = emptyFlow()
         override suspend fun deleteEvent(eventId: String): Boolean = true
     }
 
