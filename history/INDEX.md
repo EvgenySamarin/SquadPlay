@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `app`        | `remove-ad-id-permission`         | `fix(app): remove AD_ID permission from manifest`                                   | `none`                                    | `none`     | `app/remove-ad-id-permission/`           |
 | `home`       | `home-fab-hide-on-past-date`      | `feat(home): hide new game event button when past date is selected`                 | `home-event-user-star-indicator`          | `none`     | `home/home-fab-hide-on-past-date/`       |
 | `home`       | `home-event-user-star-indicator`  | `feat(home): display trailing star icon for user events on home screen`             | `home-fab-hide-on-scroll`                 | `none`     | `home/home-event-user-star-indicator/`   |
 | `event`      | `event-details-delete-dialog`     | `feat(event): move event deletion to EventDetailsScreen with confirmation dialog`   | `event-details-screen`                    | `none`     | `event/event-details-delete-dialog/`     |
