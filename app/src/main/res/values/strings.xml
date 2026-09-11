@@ -47,6 +47,7 @@
     <string name="from_to_time_warning">If time \'To\' less than time \'From\', event will be scheduled on next day</string>
     <string name="schedule_event">Schedule event</string>
     <string name="invite_new_friend">Invite new friend</string>
+    <string name="select_group">Select group</string>
     <!-- endregion -->
 
     <!-- region profile screen -->
