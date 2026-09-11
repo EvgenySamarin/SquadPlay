@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `ci`         | `cicd-pr-tests-tag-artifacts`     | `ci(workflows): run unit tests on pr and restrict artifact upload to tags`          | `cicd-rawg-api-key`                      | `none`     | `ci/cicd-pr-tests-tag-artifacts/`        |
 | `event`      | `new-event-group-selector`        | `feat(event): allow selecting group when creating new event`                        | `event-details-delete-dialog`             | `none`     | `event/new-event-group-selector/`        |
 | `home`       | `home-event-filter-by-year`       | `fix(home): filter events by year on selected date and optimize EventUI mapping`   | `home-fab-hide-on-past-date`             | `none`     | `home/home-event-filter-by-year/`        |
 | `profile`    | `profile-groups-sections`         | `feat(profile): display user groups and members in separate sections`               | `none`                                    | `none`     | `profile/profile-groups-sections/`       |
