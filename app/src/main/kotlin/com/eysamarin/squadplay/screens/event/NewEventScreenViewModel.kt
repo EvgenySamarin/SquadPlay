@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
 
 class NewEventScreenViewModel(
     private val navigator: Navigator,
@@ -68,6 +69,8 @@ class NewEventScreenViewModel(
             .onEach {
                 logger.d { "User info received: $it" }
                 userInfoState.emit(it)
+                val args = navigationArgsState.value ?: return@onEach
+                updateUiState(args)
             }
             .launchIn(viewModelScope)
 
@@ -90,6 +93,7 @@ class NewEventScreenViewModel(
     }
     
     private fun updateUiState(args: Destination.NewEventScreen) {
+        val user = userInfoState.value
         uiState.value = UiState.Normal(
             NewEventScreenUI(
                 title = "new event screen",
@@ -97,6 +101,7 @@ class NewEventScreenViewModel(
                 yearMonth = LocalDate.parse(args.yearMonth),
                 gameTitle = gameTitleState.value,
                 eventIconUrl = gameThumbnailUrlState.value,
+                userGroups = user?.groups.orEmpty(),
             )
         )
     }
@@ -105,7 +110,13 @@ class NewEventScreenViewModel(
         navigator.navigateUp()
     }
 
-    fun onEventSaveTap(title: String, dateTimeFrom: LocalDateTime, dateTimeTo: LocalDateTime, eventIconUrl: String?) = viewModelScope.launch {
+    fun onEventSaveTap(
+        title: String,
+        dateTimeFrom: LocalDateTime,
+        dateTimeTo: LocalDateTime,
+        eventIconUrl: String?,
+        groupId: String,
+    ) = viewModelScope.launch {
         val currentUser = userInfoState.value ?: run {
             logger.w { "Current user is null, cannot save event" }
             return@launch
@@ -117,10 +128,17 @@ class NewEventScreenViewModel(
             return@launch
         }
 
+        val targetGroupId = groupId.ifBlank {
+            currentUser.groups.firstOrNull()?.uid ?: run {
+                snackbar.showMessage(stringProvider.youHaveNoSquad)
+                return@launch
+            }
+        }
+
         val eventData = Event(
             uid = UUID.randomUUID().toString(),
             creatorId = currentUser.uid,
-            groupId = currentUser.groups.first().uid,
+            groupId = targetGroupId,
             title = title.takeIf { it.isNotBlank() } ?: "New event",
             eventIconUrl = eventIconUrl,
             fromDateTime = dateTimeFrom,
@@ -150,7 +168,7 @@ class NewEventScreenViewModel(
             return
         }
         searchJob = viewModelScope.launch {
-            delay(500) // Debounce 500ms
+            delay(500.milliseconds) // Debounce
             val url = gameProvider.getGameThumbnailUrl(title)
             gameThumbnailUrlState.value = url
         }
@@ -164,6 +182,7 @@ class NewEventScreenViewModel(
                 dateTimeFrom = action.timeFrom,
                 dateTimeTo = action.timeTo,
                 eventIconUrl = action.eventIconUrl,
+                groupId = action.groupId,
             )
             is NewEventScreenAction.OnGameTitleChanged -> onGameTitleChanged(action.title)
         }

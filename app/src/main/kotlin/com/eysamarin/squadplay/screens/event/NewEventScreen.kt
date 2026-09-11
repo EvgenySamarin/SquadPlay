@@ -15,7 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +32,7 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +58,7 @@ import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
+import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.NewEventScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_NEW_EVENT_SCREEN_UI
@@ -134,6 +140,14 @@ private fun NewEventScreenMediumLayout(
 ) {
     var dateTimeFrom by remember { mutableStateOf<LocalDateTime?>(null) }
     var dateTimeTo by remember { mutableStateOf<LocalDateTime?>(null) }
+    var isGroupDropdownExpanded by remember { mutableStateOf(false) }
+    var selectedGroup by remember { mutableStateOf<Group?>(null) }
+
+    LaunchedEffect(state.data.userGroups) {
+        if (selectedGroup == null || state.data.userGroups.none { it.uid == selectedGroup?.uid }) {
+            selectedGroup = state.data.userGroups.firstOrNull()
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -156,6 +170,45 @@ private fun NewEventScreenMediumLayout(
                 style = adaptiveHeadlineByHeight(windowSize),
                 color = DesignSystemTheme.colorScheme.onSurface,
             )
+        }
+
+        item {
+            ExposedDropdownMenuBox(
+                expanded = isGroupDropdownExpanded,
+                onExpandedChange = { isGroupDropdownExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = selectedGroup?.title.orEmpty(),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.select_group)) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isGroupDropdownExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                        unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = isGroupDropdownExpanded,
+                    onDismissRequest = { isGroupDropdownExpanded = false }
+                ) {
+                    state.data.userGroups.forEach { group ->
+                        DropdownMenuItem(
+                            text = { Text(group.title) },
+                            onClick = {
+                                selectedGroup = group
+                                isGroupDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         item {
@@ -234,6 +287,8 @@ private fun NewEventScreenMediumLayout(
                         val isMinutesNextDay = from.hour == to.hour
                                 && from.minute > (to.minute)
 
+                        val targetGroupId = selectedGroup?.uid ?: state.data.userGroups.firstOrNull()?.uid.orEmpty()
+
                         onAction(
                             NewEventScreenAction.OnEventSaveTap(
                                 title = state.data.gameTitle,
@@ -241,7 +296,8 @@ private fun NewEventScreenMediumLayout(
                                 timeTo = if (isHoursNextDay || isMinutesNextDay) {
                                     LocalDateTime(from.date.plus(1, DateTimeUnit.DAY), from.time)
                                 } else to,
-                                eventIconUrl = state.data.eventIconUrl
+                                eventIconUrl = state.data.eventIconUrl,
+                                groupId = targetGroupId,
                             )
                         )
                     },
