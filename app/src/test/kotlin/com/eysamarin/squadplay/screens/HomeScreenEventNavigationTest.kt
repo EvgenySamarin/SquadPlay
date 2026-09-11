@@ -1,6 +1,8 @@
 package com.eysamarin.squadplay.screens
 
 import androidx.navigation.NavOptionsBuilder
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
@@ -73,6 +75,7 @@ class HomeScreenEventNavigationTest {
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
             deepLinkManager = DefaultDeepLinkManager(),
+            analyticsProvider = FakeAnalyticsProvider(),
         )
 
         val eventUI = EventUI(
@@ -103,6 +106,7 @@ class HomeScreenEventNavigationTest {
         val viewModel = EventDetailsScreenViewModel(
             navigator = fakeNavigator,
             eventProvider = FakeEventProvider(),
+            analyticsProvider = FakeAnalyticsProvider(),
         )
 
         viewModel.onAction(EventDetailsScreenAction.OnBackButtonTap)
@@ -118,6 +122,7 @@ class HomeScreenEventNavigationTest {
         val viewModel = EventDetailsScreenViewModel(
             navigator = fakeNavigator,
             eventProvider = fakeEventProvider,
+            analyticsProvider = FakeAnalyticsProvider(),
         )
 
         viewModel.initData(
@@ -252,6 +257,7 @@ class HomeScreenEventNavigationTest {
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
             deepLinkManager = DefaultDeepLinkManager(),
+            analyticsProvider = FakeAnalyticsProvider(),
         )
     }
 
@@ -334,5 +340,17 @@ class HomeScreenEventNavigationTest {
         override val eventSaveFailed: String = ""
         override val joinedSquad: String = ""
         override val joinSquadFailed: String = ""
+    }
+
+    private class FakeAnalyticsProvider : AnalyticsProvider {
+        val trackedEvents = mutableListOf<AnalyticsEvent>()
+        val trackedScreens = mutableListOf<String>()
+        override fun trackEvent(event: AnalyticsEvent) {
+            trackedEvents.add(event)
+        }
+        override fun trackScreenView(screenName: String) {
+            trackedScreens.add(screenName)
+        }
+        override fun setUserId(userId: String?) {}
     }
 }

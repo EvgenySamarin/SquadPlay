@@ -1,6 +1,8 @@
 package com.eysamarin.squadplay.screens
 
 import androidx.navigation.NavOptionsBuilder
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
@@ -138,6 +140,7 @@ class LogoutLoadingTest {
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
             deepLinkManager = com.eysamarin.squadplay.navigation.DefaultDeepLinkManager(),
+            analyticsProvider = FakeAnalyticsProvider(),
         )
     }
 
@@ -209,5 +212,17 @@ class LogoutLoadingTest {
         override val eventSaveFailed: String = ""
         override val joinedSquad: String = ""
         override val joinSquadFailed: String = ""
+    }
+
+    private class FakeAnalyticsProvider : AnalyticsProvider {
+        val trackedEvents = mutableListOf<AnalyticsEvent>()
+        val trackedScreens = mutableListOf<String>()
+        override fun trackEvent(event: AnalyticsEvent) {
+            trackedEvents.add(event)
+        }
+        override fun trackScreenView(screenName: String) {
+            trackedScreens.add(screenName)
+        }
+        override fun setUserId(userId: String?) {}
     }
 }

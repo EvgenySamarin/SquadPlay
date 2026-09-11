@@ -9,6 +9,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -21,6 +22,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -28,6 +32,8 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.EventDetailsScreenUI
@@ -64,6 +70,19 @@ fun SquadPlayNavigation(
 
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
+    val analyticsProvider = koinInject<AnalyticsProvider>()
+
+    DisposableEffect(navController) {
+        val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
+            destination.toAnalyticsScreenName()?.let { screenName ->
+                analyticsProvider.trackScreenView(screenName)
+            }
+        }
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarProvider = koinInject<SnackbarProvider>()
@@ -188,6 +207,7 @@ fun SquadPlayNavigation(
                 )
 
                 if (inviteLinkState is UiState.Normal<String>) {
+                    analyticsProvider.trackEvent(AnalyticsEvent.InviteShared)
                     val inviteLink = (inviteLinkState as UiState.Normal<String>).data
                     val sendIntent = Intent(Intent.ACTION_SEND).apply {
                         putExtra(Intent.EXTRA_TEXT, inviteLink)
@@ -211,6 +231,7 @@ fun SquadPlayNavigation(
                         when (action) {
                             SettingsScreenAction.OnBackButtonTap -> viewModel.onBackButtonTap()
                             SettingsScreenAction.OnLicensesTap -> {
+                                analyticsProvider.trackEvent(AnalyticsEvent.OssLicensesClicked)
                                 OssLicensesMenuActivity.setActivityTitle(licensesMenuActivityTitle)
                                 context.startActivity(
                                     Intent(context, OssLicensesMenuActivity::class.java)
@@ -261,4 +282,15 @@ fun <T> LifecycleEffect(
             }
         }
     }
+}
+
+fun NavDestination.toAnalyticsScreenName(): String? = when {
+    hasRoute(Destination.HomeScreen::class) -> Destination.HomeScreen.SCREEN_NAME
+    hasRoute(Destination.NewEventScreen::class) -> Destination.NewEventScreen.SCREEN_NAME
+    hasRoute(Destination.EventDetailsScreen::class) -> Destination.EventDetailsScreen.SCREEN_NAME
+    hasRoute(Destination.ProfileScreen::class) -> Destination.ProfileScreen.SCREEN_NAME
+    hasRoute(Destination.SettingsScreen::class) -> Destination.SettingsScreen.SCREEN_NAME
+    hasRoute(Destination.AuthScreen::class) -> Destination.AuthScreen.SCREEN_NAME
+    hasRoute(Destination.RegistrationScreen::class) -> Destination.RegistrationScreen.SCREEN_NAME
+    else -> null
 }

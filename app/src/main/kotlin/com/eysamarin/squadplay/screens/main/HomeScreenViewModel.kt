@@ -37,6 +37,9 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
+
 class HomeScreenViewModel(
     private val navigator: Navigator,
     private val snackbar: SnackbarProvider,
@@ -46,6 +49,7 @@ class HomeScreenViewModel(
     private val profileProvider: ProfileProvider,
     private val stringProvider: StringProvider,
     private val deepLinkManager: DeepLinkManager,
+    private val analyticsProvider: AnalyticsProvider,
 ) : ViewModel() {
 
     companion object {
@@ -199,6 +203,7 @@ class HomeScreenViewModel(
         isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
         if (isSuccess) {
+            analyticsProvider.trackEvent(AnalyticsEvent.SignOut)
             navigator.navigateToAuthGraph()
         } else {
             isLoggingOut.value = false
@@ -236,6 +241,7 @@ class HomeScreenViewModel(
         )
 
         calendarUIState.emit(updatedCalendarUI)
+        analyticsProvider.trackEvent(AnalyticsEvent.CalendarDateSelected(date.toString()))
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
@@ -261,6 +267,7 @@ class HomeScreenViewModel(
             return@launch
         }
 
+        analyticsProvider.trackEvent(AnalyticsEvent.CreateEventClicked)
         navigator.navigate(Destination.NewEventScreen(
             selectedDate = selectedDate,
             yearMonth = calendarUi.yearMonth.toString(),
@@ -289,6 +296,9 @@ class HomeScreenViewModel(
         val isSuccess = profileProvider.joinGroup(
             userId = currentUser.uid, groupId = inviteGroupId,
         )
+        if (isSuccess) {
+            analyticsProvider.trackEvent(AnalyticsEvent.JoinGroup(inviteGroupId))
+        }
         snackbar.showMessage(
             if (isSuccess) {
                 stringProvider.joinedSquad

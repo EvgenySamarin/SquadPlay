@@ -3,6 +3,8 @@ package com.eysamarin.squadplay.screens.auth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.AnalyticsEvent
+import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
@@ -17,12 +19,15 @@ class AuthScreenViewModel(
     private val snackbar: SnackbarProvider,
     private val authProvider: AuthProvider,
     private val stringProvider: StringProvider,
+    private val analyticsProvider: AnalyticsProvider,
 ) : ViewModel() {
 
     fun onSignInWithGoogleTap() = viewModelScope.launch {
         Log.d("TAG", "onSignUpTap")
+        analyticsProvider.trackEvent(AnalyticsEvent.SignInGoogleClicked)
         val isSuccess = authProvider.signInWithGoogle()
         if (isSuccess) {
+            analyticsProvider.trackEvent(AnalyticsEvent.SignInSuccess)
             navigator.navigateToHomeGraph()
         } else {
             snackbar.showMessage(stringProvider.cannotSignText)
@@ -44,7 +49,10 @@ class AuthScreenViewModel(
                 snackbar.showMessage(signInState.description)
             }
 
-            is UiState.Normal<*> -> navigator.navigateToHomeGraph()
+            is UiState.Normal<*> -> {
+                analyticsProvider.trackEvent(AnalyticsEvent.SignInSuccess)
+                navigator.navigateToHomeGraph()
+            }
         }
     }
 
