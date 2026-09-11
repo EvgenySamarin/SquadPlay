@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.ButtonStyle
 import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
@@ -212,7 +213,7 @@ private fun GroupsList(
     }
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         groupSections.forEach { section ->
             item(key = section.groupId) {
@@ -270,7 +271,9 @@ private fun GroupHeader(
             color = DesignSystemTheme.colorScheme.onSurface
         )
         DSButton(
+            iconPainter = painterResource(R.drawable.ic_group_add_24),
             text = stringResource(R.string.share_invite_link),
+            variant = ButtonStyle.Text,
             onTap = {
                 onAction(ProfileScreenAction.OnCreateInviteLinkTap(groupId))
             }
@@ -287,7 +290,7 @@ private fun MemberRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (member.photoUrl != null) {
