@@ -43,6 +43,7 @@ jobs:
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           RAWG_API_KEY: ${{ secrets.RAWG_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: ./gradlew app:bundleRelease app:assembleRelease
 
       - name: Create Release Notes
@@ -67,7 +68,7 @@ jobs:
           releaseNotesFile: release_notes.txt
 
       - name: Upload App Bundle Artifact
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: app-bundle
@@ -75,7 +76,7 @@ jobs:
           retention-days: 1
 
       - name: Upload APK Artifact
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: app-apk
@@ -83,7 +84,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Release Notes Artifact
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
