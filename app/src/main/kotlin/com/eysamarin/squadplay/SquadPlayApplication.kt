@@ -61,7 +61,9 @@ import com.eysamarin.squadplay.data.logging.CrashReportingTree
 import com.eysamarin.squadplay.data.logging.TimberAppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProviderImpl
+import com.eysamarin.squadplay.logging.SentryLoggingTree
 import com.google.firebase.analytics.FirebaseAnalytics
+import io.sentry.android.core.SentryAndroid
 import timber.log.Timber
 
 class SquadPlayApplication : Application() {
@@ -163,6 +165,14 @@ class SquadPlayApplication : Application() {
             Timber.plant(Timber.DebugTree())
         } else {
             Timber.plant(CrashReportingTree())
+        }
+
+        if (BuildConfig.SENTRY_DSN.isNotBlank()) {
+            SentryAndroid.init(this) { options ->
+                options.setDsn(BuildConfig.SENTRY_DSN)
+                options.logs.isEnabled = true
+            }
+            Timber.plant(SentryLoggingTree())
         }
 
         startKoin {
