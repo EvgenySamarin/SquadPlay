@@ -1,6 +1,6 @@
 package com.eysamarin.squadplay.data.datasource
 
-import android.util.Log
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.EVENTS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
@@ -48,28 +48,29 @@ interface FirebaseFirestoreDataSource {
 class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
     private val firebaseMessaging: FirebaseMessaging,
+    private val logger: AppLogger,
 ): FirebaseFirestoreDataSource {
 
     override suspend fun subscribeToGroupTopic(groupId: String) {
         try {
             firebaseMessaging.subscribeToTopic(groupId).await()
-            Log.d("FCM", "Subscribed to topic: $groupId")
+            logger.d(tag = "FCM") { "Subscribed to topic: $groupId" }
         } catch (e: Exception) {
-            Log.e("FCM", "Error subscribing to topic: $groupId", e)
+            logger.e(tag = "FCM", throwable = e) { "Error subscribing to topic: $groupId" }
         }
     }
 
     private suspend fun unsubscribeFromGroupTopic(groupId: String) {
         try {
             firebaseMessaging.unsubscribeFromTopic(groupId).await()
-            Log.d("FCM", "Unsubscribed from topic: $groupId")
+            logger.d(tag = "FCM") { "Unsubscribed from topic: $groupId" }
         } catch (e: Exception) {
-            Log.e("FCM", "Error unsubscribing from topic: $groupId", e)
+            logger.e(tag = "FCM", throwable = e) { "Error unsubscribing from topic: $groupId" }
         }
     }
 
     override suspend fun saveEvent(event: Event): Boolean {
-        Log.d("TAG", "saveEvent: $event")
+        logger.d(tag = "Firestore") { "saveEvent: ${event.uid}" }
 
         val eventDataMap = hashMapOf(
             "creatorId" to event.creatorId,
@@ -88,7 +89,7 @@ class FirebaseFirestoreDataSourceImpl(
             firebaseFirestore.runTransaction { transaction ->
                 val groupDocumentSnapshot = transaction.get(groupsDocumentRef)
                 if (!groupDocumentSnapshot.exists()) {
-                    Log.e("TAG", "Group with id: ${event.groupId} not found")
+                    logger.e(tag = "Firestore") { "Group with id: ${event.groupId} not found" }
                     return@runTransaction false
                 }
                 val events = groupDocumentSnapshot["events"]?.let {
@@ -101,13 +102,13 @@ class FirebaseFirestoreDataSourceImpl(
                 true
             }.await()
         } catch (exception: Exception) {
-            Log.e("TAG", "error saving new event: ${exception.message}", exception)
+            logger.e(tag = "Firestore", throwable = exception) { "Error saving new event: ${exception.message}" }
             false
         }
     }
 
     override suspend fun deleteEvent(eventId: String): Boolean = try {
-        Log.d("TAG", "Deleting event data for $eventId")
+        logger.d(tag = "Firestore") { "Deleting event data for $eventId" }
 
         val eventDocumentRef = firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId)
         val groupsCollectionRef = firebaseFirestore.collection(GROUPS_COLLECTION)
@@ -129,51 +130,51 @@ class FirebaseFirestoreDataSourceImpl(
             transaction.delete(eventDocumentRef)
         }.await()
 
-        Log.d("TAG", "Event data deleted successfully for $eventId")
+        logger.d(tag = "Firestore") { "Event data deleted successfully for $eventId" }
         true
     } catch (e: Exception) {
-        println("Error deleting event data for $eventId: ${e.message}")
+        logger.e(tag = "Firestore", throwable = e) { "Error deleting event data for $eventId: ${e.message}" }
         false
     }
 
     override fun getEventsFlow(groupId: String): Flow<List<Event>> = callbackFlow {
         val eventsCollectionRef = firebaseFirestore.collection(EVENTS_COLLECTION)
 
-        Log.d("TAG", "subscribe on events flow")
+        logger.d(tag = "Firestore") { "Subscribe on events flow for groupId: $groupId" }
         val listenerRegistration = eventsCollectionRef
             .whereEqualTo("groupId", groupId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    Log.e("TAG", "Error getting events: ${error.message}")
+                    logger.e(tag = "Firestore", throwable = error) { "Error getting events: ${error.message}" }
                     close(error)
                     return@addSnapshotListener
                 }
 
                 if (snapshot == null || snapshot.isEmpty) {
-                    Log.w("TAG", "Events snapshot is null or empty")
+                    logger.w(tag = "Firestore") { "Events snapshot is null or empty for groupId: $groupId" }
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
 
                 val events = snapshot.documents.mapNotNull { document ->
                     val creatorId = document.getString("creatorId") ?: run {
-                        Log.e("TAG", "creatorId is null for event: ${document.id}")
+                        logger.e(tag = "Firestore") { "creatorId is null for event: ${document.id}" }
                         return@mapNotNull null
                     }
                     val title = document.getString("title") ?: run {
-                        Log.e("TAG", "title is null for event: ${document.id}")
+                        logger.e(tag = "Firestore") { "title is null for event: ${document.id}" }
                         return@mapNotNull null
                     }
                     val groupId = document.getString("groupId") ?: run {
-                        Log.e("TAG", "groupId is null for event: ${document.id}")
+                        logger.e(tag = "Firestore") { "groupId is null for event: ${document.id}" }
                         return@mapNotNull null
                     }
                     val dateFrom = document.getDate("dateFrom") ?: run {
-                        Log.e("TAG", "dateFrom is null for event: ${document.id}")
+                        logger.e(tag = "Firestore") { "dateFrom is null for event: ${document.id}" }
                         return@mapNotNull null
                     }
                     val dateTo = document.getDate("dateTo") ?: run {
-                        Log.e("TAG", "dateTo is null for event: ${document.id}")
+                        logger.e(tag = "Firestore") { "dateTo is null for event: ${document.id}" }
                         return@mapNotNull null
                     }
                     val eventIconUrl = document.getString("eventIconUrl")
@@ -192,13 +193,13 @@ class FirebaseFirestoreDataSourceImpl(
             }
 
         awaitClose {
-            Log.d("TAG", "close getEventsFlow")
+            logger.d(tag = "Firestore") { "Close getEventsFlow for groupId: $groupId" }
             listenerRegistration.remove()
         }
     }
 
     override suspend fun deleteUserProfile(userId: String) {
-        Log.d("TAG", "Deleting user data for $userId")
+        logger.d(tag = "Firestore") { "Deleting user data for $userId" }
         try {
             val userDocumentRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
             val groupsCollectionRef = firebaseFirestore.collection(USERS_COLLECTION)
@@ -218,9 +219,9 @@ class FirebaseFirestoreDataSourceImpl(
                 transaction.delete(userDocumentRef)
             }.await()
 
-            Log.d("TAG", "User data deleted successfully for $userId")
+            logger.d(tag = "Firestore") { "User data deleted successfully for $userId" }
         } catch (e: Exception) {
-            println("Error deleting user data for $userId: ${e.message}")
+            logger.e(tag = "Firestore", throwable = e) { "Error deleting user data for $userId: ${e.message}" }
         }
     }
 
@@ -231,7 +232,7 @@ class FirebaseFirestoreDataSourceImpl(
             val querySnapshot = collectionRef.get().await()
             querySnapshot.documents
         } catch (e: Exception) {
-            Log.e("TAG", "Error getting documents: ${e.message}")
+            logger.e(tag = "Firestore", throwable = e) { "Error getting documents: ${e.message}" }
             emptyList()
         }
     }
@@ -247,10 +248,10 @@ class FirebaseFirestoreDataSourceImpl(
         firebaseFirestore.collection(USERS_COLLECTION).document(user.uid)
             .set(userDataMap)
             .addOnSuccessListener {
-                Log.d("TAG", "User profile saved successfully")
+                logger.d(tag = "Firestore") { "User profile saved successfully" }
             }
             .addOnFailureListener {
-                Log.e("TAG", "Error saving user profile: ${it.message}")
+                logger.e(tag = "Firestore", throwable = it) { "Error saving user profile: ${it.message}" }
             }
             .await()
     }
@@ -268,10 +269,10 @@ class FirebaseFirestoreDataSourceImpl(
             .collection(USERS_COLLECTION)
             .document(userId)
 
-        Log.d("TAG", "subscribe on user info flow")
+        logger.d(tag = "Firestore") { "Subscribe on user info flow for userId: $userId" }
         val listenerRegistration = userDocument.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
-                Log.e("TAG", "Error getting user data: ${exception.message}")
+                logger.e(tag = "Firestore", throwable = exception) { "Error getting user data: ${exception.message}" }
                 close(exception)
                 return@addSnapshotListener
             }
@@ -283,7 +284,7 @@ class FirebaseFirestoreDataSourceImpl(
 
             val userData = snapshot.data
             if (userData == null) {
-                Log.e("TAG", "User data is null")
+                logger.e(tag = "Firestore") { "User data is null for userId: $userId" }
                 trySend(null)
                 return@addSnapshotListener
             }
@@ -299,7 +300,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
 
         awaitClose {
-            Log.d("TAG", "close getUserInfoFlow")
+            logger.d(tag = "Firestore") { "Close getUserInfoFlow for userId: $userId" }
             listenerRegistration.remove()
         }
     }
@@ -307,18 +308,18 @@ class FirebaseFirestoreDataSourceImpl(
     override fun getUserGroupsFlow(userId: String): Flow<List<Group>> = callbackFlow {
         val groupsCollectionRef = firebaseFirestore.collection(GROUPS_COLLECTION)
 
-        Log.d("TAG", "subscribe on user groups flow")
+        logger.d(tag = "Firestore") { "Subscribe on user groups flow for userId: $userId" }
         val listenerRegistration = groupsCollectionRef
             .whereArrayContains("members", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    Log.e("TAG", "Error getting groups: ${error.message}")
+                    logger.e(tag = "Firestore", throwable = error) { "Error getting groups: ${error.message}" }
                     close(error)
                     return@addSnapshotListener
                 }
 
                 if (snapshot == null || snapshot.isEmpty) {
-                    Log.w("TAG", "Groups snapshot is null or empty")
+                    logger.w(tag = "Firestore") { "Groups snapshot is null or empty for userId: $userId" }
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
@@ -338,7 +339,7 @@ class FirebaseFirestoreDataSourceImpl(
             }
 
         awaitClose {
-            Log.d("TAG", "close getUserGroupsFlow")
+            logger.d(tag = "Firestore") { "Close getUserGroupsFlow for userId: $userId" }
             listenerRegistration.remove()
         }
     }
@@ -349,23 +350,23 @@ class FirebaseFirestoreDataSourceImpl(
         val members = groups.map { group -> group.members }.flatten().distinct()
 
         if (members.isEmpty()) {
-            Log.d("TAG", "Members list is empty")
+            logger.d(tag = "Firestore") { "Members list is empty" }
             trySend(emptyList())
             close()
             return@callbackFlow
         }
 
         val friendsQuery = firebaseFirestore.collection(USERS_COLLECTION).whereIn("uid", members)
-        Log.d("TAG", "subscribe on user friends flow")
+        logger.d(tag = "Firestore") { "Subscribe on user friends flow" }
         val listenerRegistration = friendsQuery.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
-                Log.e("TAG", "Error getting user data: ${exception.message}")
+                logger.e(tag = "Firestore", throwable = exception) { "Error getting user data: ${exception.message}" }
                 close(exception)
                 return@addSnapshotListener
             }
 
             if (snapshot == null || snapshot.isEmpty) {
-                Log.d("TAG", "Friends snapshot is null or empty")
+                logger.d(tag = "Firestore") { "Friends snapshot is null or empty" }
                 trySend(emptyList())
                 return@addSnapshotListener
             }
@@ -387,7 +388,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
 
         awaitClose {
-            Log.d("TAG", "close getGroupsMembersInfoFlow")
+            logger.d(tag = "Firestore") { "Close getGroupsMembersInfoFlow" }
             listenerRegistration.remove()
         }
     }
@@ -403,10 +404,10 @@ class FirebaseFirestoreDataSourceImpl(
         firebaseFirestore.collection(GROUPS_COLLECTION).document(newGroupUid)
             .set(groupDataMap)
             .addOnSuccessListener {
-                Log.d("TAG", "Group created successfully with uid: $newGroupUid")
+                logger.d(tag = "Firestore") { "Group created successfully with uid: $newGroupUid" }
             }
             .addOnFailureListener {
-                Log.e("TAG", "Error creating new user group: ${it.message}")
+                logger.e(tag = "Firestore", throwable = it) { "Error creating new user group: ${it.message}" }
             }
             .await()
 
@@ -418,7 +419,7 @@ class FirebaseFirestoreDataSourceImpl(
             .document(groupId).get().await()
 
         if (!groupDocumentSnapshot.exists()) {
-            Log.w("TAG", "Group with id: $groupId not found")
+            logger.w(tag = "Firestore") { "Group with id: $groupId not found" }
             return@withContext null
         }
 
@@ -441,7 +442,7 @@ class FirebaseFirestoreDataSourceImpl(
             firebaseFirestore.runTransaction { transaction ->
                 val groupDocumentSnapshot = transaction.get(groupRef)
                 if (!groupDocumentSnapshot.exists()) {
-                    Log.e("TAG", "Group with id: $groupId not found")
+                    logger.e(tag = "Firestore") { "Group with id: $groupId not found" }
                     return@runTransaction false
                 }
                 val members = groupDocumentSnapshot["members"]?.let {
@@ -453,7 +454,7 @@ class FirebaseFirestoreDataSourceImpl(
                 true
             }.await()
         } catch (exception: Exception) {
-            Log.e("TAG", "error joining group: ${exception.message}", exception)
+            logger.e(tag = "Firestore", throwable = exception) { "Error joining group: ${exception.message}" }
             false
         }
     }
