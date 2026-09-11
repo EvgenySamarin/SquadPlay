@@ -1,6 +1,6 @@
 package com.eysamarin.squadplay.data.contract
 
-import android.util.Log
+import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.models.Friend
@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 
 class ProfileRepositoryImpl(
     val firestoreDataSource: FirebaseFirestoreDataSource,
+    private val logger: AppLogger,
 ) : ProfileRepository {
 
     override suspend fun isUserProfileExists(userId: String): Boolean =
@@ -30,7 +31,7 @@ class ProfileRepositoryImpl(
             user?.copy(groups = groupsExcludingCurrentUserMember)
         }
     }.catch {
-        Log.e("TAG", "cannot get user info cause: ${it.message}")
+        logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get user info cause: ${it.message}" }
     }
 
     override suspend fun saveUserProfile(user: User) = firestoreDataSource.saveUserProfile(user)
@@ -55,6 +56,6 @@ class ProfileRepositoryImpl(
         groups: List<Group>
     ): Flow<List<Friend>> = firestoreDataSource.getGroupsMembersInfoFlow(groups)
         .catch {
-            Log.e("TAG", "cannot get groups member info cause: ${it.message}")
+            logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get groups member info cause: ${it.message}" }
         }
 }
