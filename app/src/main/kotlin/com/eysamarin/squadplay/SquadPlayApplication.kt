@@ -81,6 +81,7 @@ class SquadPlayApplication : Application() {
             FirebaseFirestoreDataSourceImpl(
                 firebaseFirestore = FirebaseFirestore.getInstance(),
                 firebaseMessaging = FirebaseMessaging.getInstance(),
+                logger = get(),
             )
         }
         single<RawgDataSource> { RawgDataSource(BuildConfig.RAWG_API_KEY) }
