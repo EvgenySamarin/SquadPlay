@@ -10,6 +10,7 @@ import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -29,7 +30,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun createNewUserGroup(userId: String, title: String): String
     suspend fun getGroupInfo(groupId: String): Group?
     suspend fun joinGroup(userId: String, groupId: String): Boolean
-    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
+    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
     suspend fun saveUserProfile(user: User)
     suspend fun isUserProfileExists(userId: String): Boolean
     suspend fun deleteUserProfile(userId: String)
@@ -346,17 +347,31 @@ class FirebaseFirestoreDataSourceImpl(
 
     override fun getGroupsMembersInfoFlow(
         groups: List<Group>,
-    ): Flow<List<Friend>> = callbackFlow {
-        val members = groups.map { group -> group.members }.flatten().distinct()
-
-        if (members.isEmpty()) {
-            logger.d(tag = "Firestore") { "Members list is empty" }
+    ): Flow<List<UserGroupSection>> = callbackFlow {
+        if (groups.isEmpty()) {
+            logger.d(tag = "Firestore") { "Groups list is empty" }
             trySend(emptyList())
             close()
             return@callbackFlow
         }
 
-        val friendsQuery = firebaseFirestore.collection(USERS_COLLECTION).whereIn("uid", members)
+        val members = groups.map { group -> group.members }.flatten().distinct()
+
+        if (members.isEmpty()) {
+            logger.d(tag = "Firestore") { "Members list is empty" }
+            val emptySections = groups.map { group ->
+                UserGroupSection(
+                    groupId = group.uid,
+                    title = group.title,
+                    members = emptyList()
+                )
+            }
+            trySend(emptySections)
+            close()
+            return@callbackFlow
+        }
+
+        val friendsQuery = firebaseFirestore.collection(USERS_COLLECTION).whereIn("uid", members.take(30))
         logger.d(tag = "Firestore") { "Subscribe on user friends flow" }
         val listenerRegistration = friendsQuery.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
@@ -367,24 +382,42 @@ class FirebaseFirestoreDataSourceImpl(
 
             if (snapshot == null || snapshot.isEmpty) {
                 logger.d(tag = "Firestore") { "Friends snapshot is null or empty" }
-                trySend(emptyList())
+                val emptySections = groups.map { group ->
+                    UserGroupSection(
+                        groupId = group.uid,
+                        title = group.title,
+                        members = emptyList()
+                    )
+                }
+                trySend(emptySections)
                 return@addSnapshotListener
             }
 
-            val friends = snapshot.documents.mapNotNull { document ->
+            val membersById = snapshot.documents.mapNotNull { document ->
                 val data = document.data ?: return@mapNotNull null
+                val uid = data["uid"] as? String ?: document.id
+                val username = data["username"] as? String ?: "User"
+                val photoUrl = data["photoUrl"] as? String
+                uid to (username to photoUrl)
+            }.toMap()
 
-                Friend(
-                    uid = data["uid"] as? String ?: document.id,
-                    username = data["username"] as? String ?: "User",
-                    photoUrl = data["photoUrl"] as? String,
-                    groupTitleFrom = groups
-                        .find { it.members.contains(data["uid"] as? String) }
-                        ?.title ?: ""
+            val sections = groups.map { group ->
+                UserGroupSection(
+                    groupId = group.uid,
+                    title = group.title,
+                    members = group.members.mapNotNull { memberUid ->
+                        val memberData = membersById[memberUid] ?: return@mapNotNull null
+                        Friend(
+                            uid = memberUid,
+                            username = memberData.first,
+                            photoUrl = memberData.second,
+                            groupTitleFrom = group.title,
+                        )
+                    }
                 )
             }
 
-            trySend(friends)
+            trySend(sections)
         }
 
         awaitClose {

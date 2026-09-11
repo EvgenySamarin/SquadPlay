@@ -3,6 +3,7 @@ package com.eysamarin.squadplay.contracts
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
@@ -13,5 +14,5 @@ interface ProfileRepository {
     suspend fun getGroupInfo(groupId: String): Group?
     suspend fun joinGroup(userId: String, groupId: String): Boolean
     suspend fun createNewUserGroup(userId: String, title: String): String
-    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<Friend>>
+    fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
 }
