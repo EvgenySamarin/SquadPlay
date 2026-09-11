@@ -22,7 +22,7 @@ val PREVIEW_USER = User(
     groups = emptyList(),
 )
 
-val PREVIEW_FRIENDS = listOf(
+val PREVIEW_FRIENDS_GROUP_1 = listOf(
     Friend(
         uid = UUID.randomUUID().toString(),
         username = "NexArt",
@@ -35,25 +35,35 @@ val PREVIEW_FRIENDS = listOf(
         groupTitleFrom = "Friends",
         photoUrl = null
     ),
+)
+
+val PREVIEW_FRIENDS_GROUP_2 = listOf(
     Friend(
         uid = UUID.randomUUID().toString(),
         username = "Harry",
-        groupTitleFrom = "Friends",
+        groupTitleFrom = "Squad Gamers",
         photoUrl = null
     ),
     Friend(
         uid = UUID.randomUUID().toString(),
         username = "Pippin",
-        groupTitleFrom = "Friends",
+        groupTitleFrom = "Squad Gamers",
         photoUrl = null
     ),
 )
+
+val PREVIEW_FRIENDS = PREVIEW_FRIENDS_GROUP_1 + PREVIEW_FRIENDS_GROUP_2
 
 val PREVIEW_GROUP_SECTIONS = listOf(
     UserGroupSection(
         groupId = UUID.randomUUID().toString(),
         title = "Friends",
-        members = PREVIEW_FRIENDS
+        members = PREVIEW_FRIENDS_GROUP_1
+    ),
+    UserGroupSection(
+        groupId = UUID.randomUUID().toString(),
+        title = "Squad Gamers",
+        members = PREVIEW_FRIENDS_GROUP_2
     )
 )
 
