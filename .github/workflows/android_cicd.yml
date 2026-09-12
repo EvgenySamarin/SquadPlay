@@ -2,15 +2,11 @@ name: Android CI/CD
 
 on:
   push:
-    branches:
-      - 'trunk'
-      - 'feature/**'
     tags:
       - 'v*'
   pull_request:
     branches:
       - 'trunk'
-      - 'feature/**'
 
 jobs:
   test:
