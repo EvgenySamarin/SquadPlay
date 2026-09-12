@@ -5,6 +5,7 @@ import com.eysamarin.squadplay.contracts.EventRepository
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventResponseStatus
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 
@@ -19,7 +20,12 @@ class EventRepositoryImpl(
     override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = firebaseFirestoreDataSource
         .getEventsFlow(groupIds)
         .catch {
-            logger.e(tag = "EventRepository", throwable = it) { "Cannot get events flow cause: ${it.message}" }
+            if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                logger.d(tag = "EventRepository") { "Permission denied for events: ${it.message}" }
+                emit(emptyList())
+            } else {
+                logger.e(tag = "EventRepository", throwable = it) { "Cannot get events flow cause: ${it.message}" }
+            }
         }
 
     override suspend fun deleteEvent(eventID: String): Boolean = firebaseFirestoreDataSource

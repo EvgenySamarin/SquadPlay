@@ -7,6 +7,7 @@ import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -32,7 +33,12 @@ class ProfileRepositoryImpl(
             user?.copy(groups = groupsExcludingCurrentUserMember)
         }
     }.catch {
-        logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get user info cause: ${it.message}" }
+        if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+            logger.d(tag = "ProfileRepository") { "Permission denied for user info: ${it.message}" }
+            emit(null)
+        } else {
+            logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get user info cause: ${it.message}" }
+        }
     }
 
     override suspend fun saveUserProfile(user: User) = firestoreDataSource.saveUserProfile(user)
@@ -57,7 +63,12 @@ class ProfileRepositoryImpl(
         groups: List<Group>
     ): Flow<List<UserGroupSection>> = firestoreDataSource.getGroupsMembersInfoFlow(groups)
         .catch {
-            logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get groups member info cause: ${it.message}" }
+            if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                logger.d(tag = "ProfileRepository") { "Permission denied for groups member info: ${it.message}" }
+                emit(emptyList())
+            } else {
+                logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get groups member info cause: ${it.message}" }
+            }
         }
 
     override suspend fun renameGroup(groupId: String, newTitle: String): Boolean =

@@ -4,12 +4,14 @@ import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
+import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 
 class AuthRepositoryImpl(
     val firebaseAuthManager: FirebaseAuthManager,
     val profileRepository: ProfileRepository,
+    val firestoreDataSource: FirebaseFirestoreDataSource,
     private val logger: AppLogger,
 ) : AuthRepository {
 
@@ -36,5 +38,8 @@ class AuthRepositoryImpl(
         password: String,
     ): UiState<User> = firebaseAuthManager.signInWithEmailPassword(email, password)
 
-    override suspend fun signOut() = firebaseAuthManager.signOut()
+    override suspend fun signOut(): Boolean {
+        firestoreDataSource.clearListeners()
+        return firebaseAuthManager.signOut()
+    }
 }
