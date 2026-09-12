@@ -101,6 +101,7 @@ class SquadPlayApplication : Application() {
             AuthRepositoryImpl(
                 firebaseAuthManager = get(),
                 profileRepository = get(),
+                firestoreDataSource = get(),
                 logger = get(),
             )
         }

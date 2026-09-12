@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.Collections
 import java.util.UUID
 
 interface FirebaseFirestoreDataSource {
@@ -50,6 +52,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun renameGroup(groupId: String, newTitle: String): Boolean
     suspend fun deleteGroup(groupId: String): Boolean
     suspend fun leaveGroup(userId: String, groupId: String): Boolean
+    fun clearListeners()
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -63,6 +66,16 @@ class FirebaseFirestoreDataSourceImpl(
     private val firebaseMessaging: FirebaseMessaging,
     private val logger: AppLogger,
 ): FirebaseFirestoreDataSource {
+
+    private val activeListeners = Collections.synchronizedSet(mutableSetOf<ListenerRegistration>())
+
+    override fun clearListeners() {
+        logger.d(tag = "Firestore") { "Clearing all (${activeListeners.size}) active snapshot listeners" }
+        synchronized(activeListeners) {
+            activeListeners.forEach { it.remove() }
+            activeListeners.clear()
+        }
+    }
 
     override suspend fun subscribeToGroupTopic(groupId: String) {
         try {
@@ -176,6 +189,12 @@ class FirebaseFirestoreDataSourceImpl(
             .whereIn("groupId", groupIds)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                        logger.d(tag = "Firestore") { "Permission denied for events (unauthenticated or unauthorized): ${error.message}" }
+                        trySend(emptyList())
+                        close()
+                        return@addSnapshotListener
+                    }
                     logger.e(tag = "Firestore", throwable = error) { "Error getting events: ${error.message}" }
                     close(error)
                     return@addSnapshotListener
@@ -230,9 +249,11 @@ class FirebaseFirestoreDataSourceImpl(
                 }
                 trySend(events)
             }
+        activeListeners.add(listenerRegistration)
 
         awaitClose {
             logger.d(tag = "Firestore") { "Close getEventsFlow for groupIds: $groupIds" }
+            activeListeners.remove(listenerRegistration)
             listenerRegistration.remove()
         }
     }
@@ -326,6 +347,12 @@ class FirebaseFirestoreDataSourceImpl(
         logger.d(tag = "Firestore") { "Subscribe on user info flow for userId: $userId" }
         val listenerRegistration = userDocument.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
+                if (exception.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    logger.d(tag = "Firestore") { "Permission denied for user data (unauthenticated or unauthorized): ${exception.message}" }
+                    trySend(null)
+                    close()
+                    return@addSnapshotListener
+                }
                 logger.e(tag = "Firestore", throwable = exception) { "Error getting user data: ${exception.message}" }
                 close(exception)
                 return@addSnapshotListener
@@ -352,9 +379,11 @@ class FirebaseFirestoreDataSourceImpl(
             )
             trySend(user)
         }
+        activeListeners.add(listenerRegistration)
 
         awaitClose {
             logger.d(tag = "Firestore") { "Close getUserInfoFlow for userId: $userId" }
+            activeListeners.remove(listenerRegistration)
             listenerRegistration.remove()
         }
     }
@@ -367,6 +396,12 @@ class FirebaseFirestoreDataSourceImpl(
             .whereArrayContains("members", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                        logger.d(tag = "Firestore") { "Permission denied for groups (unauthenticated or unauthorized): ${error.message}" }
+                        trySend(emptyList())
+                        close()
+                        return@addSnapshotListener
+                    }
                     logger.e(tag = "Firestore", throwable = error) { "Error getting groups: ${error.message}" }
                     close(error)
                     return@addSnapshotListener
@@ -392,9 +427,11 @@ class FirebaseFirestoreDataSourceImpl(
                 }
                 trySend(groups)
             }
+        activeListeners.add(listenerRegistration)
 
         awaitClose {
             logger.d(tag = "Firestore") { "Close getUserGroupsFlow for userId: $userId" }
+            activeListeners.remove(listenerRegistration)
             listenerRegistration.remove()
         }
     }
@@ -430,6 +467,12 @@ class FirebaseFirestoreDataSourceImpl(
         logger.d(tag = "Firestore") { "Subscribe on user friends flow" }
         val listenerRegistration = friendsQuery.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
+                if (exception.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    logger.d(tag = "Firestore") { "Permission denied for groups members info (unauthenticated or unauthorized): ${exception.message}" }
+                    trySend(emptyList())
+                    close()
+                    return@addSnapshotListener
+                }
                 logger.e(tag = "Firestore", throwable = exception) { "Error getting user data: ${exception.message}" }
                 close(exception)
                 return@addSnapshotListener
@@ -476,9 +519,11 @@ class FirebaseFirestoreDataSourceImpl(
 
             trySend(sections)
         }
+        activeListeners.add(listenerRegistration)
 
         awaitClose {
             logger.d(tag = "Firestore") { "Close getGroupsMembersInfoFlow" }
+            activeListeners.remove(listenerRegistration)
             listenerRegistration.remove()
         }
     }

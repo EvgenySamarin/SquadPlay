@@ -21,6 +21,10 @@ android {
             )
         }
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 kotlin {
@@ -42,4 +46,6 @@ dependencies {
     implementation(libs.jakewharton.timber)
     implementation(libs.kotlinx.datetime)
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
+    testImplementation(libs.junit)
+    testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
 }
