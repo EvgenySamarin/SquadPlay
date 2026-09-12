@@ -173,7 +173,6 @@ class EventAttendanceTest {
             snackbar = FakeSnackbarProvider(),
             profileProvider = fakeProfileProvider,
             stringProvider = FakeStringProvider(),
-            deepLinkManager = DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
             logger = FakeAppLogger(),
         )

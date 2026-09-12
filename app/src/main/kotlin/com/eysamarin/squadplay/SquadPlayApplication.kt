@@ -42,6 +42,7 @@ import com.eysamarin.squadplay.messaging.SnackbarProviderImpl
 import com.eysamarin.squadplay.navigation.DeepLinkManager
 import com.eysamarin.squadplay.navigation.DefaultDeepLinkManager
 import com.eysamarin.squadplay.navigation.DefaultNavigator
+import com.eysamarin.squadplay.navigation.HomeGraphViewModel
 import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.event.EventDetailsScreenViewModel
@@ -146,6 +147,7 @@ class SquadPlayApplication : Application() {
         single<Navigator> { DefaultNavigator() }
         single<SnackbarProvider> { SnackbarProviderImpl() }
         viewModelOf(::LaunchApplicationViewModel)
+        viewModelOf(::HomeGraphViewModel)
         viewModelOf(::HomeScreenViewModel)
         viewModelOf(::NewEventScreenViewModel)
         viewModelOf(::EventDetailsScreenViewModel)
