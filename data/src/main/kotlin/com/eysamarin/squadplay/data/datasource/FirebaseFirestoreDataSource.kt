@@ -16,6 +16,8 @@ import com.eysamarin.squadplay.models.UserGroupSection
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.messaging.FirebaseMessaging
@@ -603,21 +605,50 @@ class FirebaseFirestoreDataSourceImpl(
         val groupRef = firebaseFirestore.collection(GROUPS_COLLECTION).document(groupId)
 
         return try {
+            logger.d(tag = "Firestore") { "User $userId leaving group $groupId" }
             unsubscribeFromGroupTopic(groupId)
-            firebaseFirestore.runTransaction { transaction ->
-                val groupDocumentSnapshot = transaction.get(groupRef)
-                if (!groupDocumentSnapshot.exists()) {
-                    logger.e(tag = "Firestore") { "Group with id: $groupId not found" }
-                    return@runTransaction false
-                }
-                val members = groupDocumentSnapshot["members"]?.let {
-                    val anyList = it as? List<*>
-                    anyList?.filterIsInstance<String>()
-                } ?: emptyList()
 
-                transaction.update(groupRef, mapOf("members" to members.minus(userId)))
-                true
-            }.await()
+            val groupDocumentSnapshot = groupRef.get().await()
+            if (!groupDocumentSnapshot.exists()) {
+                logger.e(tag = "Firestore") { "Group with id: $groupId not found" }
+                return false
+            }
+
+            val members = groupDocumentSnapshot["members"]?.let {
+                val anyList = it as? List<*>
+                anyList?.filterIsInstance<String>()
+            } ?: emptyList()
+
+            val eventsSnapshot = firebaseFirestore.collection(EVENTS_COLLECTION)
+                .whereEqualTo("groupId", groupId)
+                .get()
+                .await()
+
+            val eventsToUpdate = eventsSnapshot.documents.filter { doc ->
+                val responses = doc.get("responses") as? Map<*, *>
+                responses?.containsKey(userId) == true
+            }
+
+            val batchOperations = mutableListOf<(com.google.firebase.firestore.WriteBatch) -> Unit>()
+            batchOperations.add { batch ->
+                batch.update(groupRef, mapOf("members" to members.minus(userId)))
+            }
+            for (eventDoc in eventsToUpdate) {
+                batchOperations.add { batch ->
+                    batch.update(eventDoc.reference, FieldPath.of("responses", userId), FieldValue.delete())
+                }
+            }
+
+            batchOperations.chunked(500).forEach { chunk ->
+                val batch = firebaseFirestore.batch()
+                chunk.forEach { operation -> operation(batch) }
+                batch.commit().await()
+            }
+
+            logger.d(tag = "Firestore") {
+                "User $userId successfully left group $groupId and responses removed from ${eventsToUpdate.size} events"
+            }
+            true
         } catch (exception: Exception) {
             logger.e(tag = "Firestore", throwable = exception) { "Error leaving group: ${exception.message}" }
             false
