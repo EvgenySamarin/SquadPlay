@@ -38,11 +38,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.designSystem.compose.DSListItem
 import com.eysamarin.squadplay.designSystem.compose.DSListItemDefaults
 import com.eysamarin.squadplay.designSystem.compose.DSListItemLeadingType
@@ -253,10 +256,31 @@ private fun HomeScreenMediumLayout(
                         },
                         trailingIconPainter = if (item.isYourEvent) {
                             painterResource(R.drawable.ic_star_24)
-                        } else null,
+                        } else {
+                            when (item.userStatus) {
+                                EventResponseStatus.ACCEPTED -> painterResource(R.drawable.ic_check_circle_24)
+                                EventResponseStatus.REJECTED -> painterResource(R.drawable.ic_cancel_24)
+                                EventResponseStatus.NOT_SET -> painterResource(R.drawable.ic_help_24)
+                            }
+                        },
+                        trailingIconTint = if (item.isYourEvent) {
+                            null
+                        } else {
+                            when (item.userStatus) {
+                                EventResponseStatus.ACCEPTED -> Color(0xFF4CAF50)
+                                EventResponseStatus.REJECTED -> Color(0xFFF44336)
+                                EventResponseStatus.NOT_SET -> Color.Gray
+                            }
+                        },
                         trailingIconContentDescription = if (item.isYourEvent) {
                             stringResource(R.string.content_description_your_event)
-                        } else null,
+                        } else {
+                            when (item.userStatus) {
+                                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
+                                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
+                                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
+                            }
+                        },
                         onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
                         sizes = DSListItemDefaults.sizes(
                             maxHeight = 72.dp
@@ -325,10 +349,31 @@ private fun MainScreenExpandedLayout(
                         },
                         trailingIconPainter = if (item.isYourEvent) {
                             painterResource(R.drawable.ic_star_24)
-                        } else null,
+                        } else {
+                            when (item.userStatus) {
+                                EventResponseStatus.ACCEPTED -> painterResource(R.drawable.ic_check_circle_24)
+                                EventResponseStatus.REJECTED -> painterResource(R.drawable.ic_cancel_24)
+                                EventResponseStatus.NOT_SET -> painterResource(R.drawable.ic_help_24)
+                            }
+                        },
+                        trailingIconTint = if (item.isYourEvent) {
+                            null
+                        } else {
+                            when (item.userStatus) {
+                                EventResponseStatus.ACCEPTED -> Color(0xFF4CAF50)
+                                EventResponseStatus.REJECTED -> Color(0xFFF44336)
+                                EventResponseStatus.NOT_SET -> Color.Gray
+                            }
+                        },
                         trailingIconContentDescription = if (item.isYourEvent) {
                             stringResource(R.string.content_description_your_event)
-                        } else null,
+                        } else {
+                            when (item.userStatus) {
+                                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
+                                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
+                                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
+                            }
+                        },
                         onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
                         sizes = DSListItemDefaults.sizes(
                             imageWidth = 150.dp,

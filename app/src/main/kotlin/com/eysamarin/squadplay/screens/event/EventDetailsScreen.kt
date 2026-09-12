@@ -2,8 +2,10 @@ package com.eysamarin.squadplay.screens.event
 
 import android.app.Activity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,6 +41,9 @@ import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.screens.main.ConfirmationDialog
 import com.eysamarin.squadplay.ui.ImageTopBar
+import com.eysamarin.squadplay.designSystem.compose.ButtonState
+import com.eysamarin.squadplay.designSystem.compose.ButtonStyle
+import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -47,6 +52,8 @@ import com.eysamarin.squadplay.designSystem.compose.utils.TabletDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.TabletLightModePreview
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
 import com.eysamarin.squadplay.models.EventDetailsScreenUI
+import com.eysamarin.squadplay.models.EventResponseStatus
+import com.eysamarin.squadplay.models.PREVIEW_CREATOR_EVENT_DETAILS_SCREEN_UI
 import com.eysamarin.squadplay.models.PREVIEW_EVENT_DETAILS_SCREEN_UI
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
@@ -134,6 +141,27 @@ fun EventDetailsScreen(
                         style = adaptiveBodyByHeight(windowSize),
                         color = DesignSystemTheme.colorScheme.onSurface,
                     )
+                    if (!state.isYourEvent) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            DSButton(
+                                modifier = Modifier.weight(1f),
+                                text = stringResource(R.string.event_accept),
+                                variant = if (state.userStatus == EventResponseStatus.ACCEPTED) ButtonStyle.Filled else ButtonStyle.Outline,
+                                onTap = { onAction(EventDetailsScreenAction.OnAcceptTap) },
+                            )
+                            DSButton(
+                                modifier = Modifier.weight(1f),
+                                text = stringResource(R.string.event_reject),
+                                variant = if (state.userStatus == EventResponseStatus.REJECTED) ButtonStyle.Filled else ButtonStyle.Outline,
+                                state = if (state.userStatus == EventResponseStatus.REJECTED) ButtonState.Error else ButtonState.Default,
+                                onTap = { onAction(EventDetailsScreenAction.OnRejectTap) },
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -158,6 +186,18 @@ private fun EventDetailsScreenPhonePreview() {
     DesignSystemTheme {
         EventDetailsScreen(
             state = PREVIEW_EVENT_DETAILS_SCREEN_UI,
+            onAction = {}
+        )
+    }
+}
+
+@PhoneDarkModePreview
+@PhoneLightModePreview
+@Composable
+private fun EventDetailsScreenCreatorPhonePreview() {
+    DesignSystemTheme {
+        EventDetailsScreen(
+            state = PREVIEW_CREATOR_EVENT_DETAILS_SCREEN_UI,
             onAction = {}
         )
     }

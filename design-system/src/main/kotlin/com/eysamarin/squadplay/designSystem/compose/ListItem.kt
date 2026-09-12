@@ -107,6 +107,7 @@ fun DSListItem(
     leadingContentDescription: String? = null,
     trailingIconPainter: Painter? = null,
     trailingIconContentDescription: String? = null,
+    trailingIconTint: Color? = null,
     selected: Boolean = false,
     enabled: Boolean = true,
     colors: DSListItemColors = DSListItemDefaults.colors(),
@@ -225,7 +226,7 @@ fun DSListItem(
                                     painter = trailingIconPainter,
                                     contentDescription = trailingIconContentDescription,
                                     modifier = Modifier.size(24.dp),
-                                    tint = colors.contentColor.copy(alpha = contentAlpha)
+                                    tint = trailingIconTint ?: colors.contentColor.copy(alpha = contentAlpha)
                                 )
                             }
                         } else {
@@ -233,7 +234,7 @@ fun DSListItem(
                                 painter = trailingIconPainter,
                                 contentDescription = trailingIconContentDescription,
                                 modifier = Modifier.size(24.dp),
-                                tint = colors.contentColor.copy(alpha = contentAlpha)
+                                tint = trailingIconTint ?: colors.contentColor.copy(alpha = contentAlpha)
                             )
                         }
                     }

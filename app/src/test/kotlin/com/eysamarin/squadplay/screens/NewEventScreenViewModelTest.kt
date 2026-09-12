@@ -11,6 +11,7 @@ import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.UiState
@@ -125,6 +126,7 @@ class NewEventScreenViewModelTest {
         assertEquals("group-2", saved?.groupId)
         assertEquals("Dota 2 Tournament", saved?.title)
         assertEquals("user-1", saved?.creatorId)
+        assertEquals(mapOf("user-1" to "ACCEPTED"), saved?.responses)
         assertEquals(from, saved?.fromDateTime)
         assertEquals(to, saved?.toDateTime)
         assertEquals("https://example.com/icon.png", saved?.eventIconUrl)
@@ -268,6 +270,7 @@ class NewEventScreenViewModelTest {
         }
         override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = emptyFlow()
         override suspend fun deleteEvent(eventId: String): Boolean = true
+        override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) {}
     }
 
     private class FakeSnackbarProvider : SnackbarProvider {

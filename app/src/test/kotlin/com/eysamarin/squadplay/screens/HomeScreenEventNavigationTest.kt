@@ -14,6 +14,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
@@ -615,6 +616,7 @@ class HomeScreenEventNavigationTest {
             deletedEventId = eventId
             return true
         }
+        override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) {}
     }
 
     private class FakeSnackbarProvider : SnackbarProvider {

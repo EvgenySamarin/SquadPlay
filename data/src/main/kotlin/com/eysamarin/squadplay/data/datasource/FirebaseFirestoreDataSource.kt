@@ -4,9 +4,11 @@ import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.EVENTS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
+import com.eysamarin.squadplay.data.entity.EventEntity
 import com.eysamarin.squadplay.data.toLocalDateTime
 import com.eysamarin.squadplay.data.toTimestamp
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
@@ -40,6 +42,7 @@ interface FirebaseFirestoreDataSource {
     fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>>
     suspend fun subscribeToGroupTopic(groupId: String)
     suspend fun deleteEvent(eventId: String): Boolean
+    suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus)
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -75,13 +78,15 @@ class FirebaseFirestoreDataSourceImpl(
     override suspend fun saveEvent(event: Event): Boolean {
         logger.d(tag = "Firestore") { "saveEvent: ${event.uid}" }
 
+        val eventEntity = EventEntity.fromDomain(event)
         val eventDataMap = hashMapOf(
-            "creatorId" to event.creatorId,
-            "groupId" to event.groupId,
-            "title" to event.title,
-            "eventIconUrl" to event.eventIconUrl,
-            "dateFrom" to event.fromDateTime.toTimestamp(),
-            "dateTo" to event.toDateTime.toTimestamp(),
+            "creatorId" to eventEntity.creatorId,
+            "groupId" to eventEntity.groupId,
+            "title" to eventEntity.title,
+            "eventIconUrl" to eventEntity.eventIconUrl,
+            "dateFrom" to eventEntity.dateFrom,
+            "dateTo" to eventEntity.dateTo,
+            "responses" to eventEntity.responses,
         )
 
         val groupsDocumentRef = firebaseFirestore.collection(GROUPS_COLLECTION)
@@ -197,16 +202,24 @@ class FirebaseFirestoreDataSourceImpl(
                         return@mapNotNull null
                     }
                     val eventIconUrl = document.getString("eventIconUrl")
+                    val responses = (document.get("responses") as? Map<*, *>)
+                        ?.entries
+                        ?.mapNotNull { (k, v) ->
+                            val key = k as? String ?: return@mapNotNull null
+                            val value = v as? String ?: return@mapNotNull null
+                            key to value
+                        }?.toMap() ?: emptyMap()
 
-                    Event(
-                        uid = document.id,
+                    EventEntity(
+                        id = document.id,
                         creatorId = creatorId,
                         groupId = groupId,
                         title = title,
                         eventIconUrl = eventIconUrl,
-                        fromDateTime = dateFrom.toLocalDateTime(),
-                        toDateTime = dateTo.toLocalDateTime(),
-                    )
+                        dateFrom = com.google.firebase.Timestamp(dateFrom),
+                        dateTo = com.google.firebase.Timestamp(dateTo),
+                        responses = responses,
+                    ).toDomain()
                 }
                 trySend(events)
             }
@@ -215,6 +228,21 @@ class FirebaseFirestoreDataSourceImpl(
             logger.d(tag = "Firestore") { "Close getEventsFlow for groupIds: $groupIds" }
             listenerRegistration.remove()
         }
+    }
+
+    override suspend fun updateEventResponse(
+        eventId: String,
+        userId: String,
+        status: EventResponseStatus,
+    ) {
+        logger.d(tag = "Firestore") { "updateEventResponse: eventId=$eventId, userId=$userId, status=$status" }
+        val statusString = when (status) {
+            EventResponseStatus.ACCEPTED -> "ACCEPTED"
+            EventResponseStatus.REJECTED -> "REJECTED"
+            EventResponseStatus.NOT_SET -> null
+        }
+        val updates = mapOf("responses.$userId" to statusString)
+        firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId).update(updates).await()
     }
 
     override suspend fun deleteUserProfile(userId: String) {

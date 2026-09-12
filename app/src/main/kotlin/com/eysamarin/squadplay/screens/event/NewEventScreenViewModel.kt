@@ -11,6 +11,7 @@ import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.NewEventScreenAction
 import com.eysamarin.squadplay.models.NewEventScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -143,6 +144,7 @@ class NewEventScreenViewModel(
             eventIconUrl = eventIconUrl,
             fromDateTime = dateTimeFrom,
             toDateTime = dateTimeTo,
+            responses = mapOf(currentUser.uid to EventResponseStatus.ACCEPTED.name),
         )
         val isSuccess = eventProvider.saveEventData(eventData)
         if (isSuccess) {
