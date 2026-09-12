@@ -14,6 +14,7 @@ import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -563,10 +564,35 @@ class FirebaseFirestoreDataSourceImpl(
     override suspend fun deleteGroup(groupId: String): Boolean = try {
         logger.d(tag = "Firestore") { "Deleting group $groupId" }
         unsubscribeFromGroupTopic(groupId)
-        firebaseFirestore.collection(GROUPS_COLLECTION).document(groupId)
-            .delete()
+
+        val eventsSnapshot = firebaseFirestore.collection(EVENTS_COLLECTION)
+            .whereEqualTo("groupId", groupId)
+            .get()
             .await()
-        logger.d(tag = "Firestore") { "Group $groupId deleted successfully" }
+
+        val groupDocRef = firebaseFirestore.collection(GROUPS_COLLECTION).document(groupId)
+        val groupSnapshot = groupDocRef.get().await()
+        val eventIdsFromGroup = groupSnapshot["events"]?.let {
+            val anyList = it as? List<*>
+            anyList?.filterIsInstance<String>()
+        } ?: emptyList()
+
+        val eventDocRefs = mutableSetOf<DocumentReference>()
+        for (doc in eventsSnapshot.documents) {
+            eventDocRefs.add(doc.reference)
+        }
+        for (eventId in eventIdsFromGroup) {
+            eventDocRefs.add(firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId))
+        }
+
+        val allRefsToDelete = eventDocRefs + groupDocRef
+        allRefsToDelete.chunked(500).forEach { chunk ->
+            val batch = firebaseFirestore.batch()
+            chunk.forEach { ref -> batch.delete(ref) }
+            batch.commit().await()
+        }
+
+        logger.d(tag = "Firestore") { "Group $groupId and ${eventDocRefs.size} associated events deleted successfully" }
         true
     } catch (e: Exception) {
         logger.e(tag = "Firestore", throwable = e) { "Error deleting group $groupId: ${e.message}" }
