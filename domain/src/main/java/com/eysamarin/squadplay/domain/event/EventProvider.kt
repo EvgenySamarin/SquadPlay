@@ -2,12 +2,14 @@ package com.eysamarin.squadplay.domain.event
 
 import com.eysamarin.squadplay.contracts.EventRepository
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventResponseStatus
 import kotlinx.coroutines.flow.Flow
 
 interface EventProvider {
     suspend fun saveEventData(event: Event): Boolean
     fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>>
     suspend fun deleteEvent(eventId: String): Boolean
+    suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus)
 }
 
 class EventProviderImpl(
@@ -22,4 +24,7 @@ class EventProviderImpl(
 
     override suspend fun deleteEvent(eventId: String): Boolean = eventRepository
         .deleteEvent(eventId)
+
+    override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) = eventRepository
+        .updateEventResponse(eventId, userId, status)
 }

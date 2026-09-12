@@ -318,6 +318,7 @@ class HomeScreenViewModel(
                 date = dateText,
                 imageUrl = event.iconUrl,
                 isYourEvent = event.isYourEvent,
+                userStatus = event.userStatus,
             )
         )
     }
@@ -375,7 +376,8 @@ class HomeScreenViewModel(
                         toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
                     ),
                     iconUrl = event.eventIconUrl,
-                    isYourEvent = event.creatorId == currentUserId
+                    isYourEvent = event.creatorId == currentUserId,
+                    userStatus = event.getStatusForUser(currentUserId),
                 )
             } else {
                 null

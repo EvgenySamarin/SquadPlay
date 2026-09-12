@@ -13,6 +13,7 @@ import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.UiState
@@ -199,6 +200,7 @@ class LogoutLoadingTest {
         override suspend fun saveEventData(event: Event): Boolean = true
         override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = flowOf(emptyList())
         override suspend fun deleteEvent(eventId: String): Boolean = true
+        override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) {}
     }
 
     private class FakeSnackbarProvider : SnackbarProvider {

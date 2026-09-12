@@ -53,6 +53,13 @@ data class Date(
     }
 }
 
+@Serializable
+enum class EventResponseStatus {
+    ACCEPTED,
+    REJECTED,
+    NOT_SET,
+}
+
 data class Event(
     val uid: String,
     val creatorId: String,
@@ -61,7 +68,17 @@ data class Event(
     val eventIconUrl: String? = null,
     val fromDateTime: LocalDateTime,
     val toDateTime: LocalDateTime,
-)
+    val responses: Map<String, String> = emptyMap(),
+) {
+    fun getStatusForUser(userId: String): EventResponseStatus {
+        if (creatorId == userId) return EventResponseStatus.ACCEPTED
+        return when (responses[userId]) {
+            EventResponseStatus.ACCEPTED.name -> EventResponseStatus.ACCEPTED
+            EventResponseStatus.REJECTED.name -> EventResponseStatus.REJECTED
+            else -> EventResponseStatus.NOT_SET
+        }
+    }
+}
 
 data class EventUI(
     val eventId: String,
@@ -70,6 +87,7 @@ data class EventUI(
     val subtitle: String? = null,
     val iconUrl: String? = null,
     val isYourEvent: Boolean = false,
+    val userStatus: EventResponseStatus = EventResponseStatus.NOT_SET,
 )
 
 val PREVIEW_CALENDAR_UI = CalendarUI(
@@ -121,6 +139,7 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "from 12:00 to 14:00",
         isYourEvent = false,
+        userStatus = EventResponseStatus.ACCEPTED,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
@@ -128,6 +147,7 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "from 12:00 to 14:00",
         isYourEvent = false,
+        userStatus = EventResponseStatus.REJECTED,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
@@ -135,6 +155,7 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "from 12:00 to 14:00",
         isYourEvent = true,
+        userStatus = EventResponseStatus.NOT_SET,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
@@ -142,6 +163,7 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "from 12:00 to 14:00",
         isYourEvent = false,
+        userStatus = EventResponseStatus.NOT_SET,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
@@ -149,6 +171,7 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "from 12:00 to 14:00",
         isYourEvent = true,
+        userStatus = EventResponseStatus.NOT_SET,
     ),
 )
 

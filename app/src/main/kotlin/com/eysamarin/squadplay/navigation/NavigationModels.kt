@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.navigation
 
 import androidx.navigation.NavOptionsBuilder
 import com.eysamarin.squadplay.models.Date
+import com.eysamarin.squadplay.models.EventResponseStatus
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
@@ -77,6 +78,7 @@ sealed interface Destination {
         val date: String,
         val imageUrl: String? = null,
         val isYourEvent: Boolean = false,
+        val userStatus: EventResponseStatus = EventResponseStatus.NOT_SET,
     ) : Destination {
         companion object {
             const val SCREEN_NAME = "EventDetailsScreen"
