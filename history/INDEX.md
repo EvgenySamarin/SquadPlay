@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `navigation` | `sp-89-homegraph-deep-link-scope`  | `fix(navigation): scope deep link handling to HomeGraph and clear state on completion` | `unauth-deep-link-guard`                  | `none`     | `navigation/sp-89-homegraph-deep-link-scope/` |
 | `profile`    | `sp-89-leave-group-remove-event-responses` | `feat(profile): remove user responses from group events on leave group`             | `sp-89-cascade-delete-group-events`       | `none`     | `profile/sp-89-leave-group-remove-event-responses/` |
 | `profile`    | `sp-89-cascade-delete-group-events` | `feat(profile): delete all group events on group deletion`                          | `sp-89-group-management`                  | `none`     | `profile/sp-89-cascade-delete-group-events/` |
 | `profile`    | `sp-89-group-management`          | `feat(profile): allow managing user groups with edit, delete, and leave actions`    | `profile-groups-sections`                 | `none`     | `profile/sp-89-group-management/`        |
