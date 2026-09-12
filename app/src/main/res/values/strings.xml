@@ -18,7 +18,7 @@
 
     <!-- region auth screen -->
     <string name="auth_screen_title">SquadPlay</string>
-    <string name="cannot_sign_in">Cannot sign in, please login your google account first</string>
+    <string name="cannot_sign_in">Cannot sign in, please log in your Google account first</string>
     <string name="sign_in">Sign in</string>
     <string name="sign_up">Sign Up</string>
     <string name="sign_in_with_google">Sign in with Google</string>

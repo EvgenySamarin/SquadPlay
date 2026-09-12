@@ -45,6 +45,7 @@
     <string name="from_to_time_warning">Если время \'До\' меньше, чем время \'С\', событие будет учитывать следующий день</string>
     <string name="schedule_event">Запланировать событие</string>
     <string name="invite_new_friend">Пригласить приятеля</string>
+    <string name="select_group">Выберите группу</string>
     <!-- endregion -->
 
     <!-- region profile screen -->
