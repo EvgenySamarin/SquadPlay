@@ -15,4 +15,7 @@ interface ProfileRepository {
     suspend fun joinGroup(userId: String, groupId: String): Boolean
     suspend fun createNewUserGroup(userId: String, title: String): String
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
+    suspend fun renameGroup(groupId: String, newTitle: String): Boolean
+    suspend fun deleteGroup(groupId: String): Boolean
+    suspend fun leaveGroup(userId: String, groupId: String): Boolean
 }

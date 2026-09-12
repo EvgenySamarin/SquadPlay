@@ -59,4 +59,13 @@ class ProfileRepositoryImpl(
         .catch {
             logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get groups member info cause: ${it.message}" }
         }
+
+    override suspend fun renameGroup(groupId: String, newTitle: String): Boolean =
+        firestoreDataSource.renameGroup(groupId = groupId, newTitle = newTitle)
+
+    override suspend fun deleteGroup(groupId: String): Boolean =
+        firestoreDataSource.deleteGroup(groupId = groupId)
+
+    override suspend fun leaveGroup(userId: String, groupId: String): Boolean =
+        firestoreDataSource.leaveGroup(userId = userId, groupId = groupId)
 }

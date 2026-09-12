@@ -147,6 +147,58 @@ class ProfileScreenViewModel(
         navigator.navigate(Destination.SettingsScreen)
     }
 
+    fun onEditGroupTap(groupId: String) {
+        logger.d { "onEditGroupTap: groupId=$groupId" }
+        analyticsProvider.trackEvent(AnalyticsEvent.EditGroupClicked(groupId))
+    }
+
+    fun onDeleteGroupTap(groupId: String) {
+        logger.d { "onDeleteGroupTap: groupId=$groupId" }
+        analyticsProvider.trackEvent(AnalyticsEvent.DeleteGroupClicked(groupId))
+    }
+
+    fun onLeaveGroupTap(groupId: String) {
+        logger.d { "onLeaveGroupTap: groupId=$groupId" }
+        analyticsProvider.trackEvent(AnalyticsEvent.LeaveGroupClicked(groupId))
+    }
+
+    fun onConfirmEditGroup(groupId: String, newTitle: String) = viewModelScope.launch {
+        val trimmed = newTitle.trim()
+        val words = if (trimmed.isEmpty()) emptyList() else trimmed.split("\\s+".toRegex())
+        if (words.size != 1) return@launch
+
+        val isSuccess = profileProvider.renameGroup(groupId = groupId, newTitle = trimmed)
+        if (isSuccess) {
+            logger.d { "Group renamed successfully: $groupId to $trimmed" }
+            analyticsProvider.trackEvent(AnalyticsEvent.GroupRenamed(groupId))
+        } else {
+            logger.w { "Failed to rename group $groupId" }
+        }
+    }
+
+    fun onConfirmDeleteGroup(groupId: String) = viewModelScope.launch {
+        val isSuccess = profileProvider.deleteGroup(groupId = groupId)
+        if (isSuccess) {
+            logger.d { "Group deleted successfully: $groupId" }
+            analyticsProvider.trackEvent(AnalyticsEvent.GroupDeleted(groupId))
+        } else {
+            logger.w { "Failed to delete group $groupId" }
+        }
+    }
+
+    fun onConfirmLeaveGroup(groupId: String) = viewModelScope.launch {
+        val currentUiState = uiState.value
+        if (currentUiState !is UiState.Normal) return@launch
+        val userId = currentUiState.data.user.uid
+        val isSuccess = profileProvider.leaveGroup(userId = userId, groupId = groupId)
+        if (isSuccess) {
+            logger.d { "Group left successfully: $groupId for user $userId" }
+            analyticsProvider.trackEvent(AnalyticsEvent.GroupLeft(groupId))
+        } else {
+            logger.w { "Failed to leave group $groupId for user $userId" }
+        }
+    }
+
     fun onAction(action: ProfileScreenAction) {
         when (action) {
             ProfileScreenAction.OnBackButtonTap -> onBackButtonTap()
@@ -156,9 +208,12 @@ class ProfileScreenViewModel(
             is ProfileScreenAction.OnConfirmCreateGroup -> onConfirmCreateGroup(action.title)
             ProfileScreenAction.OnLogOutTap -> onLogOutTap()
             ProfileScreenAction.OnSettingsTap -> onSettingsTap()
-            is ProfileScreenAction.OnDeleteGroupTap -> TODO()
-            is ProfileScreenAction.OnEditGroupTap -> TODO()
-            is ProfileScreenAction.OnLeaveGroupTap -> TODO()
+            is ProfileScreenAction.OnDeleteGroupTap -> onDeleteGroupTap(action.groupId)
+            is ProfileScreenAction.OnEditGroupTap -> onEditGroupTap(action.groupId)
+            is ProfileScreenAction.OnLeaveGroupTap -> onLeaveGroupTap(action.groupId)
+            is ProfileScreenAction.OnConfirmEditGroup -> onConfirmEditGroup(action.groupId, action.newTitle)
+            is ProfileScreenAction.OnConfirmDeleteGroup -> onConfirmDeleteGroup(action.groupId)
+            is ProfileScreenAction.OnConfirmLeaveGroup -> onConfirmLeaveGroup(action.groupId)
         }
     }
 }

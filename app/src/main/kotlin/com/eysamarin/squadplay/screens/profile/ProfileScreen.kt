@@ -60,6 +60,7 @@ import com.eysamarin.squadplay.ui.EmptyContent
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
+import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
@@ -73,6 +74,10 @@ fun ProfileScreen(
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (ProfileScreenAction) -> Unit
 ) {
+    var editingGroup by remember { mutableStateOf<UserGroupSection?>(null) }
+    var deletingGroup by remember { mutableStateOf<UserGroupSection?>(null) }
+    var leavingGroup by remember { mutableStateOf<UserGroupSection?>(null) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -117,7 +122,21 @@ fun ProfileScreen(
                             WindowWidthSizeClass.Expanded,
                             WindowWidthSizeClass.Compact,
                             WindowWidthSizeClass.Medium -> ProfileScreenMediumLayout(
-                                state, windowSize, onAction
+                                state = state,
+                                windowSize = windowSize,
+                                onAction = onAction,
+                                onEditGroup = { section ->
+                                    onAction(ProfileScreenAction.OnEditGroupTap(section.groupId))
+                                    editingGroup = section
+                                },
+                                onDeleteGroup = { section ->
+                                    onAction(ProfileScreenAction.OnDeleteGroupTap(section.groupId))
+                                    deletingGroup = section
+                                },
+                                onLeaveGroup = { section ->
+                                    onAction(ProfileScreenAction.OnLeaveGroupTap(section.groupId))
+                                    leavingGroup = section
+                                },
                             )
                         }
                     }
@@ -132,6 +151,46 @@ fun ProfileScreen(
             windowSize = windowSize,
             onDismiss = { onAction(ProfileScreenAction.OnDismissCreateGroupBottomSheet) },
             onConfirm = { title -> onAction(ProfileScreenAction.OnConfirmCreateGroup(title)) },
+        )
+    }
+
+    editingGroup?.let { group ->
+        EditGroupBottomSheet(
+            initialTitle = group.title,
+            windowSize = windowSize,
+            onDismiss = { editingGroup = null },
+            onConfirm = { newTitle ->
+                editingGroup = null
+                onAction(ProfileScreenAction.OnConfirmEditGroup(group.groupId, newTitle))
+            },
+        )
+    }
+
+    deletingGroup?.let { group ->
+        ConfirmationBottomSheet(
+            windowSize = windowSize,
+            title = stringResource(R.string.delete_group_title),
+            message = stringResource(R.string.delete_group_message),
+            confirmButtonText = stringResource(R.string.delete),
+            onDismiss = { deletingGroup = null },
+            onConfirm = {
+                deletingGroup = null
+                onAction(ProfileScreenAction.OnConfirmDeleteGroup(group.groupId))
+            },
+        )
+    }
+
+    leavingGroup?.let { group ->
+        ConfirmationBottomSheet(
+            windowSize = windowSize,
+            title = stringResource(R.string.leave_group_title),
+            message = stringResource(R.string.leave_group_message),
+            confirmButtonText = stringResource(R.string.leave),
+            onDismiss = { leavingGroup = null },
+            onConfirm = {
+                leavingGroup = null
+                onAction(ProfileScreenAction.OnConfirmLeaveGroup(group.groupId))
+            },
         )
     }
 
@@ -157,6 +216,9 @@ private fun ProfileScreenMediumLayout(
     state: UiState<ProfileScreenUI>,
     windowSize: WindowSizeClass,
     onAction: (ProfileScreenAction) -> Unit,
+    onEditGroup: (UserGroupSection) -> Unit,
+    onDeleteGroup: (UserGroupSection) -> Unit,
+    onLeaveGroup: (UserGroupSection) -> Unit,
 ) {
     if (state !is UiState.Normal) return
 
@@ -218,8 +280,12 @@ private fun ProfileScreenMediumLayout(
 
         GroupsList(
             groupSections = state.data.groupSections,
+            currentUserId = state.data.user.uid,
             windowSize = windowSize,
             onAction = onAction,
+            onEditGroup = onEditGroup,
+            onDeleteGroup = onDeleteGroup,
+            onLeaveGroup = onLeaveGroup,
         )
     }
 }
@@ -227,8 +293,12 @@ private fun ProfileScreenMediumLayout(
 @Composable
 private fun GroupsList(
     groupSections: List<UserGroupSection>,
+    currentUserId: String,
     windowSize: WindowSizeClass,
     onAction: (ProfileScreenAction) -> Unit,
+    onEditGroup: (UserGroupSection) -> Unit,
+    onDeleteGroup: (UserGroupSection) -> Unit,
+    onLeaveGroup: (UserGroupSection) -> Unit,
 ) {
     if (groupSections.isEmpty()) {
         EmptyContent(windowSize, modifier = Modifier.fillMaxSize())
@@ -241,10 +311,13 @@ private fun GroupsList(
         groupSections.forEach { section ->
             item(key = section.groupId) {
                 GroupHeader(
-                    title = section.title,
-                    groupId = section.groupId,
+                    section = section,
+                    currentUserId = currentUserId,
                     windowSize = windowSize,
-                    onAction = onAction,
+                    onEditTap = { onEditGroup(section) },
+                    onShareTap = { onAction(ProfileScreenAction.OnCreateInviteLinkTap(section.groupId)) },
+                    onDeleteTap = { onDeleteGroup(section) },
+                    onLeaveTap = { onLeaveGroup(section) },
                 )
             }
             if (section.members.isEmpty()) {
@@ -278,11 +351,17 @@ private fun GroupsList(
 
 @Composable
 private fun GroupHeader(
-    title: String,
-    groupId: String,
+    section: UserGroupSection,
+    currentUserId: String,
     windowSize: WindowSizeClass,
-    onAction: (ProfileScreenAction) -> Unit,
+    onEditTap: () -> Unit,
+    onShareTap: () -> Unit,
+    onDeleteTap: () -> Unit,
+    onLeaveTap: () -> Unit,
 ) {
+    val isOwner = section.ownerId.isNullOrEmpty() || section.ownerId == currentUserId
+    val canLeave = !section.ownerId.isNullOrEmpty() && section.ownerId != currentUserId
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -290,7 +369,7 @@ private fun GroupHeader(
     ) {
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = title,
+            text = section.title,
             textAlign = TextAlign.Start,
             style = adaptiveHeadlineByHeight(windowSize),
             color = DesignSystemTheme.colorScheme.onSurface
@@ -300,36 +379,33 @@ private fun GroupHeader(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            DSButton(
-                iconPainter = painterResource(R.drawable.ic_edit_24),
-                variant = ButtonStyle.Text,
-                onTap = {
-                    onAction(ProfileScreenAction.OnEditGroupTap(groupId))
-                }
-            )
+            if (isOwner) {
+                DSButton(
+                    iconPainter = painterResource(R.drawable.ic_edit_24),
+                    variant = ButtonStyle.Text,
+                    onTap = onEditTap
+                )
+            }
             DSButton(
                 iconPainter = painterResource(R.drawable.ic_share_24),
                 variant = ButtonStyle.Text,
-                onTap = {
-                    onAction(ProfileScreenAction.OnCreateInviteLinkTap(groupId))
-                }
+                onTap = onShareTap
             )
-            DSButton(
-                iconPainter = painterResource(R.drawable.ic_delete_24),
-                variant = ButtonStyle.Text,
-                onTap = {
-                    onAction(ProfileScreenAction.OnDeleteGroupTap(groupId))
-                }
-            )
-            DSButton(
-                iconPainter = painterResource(R.drawable.ic_door_open_24),
-                variant = ButtonStyle.Text,
-                onTap = {
-                    onAction(ProfileScreenAction.OnLeaveGroupTap(groupId))
-                }
-            )
+            if (isOwner) {
+                DSButton(
+                    iconPainter = painterResource(R.drawable.ic_delete_24),
+                    variant = ButtonStyle.Text,
+                    onTap = onDeleteTap
+                )
+            }
+            if (canLeave) {
+                DSButton(
+                    iconPainter = painterResource(R.drawable.ic_door_open_24),
+                    variant = ButtonStyle.Text,
+                    onTap = onLeaveTap
+                )
+            }
         }
-
     }
 }
 
@@ -433,6 +509,122 @@ private fun CreateGroupBottomSheet(
                     }
                 }
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditGroupBottomSheet(
+    initialTitle: String,
+    windowSize: WindowSizeClass,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var groupTitle by rememberSaveable(initialTitle) { mutableStateOf(initialTitle) }
+    val trimmedTitle = groupTitle.trim()
+    val words = remember(trimmedTitle) {
+        if (trimmedTitle.isEmpty()) emptyList() else trimmedTitle.split("\\s+".toRegex())
+    }
+    val hasError = words.size > 1
+    val isButtonEnabled = words.size == 1
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = DesignSystemTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.edit_group_title),
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface,
+            )
+            OutlinedTextField(
+                value = groupTitle,
+                onValueChange = { groupTitle = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.group_title_label)) },
+                isError = hasError,
+                supportingText = {
+                    if (hasError) {
+                        Text(stringResource(R.string.error_single_word_title))
+                    }
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                    unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                )
+            )
+            DSButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.save),
+                enabled = isButtonEnabled,
+                onTap = {
+                    if (isButtonEnabled) {
+                        onConfirm(trimmedTitle)
+                    }
+                }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ConfirmationBottomSheet(
+    windowSize: WindowSizeClass,
+    title: String,
+    message: String,
+    confirmButtonText: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = DesignSystemTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = title,
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = message,
+                style = adaptiveBodyByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DSButton(
+                    modifier = Modifier.weight(1f),
+                    variant = ButtonStyle.Text,
+                    text = stringResource(R.string.no),
+                    onTap = onDismiss,
+                )
+                DSButton(
+                    modifier = Modifier.weight(1f),
+                    text = confirmButtonText,
+                    onTap = onConfirm,
+                )
+            }
         }
     }
 }

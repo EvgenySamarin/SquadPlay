@@ -20,6 +20,9 @@ interface ProfileProvider {
      */
     suspend fun createNewUserGroup(userId: String, title: String = "Friends"): String
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
+    suspend fun renameGroup(groupId: String, newTitle: String): Boolean
+    suspend fun deleteGroup(groupId: String): Boolean
+    suspend fun leaveGroup(userId: String, groupId: String): Boolean
 }
 
 class ProfileProviderImpl(
@@ -53,5 +56,17 @@ class ProfileProviderImpl(
 
     override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> {
         return profileRepository.getGroupsMembersInfoFlow(groups)
+    }
+
+    override suspend fun renameGroup(groupId: String, newTitle: String): Boolean {
+        return profileRepository.renameGroup(groupId = groupId, newTitle = newTitle)
+    }
+
+    override suspend fun deleteGroup(groupId: String): Boolean {
+        return profileRepository.deleteGroup(groupId = groupId)
+    }
+
+    override suspend fun leaveGroup(userId: String, groupId: String): Boolean {
+        return profileRepository.leaveGroup(userId = userId, groupId = groupId)
     }
 }
