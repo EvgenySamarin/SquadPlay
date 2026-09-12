@@ -7,7 +7,6 @@ import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
-import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.ProfileScreenAction
 import com.eysamarin.squadplay.models.ProfileScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -157,6 +156,9 @@ class ProfileScreenViewModel(
             is ProfileScreenAction.OnConfirmCreateGroup -> onConfirmCreateGroup(action.title)
             ProfileScreenAction.OnLogOutTap -> onLogOutTap()
             ProfileScreenAction.OnSettingsTap -> onSettingsTap()
+            is ProfileScreenAction.OnDeleteGroupTap -> TODO()
+            is ProfileScreenAction.OnEditGroupTap -> TODO()
+            is ProfileScreenAction.OnLeaveGroupTap -> TODO()
         }
     }
 }

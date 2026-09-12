@@ -8,6 +8,10 @@
 
     <string name="yes">Да</string>
     <string name="no">Нет</string>
+    <string name="delete">Удалить</string>
+    <string name="leave">Покинуть</string>
+    <string name="edit">Редактировать</string>
+    <string name="share">Поделиться</string>
 
     <string name="from">Стартуем</string>
     <string name="to">Расходимся</string>
@@ -49,7 +53,6 @@
     <!-- endregion -->
 
     <!-- region profile screen -->
-    <string name="share_invite_link">Пригласить</string>
     <string name="friends_list">Список друзей:</string>
     <string name="group">Группа: %s</string>
     <string name="no_groups_found">Группы не найдены</string>

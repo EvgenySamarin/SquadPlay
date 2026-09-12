@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
@@ -282,24 +283,53 @@ private fun GroupHeader(
     windowSize: WindowSizeClass,
     onAction: (ProfileScreenAction) -> Unit,
 ) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
+            modifier = Modifier.fillMaxWidth(),
             text = title,
+            textAlign = TextAlign.Start,
             style = adaptiveHeadlineByHeight(windowSize),
             color = DesignSystemTheme.colorScheme.onSurface
         )
-        DSButton(
-            iconPainter = painterResource(R.drawable.ic_share_24),
-            text = stringResource(R.string.share_invite_link),
-            variant = ButtonStyle.Text,
-            onTap = {
-                onAction(ProfileScreenAction.OnCreateInviteLinkTap(groupId))
-            }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            DSButton(
+                iconPainter = painterResource(R.drawable.ic_edit_24),
+                variant = ButtonStyle.Text,
+                onTap = {
+                    onAction(ProfileScreenAction.OnEditGroupTap(groupId))
+                }
+            )
+            DSButton(
+                iconPainter = painterResource(R.drawable.ic_share_24),
+                variant = ButtonStyle.Text,
+                onTap = {
+                    onAction(ProfileScreenAction.OnCreateInviteLinkTap(groupId))
+                }
+            )
+            DSButton(
+                iconPainter = painterResource(R.drawable.ic_delete_24),
+                variant = ButtonStyle.Text,
+                onTap = {
+                    onAction(ProfileScreenAction.OnDeleteGroupTap(groupId))
+                }
+            )
+            DSButton(
+                iconPainter = painterResource(R.drawable.ic_door_open_24),
+                variant = ButtonStyle.Text,
+                onTap = {
+                    onAction(ProfileScreenAction.OnLeaveGroupTap(groupId))
+                }
+            )
+        }
+
     }
 }
 

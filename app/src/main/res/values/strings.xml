@@ -10,6 +10,10 @@
 
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="delete">Delete</string>
+    <string name="leave">Leave</string>
+    <string name="edit">Edit</string>
+    <string name="share">Share</string>
 
     <string name="from">From</string>
     <string name="to">To</string>
@@ -51,7 +55,6 @@
     <!-- endregion -->
 
     <!-- region profile screen -->
-    <string name="share_invite_link">Share link</string>
     <string name="friends_list">Friends list:</string>
     <string name="group">Group: %s</string>
     <string name="no_groups_found">No groups found</string>
