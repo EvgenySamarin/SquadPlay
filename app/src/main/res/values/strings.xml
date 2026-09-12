@@ -79,6 +79,7 @@
     <string name="delete_event_dialog_message">Are you sure you want to delete this event?</string>
     <string name="event_accept">Accept</string>
     <string name="event_reject">Reject</string>
+    <string name="event_members_label">Members</string>
     <!-- endregion -->
 
     <!-- region content description -->

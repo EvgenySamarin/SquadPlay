@@ -79,6 +79,7 @@ sealed interface Destination {
         val imageUrl: String? = null,
         val isYourEvent: Boolean = false,
         val userStatus: EventResponseStatus = EventResponseStatus.NOT_SET,
+        val groupId: String = "",
     ) : Destination {
         companion object {
             const val SCREEN_NAME = "EventDetailsScreen"

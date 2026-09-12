@@ -311,6 +311,7 @@ class HomeScreenViewModel(
         } else {
             event.subtitle.orEmpty()
         }
+        val targetGroupId = event.groupId ?: matchingEvent?.groupId.orEmpty()
         navigator.navigate(
             Destination.EventDetailsScreen(
                 eventId = event.eventId,
@@ -319,6 +320,7 @@ class HomeScreenViewModel(
                 imageUrl = event.iconUrl,
                 isYourEvent = event.isYourEvent,
                 userStatus = event.userStatus,
+                groupId = targetGroupId,
             )
         )
     }
@@ -371,6 +373,7 @@ class HomeScreenViewModel(
                     eventId = event.uid,
                     title = event.title,
                     groupTitle = groupsById[event.groupId]?.title,
+                    groupId = event.groupId,
                     subtitle = stringProvider.fromToDate(
                         fromDate = formatTime(fromDate.hour, fromDate.minute),
                         toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
