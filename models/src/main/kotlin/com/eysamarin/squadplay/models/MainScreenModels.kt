@@ -84,6 +84,7 @@ data class EventUI(
     val eventId: String,
     val title: String,
     val groupTitle: String? = null,
+    val groupId: String? = null,
     val subtitle: String? = null,
     val iconUrl: String? = null,
     val isYourEvent: Boolean = false,

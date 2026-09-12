@@ -17,6 +17,7 @@ import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.EventUI
+import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.UiState
@@ -199,6 +200,7 @@ class EventAttendanceTest {
         assertEquals("event-other-accepted", dest.eventId)
         assertEquals(EventResponseStatus.ACCEPTED, dest.userStatus)
         assertFalse(dest.isYourEvent)
+        assertEquals("group-1", dest.groupId)
     }
 
     @Test
@@ -314,6 +316,85 @@ class EventAttendanceTest {
         assertEquals(null, fakeEventProvider.lastUpdatedResponseEventId)
     }
 
+    @Test
+    fun eventDetailsScreenViewModel_loadsGroupMembersWithAttendanceResponses() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val event = Event(
+            uid = "event-1",
+            creatorId = "user-creator",
+            groupId = "group-1",
+            title = "Apex Games",
+            fromDateTime = LocalDateTime(2026, 9, 12, 18, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 20, 0),
+            responses = mapOf(
+                "user-accepted" to "ACCEPTED",
+                "user-rejected" to "REJECTED",
+            ),
+        )
+        val fakeEventProvider = FakeEventProvider(events = listOf(event))
+        val group = Group(
+            uid = "group-1",
+            title = "Alpha Squad",
+            members = listOf("user-creator", "user-accepted", "user-rejected", "user-not-set"),
+        )
+        val members = listOf(
+            Friend(uid = "user-creator", username = "CreatorUser", groupTitleFrom = "Alpha Squad", photoUrl = null),
+            Friend(uid = "user-accepted", username = "AcceptedUser", groupTitleFrom = "Alpha Squad", photoUrl = "https://photo.url"),
+            Friend(uid = "user-rejected", username = "RejectedUser", groupTitleFrom = "Alpha Squad", photoUrl = null),
+            Friend(uid = "user-not-set", username = "NotSetUser", groupTitleFrom = "Alpha Squad", photoUrl = null),
+        )
+        val fakeProfileProvider = FakeProfileProvider(
+            user = User(uid = "user-accepted", username = "AcceptedUser", email = "accepted@test.com", photoUrl = null, groups = listOf(group)),
+            groupInfo = group,
+            groupSections = listOf(UserGroupSection(groupId = "group-1", title = "Alpha Squad", members = members)),
+        )
+
+        val viewModel = EventDetailsScreenViewModel(
+            navigator = fakeNavigator,
+            eventProvider = fakeEventProvider,
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.initData(
+            Destination.EventDetailsScreen(
+                eventId = "event-1",
+                title = "Apex Games",
+                date = "18:00 - 20:00",
+                imageUrl = null,
+                isYourEvent = false,
+                userStatus = EventResponseStatus.ACCEPTED,
+                groupId = "group-1",
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals("group-1", uiState.groupId)
+        assertEquals(4, uiState.members.size)
+
+        val creatorMember = uiState.members.first { it.uid == "user-creator" }
+        assertEquals(EventResponseStatus.ACCEPTED, creatorMember.status)
+        assertEquals("CreatorUser", creatorMember.username)
+
+        val acceptedMember = uiState.members.first { it.uid == "user-accepted" }
+        assertEquals(EventResponseStatus.ACCEPTED, acceptedMember.status)
+
+        val rejectedMember = uiState.members.first { it.uid == "user-rejected" }
+        assertEquals(EventResponseStatus.REJECTED, rejectedMember.status)
+
+        val notSetMember = uiState.members.first { it.uid == "user-not-set" }
+        assertEquals(EventResponseStatus.NOT_SET, notSetMember.status)
+
+        // Tapping reject as user-accepted updates optimistic status in members list
+        viewModel.onAction(EventDetailsScreenAction.OnRejectTap)
+        assertEquals(EventResponseStatus.REJECTED, viewModel.uiState.value.userStatus)
+        val updatedAcceptedMember = viewModel.uiState.value.members.first { it.uid == "user-accepted" }
+        assertEquals(EventResponseStatus.REJECTED, updatedAcceptedMember.status)
+    }
+
     private class FakeNavigator : Navigator {
         val navigatedDestinations = mutableListOf<Destination>()
         var navigateUpCalls = 0
@@ -338,13 +419,15 @@ class EventAttendanceTest {
 
     private class FakeProfileProvider(
         var user: User? = User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList()),
+        var groupInfo: Group? = null,
+        var groupSections: List<UserGroupSection> = emptyList(),
     ) : ProfileProvider {
         override fun getUserInfoFlow(): Flow<User?> = flowOf(user)
         override fun createNewInviteLink(inviteGroupId: String): String = ""
         override suspend fun joinGroup(userId: String, groupId: String): Boolean = true
-        override suspend fun getGroupInfo(groupId: String): Group? = null
+        override suspend fun getGroupInfo(groupId: String): Group? = groupInfo
         override suspend fun createNewUserGroup(userId: String, title: String): String = ""
-        override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> = flowOf(emptyList())
+        override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> = flowOf(groupSections)
     }
 
     private class FakeCalendarUIProvider(

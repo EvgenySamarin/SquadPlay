@@ -50,11 +50,18 @@ import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PreviewUtils.WINDOWS_SIZE_MEDIUM
 import com.eysamarin.squadplay.designSystem.compose.utils.TabletDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.TabletLightModePreview
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.clip
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
 import com.eysamarin.squadplay.models.EventDetailsScreenUI
+import com.eysamarin.squadplay.models.EventMemberUI
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.PREVIEW_CREATOR_EVENT_DETAILS_SCREEN_UI
 import com.eysamarin.squadplay.models.PREVIEW_EVENT_DETAILS_SCREEN_UI
+import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
+import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.adaptiveBodyByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
@@ -121,44 +128,74 @@ fun EventDetailsScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp),
                 contentAlignment = if (isExpanded) Alignment.TopCenter else Alignment.TopStart,
             ) {
-                Column(
+                LazyColumn(
                     modifier = if (isExpanded) Modifier.fillMaxWidth(0.6f) else Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = state.title,
-                        style = adaptiveHeadlineByHeight(windowSize),
-                        color = DesignSystemTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.event_details_date_label),
-                        style = adaptiveTitleByHeight(windowSize),
-                        color = DesignSystemTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = state.date,
-                        style = adaptiveBodyByHeight(windowSize),
-                        color = DesignSystemTheme.colorScheme.onSurface,
-                    )
-                    if (!state.isYourEvent) {
+                    item {
+                        Text(
+                            text = state.title,
+                            style = adaptiveHeadlineByHeight(windowSize),
+                            color = DesignSystemTheme.colorScheme.onSurface,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.event_details_date_label),
+                            style = adaptiveTitleByHeight(windowSize),
+                            color = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = state.date,
+                            style = adaptiveBodyByHeight(windowSize),
+                            color = DesignSystemTheme.colorScheme.onSurface,
+                        )
+                        if (!state.isYourEvent) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                DSButton(
+                                    modifier = Modifier.weight(1f),
+                                    text = stringResource(R.string.event_accept),
+                                    variant = if (state.userStatus == EventResponseStatus.ACCEPTED) ButtonStyle.Filled else ButtonStyle.Outline,
+                                    onTap = { onAction(EventDetailsScreenAction.OnAcceptTap) },
+                                )
+                                DSButton(
+                                    modifier = Modifier.weight(1f),
+                                    text = stringResource(R.string.event_reject),
+                                    variant = if (state.userStatus == EventResponseStatus.REJECTED) ButtonStyle.Filled else ButtonStyle.Outline,
+                                    state = if (state.userStatus == EventResponseStatus.REJECTED) ButtonState.Error else ButtonState.Default,
+                                    onTap = { onAction(EventDetailsScreenAction.OnRejectTap) },
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(24.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            DSButton(
-                                modifier = Modifier.weight(1f),
-                                text = stringResource(R.string.event_accept),
-                                variant = if (state.userStatus == EventResponseStatus.ACCEPTED) ButtonStyle.Filled else ButtonStyle.Outline,
-                                onTap = { onAction(EventDetailsScreenAction.OnAcceptTap) },
+                        Text(
+                            text = stringResource(R.string.event_members_label),
+                            style = adaptiveTitleByHeight(windowSize),
+                            color = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    if (state.members.isEmpty()) {
+                        item(key = "empty_members") {
+                            Text(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                text = stringResource(R.string.no_group_members),
+                                style = adaptiveBodyByHeight(windowSize),
+                                color = DesignSystemTheme.colorScheme.onSurfaceVariant,
                             )
-                            DSButton(
-                                modifier = Modifier.weight(1f),
-                                text = stringResource(R.string.event_reject),
-                                variant = if (state.userStatus == EventResponseStatus.REJECTED) ButtonStyle.Filled else ButtonStyle.Outline,
-                                state = if (state.userStatus == EventResponseStatus.REJECTED) ButtonState.Error else ButtonState.Default,
-                                onTap = { onAction(EventDetailsScreenAction.OnRejectTap) },
+                        }
+                    } else {
+                        items(
+                            items = state.members,
+                            key = { member -> member.uid }
+                        ) { member ->
+                            EventMemberRow(
+                                member = member,
+                                windowSize = windowSize,
                             )
                         }
                     }
@@ -175,6 +212,68 @@ fun EventDetailsScreen(
             onConfirmTap = { onAction(EventDetailsScreenAction.OnConfirmDeleteTap) },
             onDismiss = { onAction(EventDetailsScreenAction.OnDismissDeleteDialog) },
         )
+    }
+}
+
+@Composable
+private fun EventMemberRow(
+    member: EventMemberUI,
+    windowSize: WindowSizeClass,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            modifier = Modifier.size(24.dp),
+            painter = when (member.status) {
+                EventResponseStatus.ACCEPTED -> painterResource(R.drawable.ic_check_circle_24)
+                EventResponseStatus.REJECTED -> painterResource(R.drawable.ic_cancel_24)
+                EventResponseStatus.NOT_SET -> painterResource(R.drawable.ic_help_24)
+            },
+            contentDescription = when (member.status) {
+                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
+                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
+                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
+            },
+            tint = when (member.status) {
+                EventResponseStatus.ACCEPTED -> DesignSystemTheme.extendedColors.green
+                EventResponseStatus.REJECTED -> DesignSystemTheme.extendedColors.red
+                EventResponseStatus.NOT_SET -> Color.Gray
+            },
+        )
+
+        if (!member.photoUrl.isNullOrBlank()) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                model = member.photoUrl,
+                contentDescription = null,
+            )
+        } else {
+            Icon(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
+                painter = painterResource(R.drawable.default_avatar),
+                contentDescription = null,
+                tint = Color.Unspecified,
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = member.username,
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface,
+            )
+        }
     }
 }
 

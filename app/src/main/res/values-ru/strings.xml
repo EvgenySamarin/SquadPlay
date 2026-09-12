@@ -75,6 +75,9 @@
     <string name="event_details_date_label">Дата и время</string>
     <string name="delete_event_dialog_title">Удалить событие</string>
     <string name="delete_event_dialog_message">Вы уверены, что хотите удалить это событие?</string>
+    <string name="event_accept">Принять</string>
+    <string name="event_reject">Отклонить</string>
+    <string name="event_members_label">Участники</string>
     <!-- endregion -->
 
     <!-- region content description -->
@@ -86,5 +89,8 @@
     <string name="content_description_create_new_group">Создать новую группу</string>
     <string name="content_description_delete">Удалить</string>
     <string name="content_description_your_event">Ваше событие</string>
+    <string name="content_description_status_accepted">Принято</string>
+    <string name="content_description_status_rejected">Отклонено</string>
+    <string name="content_description_status_not_set">Ответ не дан</string>
     <!-- endregion -->
 </resources>
