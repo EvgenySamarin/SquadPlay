@@ -2,6 +2,7 @@
 
 | Domain       | Feature / Task                    | Target Commit Title                                                                 | Parent                                    | Deprecates | Path                                     |
 |:-------------|:----------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------|:-----------|:-----------------------------------------|
+| `profile`    | `sp-89-cascade-delete-group-events` | `feat(profile): delete all group events on group deletion`                          | `sp-89-group-management`                  | `none`     | `profile/sp-89-cascade-delete-group-events/` |
 | `profile`    | `sp-89-group-management`          | `feat(profile): allow managing user groups with edit, delete, and leave actions`    | `profile-groups-sections`                 | `none`     | `profile/sp-89-group-management/`        |
 | `event`      | `event-details-group-members`     | `feat(event): display group members and attendance responses on event details screen` | `event-accept-reject`                     | `none`     | `event/event-details-group-members/`     |
 | `event`      | `event-accept-reject`             | `feat(event): support event accept and reject attendance status`                    | `new-event-group-selector`                | `none`     | `event/event-accept-reject/`             |
