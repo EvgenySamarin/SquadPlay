@@ -61,6 +61,12 @@
     <string name="create_new_group_title">Создать новую группу</string>
     <string name="group_title_label">Название группы</string>
     <string name="error_single_word_title">Название должно состоять из одного слова</string>
+    <string name="edit_group_title">Редактировать группу</string>
+    <string name="save">Сохранить</string>
+    <string name="delete_group_title">Удалить группу</string>
+    <string name="delete_group_message">Вы уверены, что хотите удалить эту группу?</string>
+    <string name="leave_group_title">Покинуть группу</string>
+    <string name="leave_group_message">Вы уверены, что хотите покинуть эту группу?</string>
     <!-- endregion -->
 
     <!-- region Settings screen -->
@@ -95,5 +101,8 @@
     <string name="content_description_status_accepted">Принято</string>
     <string name="content_description_status_rejected">Отклонено</string>
     <string name="content_description_status_not_set">Ответ не дан</string>
+    <string name="content_description_edit_group">Редактировать группу</string>
+    <string name="content_description_leave_group">Покинуть группу</string>
+    <string name="content_description_share_invite">Поделиться ссылкой</string>
     <!-- endregion -->
 </resources>

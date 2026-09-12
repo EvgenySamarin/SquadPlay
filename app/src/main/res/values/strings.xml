@@ -63,6 +63,12 @@
     <string name="create_new_group_title">Create new group</string>
     <string name="group_title_label">Group title</string>
     <string name="error_single_word_title">Title must contain only one word</string>
+    <string name="edit_group_title">Edit group</string>
+    <string name="save">Save</string>
+    <string name="delete_group_title">Delete group</string>
+    <string name="delete_group_message">Are you sure you want to delete this group?</string>
+    <string name="leave_group_title">Leave group</string>
+    <string name="leave_group_message">Are you sure you want to leave this group?</string>
     <!-- endregion -->
 
     <!-- region Settings screen -->
@@ -97,5 +103,8 @@
     <string name="content_description_status_accepted">Accepted</string>
     <string name="content_description_status_rejected">Rejected</string>
     <string name="content_description_status_not_set">Response not set</string>
+    <string name="content_description_edit_group">Edit group</string>
+    <string name="content_description_leave_group">Leave group</string>
+    <string name="content_description_share_invite">Share invite link</string>
     <!-- endregion -->
 </resources>

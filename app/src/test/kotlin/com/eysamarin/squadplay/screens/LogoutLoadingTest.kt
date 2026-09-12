@@ -182,6 +182,9 @@ class LogoutLoadingTest {
         override suspend fun getGroupInfo(groupId: String): Group? = null
         override suspend fun createNewUserGroup(userId: String, title: String): String = ""
         override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> = flowOf(emptyList())
+        override suspend fun renameGroup(groupId: String, newTitle: String): Boolean = true
+        override suspend fun deleteGroup(groupId: String): Boolean = true
+        override suspend fun leaveGroup(userId: String, groupId: String): Boolean = true
     }
 
     private class FakeCalendarUIProvider : CalendarUIProvider {

@@ -8,6 +8,9 @@ sealed interface ProfileScreenAction {
     data class OnLeaveGroupTap(val groupId: String) : ProfileScreenAction
     data class OnDeleteGroupTap(val groupId: String) : ProfileScreenAction
     data class OnEditGroupTap(val groupId: String) : ProfileScreenAction
+    data class OnConfirmEditGroup(val groupId: String, val newTitle: String) : ProfileScreenAction
+    data class OnConfirmDeleteGroup(val groupId: String) : ProfileScreenAction
+    data class OnConfirmLeaveGroup(val groupId: String) : ProfileScreenAction
     object OnLogOutTap : ProfileScreenAction
     object OnSettingsTap : ProfileScreenAction
     object OnCreateNewGroupTap : ProfileScreenAction
@@ -65,12 +68,14 @@ val PREVIEW_GROUP_SECTIONS = listOf(
     UserGroupSection(
         groupId = UUID.randomUUID().toString(),
         title = "Friends",
-        members = PREVIEW_FRIENDS_GROUP_1
+        members = PREVIEW_FRIENDS_GROUP_1,
+        ownerId = PREVIEW_USER.uid,
     ),
     UserGroupSection(
         groupId = UUID.randomUUID().toString(),
         title = "Squad Gamers",
-        members = PREVIEW_FRIENDS_GROUP_2
+        members = PREVIEW_FRIENDS_GROUP_2,
+        ownerId = UUID.randomUUID().toString(),
     )
 )
 

@@ -41,8 +41,12 @@ interface FirebaseFirestoreDataSource {
     suspend fun saveEvent(event: Event): Boolean
     fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>>
     suspend fun subscribeToGroupTopic(groupId: String)
+    suspend fun unsubscribeFromGroupTopic(groupId: String)
     suspend fun deleteEvent(eventId: String): Boolean
     suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus)
+    suspend fun renameGroup(groupId: String, newTitle: String): Boolean
+    suspend fun deleteGroup(groupId: String): Boolean
+    suspend fun leaveGroup(userId: String, groupId: String): Boolean
 
     companion object {
         const val USERS_COLLECTION = "users"
@@ -66,7 +70,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
     }
 
-    private suspend fun unsubscribeFromGroupTopic(groupId: String) {
+    override suspend fun unsubscribeFromGroupTopic(groupId: String) {
         try {
             firebaseMessaging.unsubscribeFromTopic(groupId).await()
             logger.d(tag = "FCM") { "Unsubscribed from topic: $groupId" }
@@ -379,7 +383,8 @@ class FirebaseFirestoreDataSourceImpl(
                         members = document["members"]?.let {
                             val anyList = it as? List<*>
                             anyList?.filterIsInstance<String>()
-                        } ?: emptyList()
+                        } ?: emptyList(),
+                        ownerId = document.getString("ownerId")
                     )
                 }
                 trySend(groups)
@@ -409,7 +414,8 @@ class FirebaseFirestoreDataSourceImpl(
                 UserGroupSection(
                     groupId = group.uid,
                     title = group.title,
-                    members = emptyList()
+                    members = emptyList(),
+                    ownerId = group.ownerId,
                 )
             }
             trySend(emptySections)
@@ -432,7 +438,8 @@ class FirebaseFirestoreDataSourceImpl(
                     UserGroupSection(
                         groupId = group.uid,
                         title = group.title,
-                        members = emptyList()
+                        members = emptyList(),
+                        ownerId = group.ownerId,
                     )
                 }
                 trySend(emptySections)
@@ -459,7 +466,8 @@ class FirebaseFirestoreDataSourceImpl(
                             photoUrl = memberData.second,
                             groupTitleFrom = group.title,
                         )
-                    }
+                    },
+                    ownerId = group.ownerId,
                 )
             }
 
@@ -478,6 +486,7 @@ class FirebaseFirestoreDataSourceImpl(
         val groupDataMap = hashMapOf(
             "members" to listOf(userId),
             "title" to title,
+            "ownerId" to userId,
         )
 
         firebaseFirestore.collection(GROUPS_COLLECTION).document(newGroupUid)
@@ -510,7 +519,8 @@ class FirebaseFirestoreDataSourceImpl(
         return@withContext Group(
             uid = groupId,
             title = groupDocumentSnapshot.getString("title") ?: "",
-            members = members
+            members = members,
+            ownerId = groupDocumentSnapshot.getString("ownerId")
         )
     }
 
@@ -534,6 +544,56 @@ class FirebaseFirestoreDataSourceImpl(
             }.await()
         } catch (exception: Exception) {
             logger.e(tag = "Firestore", throwable = exception) { "Error joining group: ${exception.message}" }
+            false
+        }
+    }
+
+    override suspend fun renameGroup(groupId: String, newTitle: String): Boolean = try {
+        logger.d(tag = "Firestore") { "Renaming group $groupId to $newTitle" }
+        firebaseFirestore.collection(GROUPS_COLLECTION).document(groupId)
+            .update("title", newTitle)
+            .await()
+        logger.d(tag = "Firestore") { "Group $groupId renamed successfully to $newTitle" }
+        true
+    } catch (e: Exception) {
+        logger.e(tag = "Firestore", throwable = e) { "Error renaming group $groupId: ${e.message}" }
+        false
+    }
+
+    override suspend fun deleteGroup(groupId: String): Boolean = try {
+        logger.d(tag = "Firestore") { "Deleting group $groupId" }
+        unsubscribeFromGroupTopic(groupId)
+        firebaseFirestore.collection(GROUPS_COLLECTION).document(groupId)
+            .delete()
+            .await()
+        logger.d(tag = "Firestore") { "Group $groupId deleted successfully" }
+        true
+    } catch (e: Exception) {
+        logger.e(tag = "Firestore", throwable = e) { "Error deleting group $groupId: ${e.message}" }
+        false
+    }
+
+    override suspend fun leaveGroup(userId: String, groupId: String): Boolean {
+        val groupRef = firebaseFirestore.collection(GROUPS_COLLECTION).document(groupId)
+
+        return try {
+            unsubscribeFromGroupTopic(groupId)
+            firebaseFirestore.runTransaction { transaction ->
+                val groupDocumentSnapshot = transaction.get(groupRef)
+                if (!groupDocumentSnapshot.exists()) {
+                    logger.e(tag = "Firestore") { "Group with id: $groupId not found" }
+                    return@runTransaction false
+                }
+                val members = groupDocumentSnapshot["members"]?.let {
+                    val anyList = it as? List<*>
+                    anyList?.filterIsInstance<String>()
+                } ?: emptyList()
+
+                transaction.update(groupRef, mapOf("members" to members.minus(userId)))
+                true
+            }.await()
+        } catch (exception: Exception) {
+            logger.e(tag = "Firestore", throwable = exception) { "Error leaving group: ${exception.message}" }
             false
         }
     }

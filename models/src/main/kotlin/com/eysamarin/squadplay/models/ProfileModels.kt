@@ -15,6 +15,7 @@ data class Group(
     val uid: String,
     val title: String,
     val members: List<String>,
+    val ownerId: String? = null,
 )
 
 data class Friend(
@@ -28,4 +29,5 @@ data class UserGroupSection(
     val groupId: String,
     val title: String,
     val members: List<Friend>,
+    val ownerId: String? = null,
 )

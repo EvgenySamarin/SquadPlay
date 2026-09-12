@@ -240,6 +240,117 @@ class ProfileScreenViewModelTest {
         assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.GroupCreated("new-group-id")))
     }
 
+    @Test
+    fun onEditGroupTap_tracksEditGroupClickedAnalyticsEvent() = runTest(testDispatcher) {
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(analyticsProvider = fakeAnalyticsProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnEditGroupTap("group-1"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.EditGroupClicked("group-1")))
+    }
+
+    @Test
+    fun onConfirmEditGroup_renamesGroup_andTracksGroupRenamedAnalyticsEvent() = runTest(testDispatcher) {
+        val fakeProfileProvider = FakeProfileProvider()
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = fakeAnalyticsProvider,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmEditGroup("group-1", "Titans"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeProfileProvider.renameGroupCalls)
+        assertEquals("group-1", fakeProfileProvider.lastRenamedGroupId)
+        assertEquals("Titans", fakeProfileProvider.lastRenamedGroupTitle)
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.GroupRenamed("group-1")))
+    }
+
+    @Test
+    fun onConfirmEditGroup_ignoresMultipleWords() = runTest(testDispatcher) {
+        val fakeProfileProvider = FakeProfileProvider()
+        val viewModel = createViewModel(profileProvider = fakeProfileProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmEditGroup("group-1", "Multiple Words Here"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(0, fakeProfileProvider.renameGroupCalls)
+    }
+
+    @Test
+    fun onDeleteGroupTap_tracksDeleteGroupClickedAnalyticsEvent() = runTest(testDispatcher) {
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(analyticsProvider = fakeAnalyticsProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnDeleteGroupTap("group-1"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.DeleteGroupClicked("group-1")))
+    }
+
+    @Test
+    fun onConfirmDeleteGroup_deletesGroup_andTracksGroupDeletedAnalyticsEvent() = runTest(testDispatcher) {
+        val fakeProfileProvider = FakeProfileProvider()
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = fakeAnalyticsProvider,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmDeleteGroup("group-1"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeProfileProvider.deleteGroupCalls)
+        assertEquals("group-1", fakeProfileProvider.lastDeletedGroupId)
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.GroupDeleted("group-1")))
+    }
+
+    @Test
+    fun onLeaveGroupTap_tracksLeaveGroupClickedAnalyticsEvent() = runTest(testDispatcher) {
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(analyticsProvider = fakeAnalyticsProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnLeaveGroupTap("group-1"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.LeaveGroupClicked("group-1")))
+    }
+
+    @Test
+    fun onConfirmLeaveGroup_leavesGroup_andTracksGroupLeftAnalyticsEvent() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-123",
+            username = "Member",
+            email = "member@test.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val fakeProfileProvider = FakeProfileProvider(userInfo = user)
+        val fakeAnalyticsProvider = FakeAnalyticsProvider()
+        val viewModel = createViewModel(
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = fakeAnalyticsProvider,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmLeaveGroup("group-1"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeProfileProvider.leaveGroupCalls)
+        assertEquals("user-123", fakeProfileProvider.lastLeaveGroupUserId)
+        assertEquals("group-1", fakeProfileProvider.lastLeaveGroupId)
+        assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.GroupLeft("group-1")))
+    }
+
     private fun createViewModel(
         profileProvider: ProfileProvider = FakeProfileProvider(),
         navigator: Navigator = FakeNavigator(),
@@ -262,6 +373,14 @@ class ProfileScreenViewModelTest {
         var lastCreatedGroupUserId: String? = null
         var lastCreatedGroupTitle: String? = null
         var lastInviteGroupId: String? = null
+        var renameGroupCalls = 0
+        var lastRenamedGroupId: String? = null
+        var lastRenamedGroupTitle: String? = null
+        var deleteGroupCalls = 0
+        var lastDeletedGroupId: String? = null
+        var leaveGroupCalls = 0
+        var lastLeaveGroupUserId: String? = null
+        var lastLeaveGroupId: String? = null
 
         override fun getUserInfoFlow(): Flow<User?> = flowOf(userInfo)
 
@@ -281,6 +400,26 @@ class ProfileScreenViewModelTest {
         }
 
         override fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>> = flowOf(sections)
+
+        override suspend fun renameGroup(groupId: String, newTitle: String): Boolean {
+            renameGroupCalls++
+            lastRenamedGroupId = groupId
+            lastRenamedGroupTitle = newTitle
+            return true
+        }
+
+        override suspend fun deleteGroup(groupId: String): Boolean {
+            deleteGroupCalls++
+            lastDeletedGroupId = groupId
+            return true
+        }
+
+        override suspend fun leaveGroup(userId: String, groupId: String): Boolean {
+            leaveGroupCalls++
+            lastLeaveGroupUserId = userId
+            lastLeaveGroupId = groupId
+            return true
+        }
     }
 
     private class FakeNavigator : Navigator {

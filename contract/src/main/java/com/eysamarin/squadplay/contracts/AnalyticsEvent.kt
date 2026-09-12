@@ -11,6 +11,36 @@ sealed interface AnalyticsEvent {
         override val params: Map<String, Any?> = mapOf("group_id" to groupId)
     }
 
+    data class EditGroupClicked(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "edit_group_clicked"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
+    data class GroupRenamed(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "group_renamed"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
+    data class DeleteGroupClicked(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "delete_group_clicked"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
+    data class GroupDeleted(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "group_deleted"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
+    data class LeaveGroupClicked(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "leave_group_clicked"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
+    data class GroupLeft(val groupId: String) : AnalyticsEvent {
+        override val eventName: String = "group_left"
+        override val params: Map<String, Any?> = mapOf("group_id" to groupId)
+    }
+
     data class JoinGroup(val groupId: String) : AnalyticsEvent {
         override val eventName: String = "join_group"
         override val params: Map<String, Any?> = mapOf("group_id" to groupId)
