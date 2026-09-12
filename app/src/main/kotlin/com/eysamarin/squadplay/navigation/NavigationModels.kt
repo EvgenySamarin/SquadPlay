@@ -37,10 +37,8 @@ sealed interface Destination {
     data object HomeGraph: Destination
 
     @Serializable
-    data class HomeScreen(val inviteGroupID: String? = null): Destination {
-        companion object {
-            const val SCREEN_NAME = "HomeScreen"
-        }
+    data object HomeScreen : Destination {
+        const val SCREEN_NAME = "HomeScreen"
         override val screenName: String get() = SCREEN_NAME
     }
 

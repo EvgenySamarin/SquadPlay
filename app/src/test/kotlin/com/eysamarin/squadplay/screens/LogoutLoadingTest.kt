@@ -144,7 +144,6 @@ class LogoutLoadingTest {
             snackbar = FakeSnackbarProvider(),
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
-            deepLinkManager = com.eysamarin.squadplay.navigation.DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
             logger = FakeAppLogger(),
         )

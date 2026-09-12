@@ -22,15 +22,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.eysamarin.squadplay.screens.main.ConfirmationDialog
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
@@ -103,6 +105,17 @@ fun SquadPlayNavigation(
         }
     }
 
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val homeGraphEntry = remember(currentBackStackEntry) {
+        runCatching { navController.getBackStackEntry<Destination.HomeGraph>() }.getOrNull()
+    }
+    if (homeGraphEntry != null) {
+        HomeGraphDeepLinkHandler(
+            homeGraphEntry = homeGraphEntry,
+            windowSize = windowSize,
+        )
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -130,24 +143,12 @@ fun SquadPlayNavigation(
             }
         }
 
-        navigation<Destination.HomeGraph>(startDestination = Destination.HomeScreen()) {
-            composable<Destination.HomeScreen>(
-                deepLinks = listOf(
-                    navDeepLink {
-                        uriPattern = "https://evgenysamarin.github.io/invite/{inviteGroupID}"
-                    }
-                ),
-            ) { entry ->
+        navigation<Destination.HomeGraph>(startDestination = Destination.HomeScreen) {
+            composable<Destination.HomeScreen> {
                 val viewModel: HomeScreenViewModel = koinViewModel()
-
-                val groupId = remember { entry.arguments?.getString("inviteGroupID") }
-                LaunchedEffect(groupId) {
-                    viewModel.onJoinGroupDeepLinkRetrieved(groupId)
-                }
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()
-                val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
 
                 RootScreenBackHandler(snackbarHostState = snackbarHostState)
 
@@ -155,7 +156,6 @@ fun SquadPlayNavigation(
                     state = uiState,
                     isLoggingOut = isLoggingOut,
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-                    confirmInviteDialogState = confirmInviteDialogState,
                     windowSize = windowSize,
                     onAction = viewModel::onAction,
                 )
@@ -293,4 +293,23 @@ fun NavDestination.toAnalyticsScreenName(): String? = when {
     hasRoute(Destination.AuthScreen::class) -> Destination.AuthScreen.SCREEN_NAME
     hasRoute(Destination.RegistrationScreen::class) -> Destination.RegistrationScreen.SCREEN_NAME
     else -> null
+}
+
+@Composable
+private fun HomeGraphDeepLinkHandler(
+    homeGraphEntry: NavBackStackEntry,
+    windowSize: WindowSizeClass,
+) {
+    val viewModel: HomeGraphViewModel = koinViewModel(viewModelStoreOwner = homeGraphEntry)
+    val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
+
+    if (confirmInviteDialogState is UiState.Normal<String>) {
+        ConfirmationDialog(
+            windowSize = windowSize,
+            title = stringResource(R.string.invite_new_friend),
+            text = (confirmInviteDialogState as UiState.Normal<String>).data,
+            onDismiss = viewModel::onJoinGroupDialogDismiss,
+            onConfirmTap = viewModel::onJoinGroupDialogConfirm,
+        )
+    }
 }

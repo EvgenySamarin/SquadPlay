@@ -9,8 +9,6 @@ sealed interface HomeScreenAction {
     object OnAddGameEventTap : HomeScreenAction
     object OnLogOutTap : HomeScreenAction
     object OnAvatarTap : HomeScreenAction
-    object OnJoinGroupDialogDismiss : HomeScreenAction
-    object OnJoinGroupDialogConfirm : HomeScreenAction
     class OnPrevMonthTap(val yearMonth: LocalDate) : HomeScreenAction
     class OnNextMonthTap(val yearMonth: LocalDate) : HomeScreenAction
     class OnDateTap(val date: Date) : HomeScreenAction

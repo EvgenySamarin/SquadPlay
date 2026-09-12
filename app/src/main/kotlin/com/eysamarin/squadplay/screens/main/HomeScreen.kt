@@ -76,7 +76,6 @@ import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 fun HomeScreen(
     state: UiState<HomeScreenUI>,
     isLoggingOut: Boolean = false,
-    confirmInviteDialogState: UiState<String> = UiState.Empty,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (HomeScreenAction) -> Unit,
@@ -167,20 +166,6 @@ fun HomeScreen(
         },
         containerColor = DesignSystemTheme.colorScheme.surface,
     )
-
-    if (confirmInviteDialogState is UiState.Normal<String>) {
-        ConfirmationDialog(
-            windowSize = windowSize,
-            title = stringResource(R.string.invite_new_friend),
-            text = confirmInviteDialogState.data,
-            onDismiss = {
-                onAction(HomeScreenAction.OnJoinGroupDialogDismiss)
-            },
-            onConfirmTap = {
-                onAction(HomeScreenAction.OnJoinGroupDialogConfirm)
-            }
-        )
-    }
 
     if (isLoggingOut) {
         Box(

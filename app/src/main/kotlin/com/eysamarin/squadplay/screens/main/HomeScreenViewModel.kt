@@ -20,7 +20,6 @@ import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
-import com.eysamarin.squadplay.navigation.DeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.CoroutineDispatcher
@@ -35,7 +34,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,7 +48,6 @@ class HomeScreenViewModel(
     private val authProvider: AuthProvider,
     private val profileProvider: ProfileProvider,
     private val stringProvider: StringProvider,
-    private val deepLinkManager: DeepLinkManager,
     private val analyticsProvider: AnalyticsProvider,
     private val logger: AppLogger,
 ) : ViewModel() {
@@ -71,12 +68,6 @@ class HomeScreenViewModel(
     val isLoggingOut: StateFlow<Boolean>
         field = MutableStateFlow<Boolean>(false)
 
-    val confirmInviteDialogState: StateFlow<UiState<String>>
-        field = MutableStateFlow<UiState<String>>(UiState.Empty)
-
-    val inviteGroupIdState: StateFlow<String?>
-        field = MutableStateFlow<String?>(null)
-
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
     private val calendarUIState = MutableStateFlow<CalendarUI>(
@@ -89,15 +80,6 @@ class HomeScreenViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
-        viewModelScope.launch {
-            deepLinkManager.pendingInviteGroupId
-                .filterNotNull()
-                .collect { inviteGroupId ->
-                    deepLinkManager.consumePendingInviteGroupId()
-                    onJoinGroupDeepLinkRetrieved(inviteGroupId)
-                }
-        }
-
         profileProvider.getUserInfoFlow()
             .onEach {
                 logger.d { "New user fetched: $it" }
@@ -116,29 +98,6 @@ class HomeScreenViewModel(
             .onEach {
                 logger.d { "Events received: [${it.firstOrNull()}]..." }
                 eventsState.emit(it)
-            }
-            .launchIn(viewModelScope)
-
-
-        userInfoState
-            .filterNotNull()
-            .combine(inviteGroupIdState.filterNotNull()) { user, inviteGroupId ->
-                user to inviteGroupId
-            }
-            .onEach { (user, inviteGroupId) ->
-                if (user.groups.map { it.uid }.contains(inviteGroupId)) {
-                    snackbar.showMessage(stringProvider.alreadyInSquad)
-                    logger.w { "You're already in this squad" }
-                    return@onEach
-                }
-
-                val groupInfo = profileProvider.getGroupInfo(inviteGroupId)
-                if (groupInfo == null) {
-                    snackbar.showMessage(stringProvider.squadNotFound(inviteGroupId))
-                    logger.w { "Group with uid: $inviteGroupId not found" }
-                    return@onEach
-                }
-                confirmInviteDialogState.emit(UiState.Normal(stringProvider.wantToJoinSquad(groupInfo.title)))
             }
             .launchIn(viewModelScope)
 
@@ -263,44 +222,6 @@ class HomeScreenViewModel(
         ))
     }
 
-    fun onJoinGroupDeepLinkRetrieved(inviteGroupId: String?) = viewModelScope.launch {
-        if (inviteGroupId == null) return@launch
-
-        logger.d { "Invite group deep link retrieved: $inviteGroupId" }
-        inviteGroupIdState.emit(inviteGroupId)
-    }
-
-    fun onJoinGroupDialogConfirm() = viewModelScope.launch {
-        val inviteGroupId = inviteGroupIdState.value ?: run {
-            logger.w { "groupId is null, cannot join group" }
-            return@launch
-        }
-        val currentUser = userInfoState.value ?: run {
-            logger.w { "currentUser is null, cannot join group" }
-            return@launch
-        }
-
-        val isSuccess = profileProvider.joinGroup(
-            userId = currentUser.uid, groupId = inviteGroupId,
-        )
-        if (isSuccess) {
-            analyticsProvider.trackEvent(AnalyticsEvent.JoinGroup(inviteGroupId))
-        } else {
-            logger.w { "Failed to join group $inviteGroupId" }
-        }
-        snackbar.showMessage(
-            if (isSuccess) {
-                stringProvider.joinedSquad
-            } else {
-                stringProvider.joinSquadFailed
-            }
-        )
-    }
-
-    fun onJoinGroupDialogDismiss() = viewModelScope.launch {
-        confirmInviteDialogState.emit(UiState.Empty)
-    }
-
     fun onEventTap(event: EventUI) = viewModelScope.launch {
         logger.d { "onEventTap: ${event.eventId}" }
         val matchingEvent = eventsState.value.firstOrNull { it.uid == event.eventId }
@@ -333,12 +254,6 @@ class HomeScreenViewModel(
             HomeScreenAction.OnAddGameEventTap -> onAddGameEventTap()
             HomeScreenAction.OnLogOutTap -> onLogOutTap()
             HomeScreenAction.OnAvatarTap -> onAvatarTap()
-            HomeScreenAction.OnJoinGroupDialogConfirm -> {
-                onJoinGroupDialogConfirm()
-                onJoinGroupDialogDismiss()
-            }
-
-            HomeScreenAction.OnJoinGroupDialogDismiss -> onJoinGroupDialogDismiss()
             is HomeScreenAction.OnEventTap -> onEventTap(action.event)
         }
     }

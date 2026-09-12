@@ -80,7 +80,6 @@ class HomeScreenEventNavigationTest {
             snackbar = FakeSnackbarProvider(),
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
-            deepLinkManager = DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
             logger = FakeAppLogger(),
         )
@@ -536,7 +535,6 @@ class HomeScreenEventNavigationTest {
             snackbar = FakeSnackbarProvider(),
             profileProvider = profileProvider,
             stringProvider = FakeStringProvider(),
-            deepLinkManager = DefaultDeepLinkManager(),
             analyticsProvider = FakeAnalyticsProvider(),
             logger = FakeAppLogger(),
         )
