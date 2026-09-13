@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +52,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import java.time.Month
 import java.time.format.TextStyle
 import kotlin.math.roundToInt
 
@@ -155,7 +158,7 @@ fun Header(
             )
         }
         // Localized month name using java.time.Month as helper
-        val monthName = java.time.Month.valueOf(yearMonth.month.name).getDisplayName(TextStyle.FULL, LocalLocale.current.platformLocale)
+        val monthName = Month.valueOf(yearMonth.month.name).getDisplayName(TextStyle.FULL, LocalLocale.current.platformLocale)
         Text(
             text = "$monthName ${yearMonth.year}",
             textAlign = TextAlign.Center,
@@ -208,7 +211,6 @@ fun ContentItem(
     onItemTap: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     Box(
         modifier = modifier,
     ) {
@@ -222,21 +224,43 @@ fun ContentItem(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = date.dayOfMonth?.toString() ?: "",
-                color = when {
-                    !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
-                    date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
-                    else -> DesignSystemTheme.colorScheme.onSurface
-                },
-                style = adaptiveBodyByHeight(windowSize),
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = date.dayOfMonth?.toString() ?: "",
+                    color = when {
+                        !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                        date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
+                        else -> DesignSystemTheme.colorScheme.onSurface
+                    },
+                    style = adaptiveBodyByHeight(windowSize),
+                )
 
+                if (date.countEvents > 0) {
+                    val dotColor = when {
+                        !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                        date.hasUserEvents -> DesignSystemTheme.extendedColors.blue
+                        else -> DesignSystemTheme.extendedColors.orange
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 2.dp)
+                            .size(5.dp)
+                            .clip(CircleShape)
+                            .background(dotColor)
+                    )
+                }
+            }
         }
 
         if (date.countEvents > 0) {
             Badge(
-                modifier = Modifier.align(Alignment.TopEnd).offset(6.dp, (-6).dp),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(6.dp, (-6).dp),
                 containerColor = when {
                     !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
                     date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
