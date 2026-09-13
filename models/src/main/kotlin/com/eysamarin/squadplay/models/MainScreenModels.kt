@@ -86,7 +86,6 @@ data class EventUI(
     val subtitle: String? = null,
     val iconUrl: String? = null,
     val isYourEvent: Boolean = false,
-    val userStatus: EventResponseStatus = EventResponseStatus.NOT_SET,
     val members: List<EventMemberUI> = emptyList(),
 )
 
@@ -154,7 +153,6 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "12:00 - 14:00",
         isYourEvent = false,
-        userStatus = EventResponseStatus.ACCEPTED,
         members = PREVIEW_EVENT_MEMBERS_ALL_ACCEPTED,
     ),
     EventUI(
@@ -164,7 +162,6 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "14:00 - 16:00",
         isYourEvent = false,
-        userStatus = EventResponseStatus.REJECTED,
         members = PREVIEW_EVENT_MEMBERS_MIXED,
     ),
     EventUI(
@@ -174,7 +171,6 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "18:00 - 20:00",
         isYourEvent = true,
-        userStatus = EventResponseStatus.ACCEPTED,
         members = PREVIEW_EVENT_MEMBERS_ALL_ACCEPTED,
     ),
     EventUI(
@@ -184,7 +180,6 @@ val PREVIEW_EVENTS = listOf(
         iconUrl = null,
         subtitle = "20:00 - 22:00",
         isYourEvent = false,
-        userStatus = EventResponseStatus.NOT_SET,
         members = PREVIEW_EVENT_MEMBERS_MIXED,
     ),
 )

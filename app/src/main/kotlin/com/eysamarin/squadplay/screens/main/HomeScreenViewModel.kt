@@ -15,6 +15,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventMemberUI
+import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.HomeScreenAction
@@ -136,7 +137,7 @@ class HomeScreenViewModel(
                 events = events,
                 selectedDate = selectedDate,
                 calendarYear = eventBasedCalendar.yearMonth.year,
-                currentUserId = userInfo.uid,
+                currentUser = userInfo,
                 userGroups = userInfo.groups,
                 groupSections = groupSections,
             )
@@ -257,6 +258,7 @@ class HomeScreenViewModel(
             event.subtitle.orEmpty()
         }
         val targetGroupId = event.groupId ?: matchingEvent?.groupId.orEmpty()
+        val userStatus = event.members.firstOrNull()?.status ?: EventResponseStatus.NOT_SET
         navigator.navigate(
             Destination.EventDetailsScreen(
                 eventId = event.eventId,
@@ -264,7 +266,7 @@ class HomeScreenViewModel(
                 date = dateText,
                 imageUrl = event.iconUrl,
                 isYourEvent = event.isYourEvent,
-                userStatus = event.userStatus,
+                userStatus = userStatus,
                 groupId = targetGroupId,
             )
         )
@@ -292,7 +294,7 @@ class HomeScreenViewModel(
         events: List<Event>,
         selectedDate: Date?,
         calendarYear: Int,
-        currentUserId: String,
+        currentUser: User,
         userGroups: List<Group> = emptyList(),
         groupSections: List<UserGroupSection> = emptyList(),
     ): List<EventUI> {
@@ -311,14 +313,28 @@ class HomeScreenViewModel(
                 fromDate.year == selectedYear
             ) {
                 val groupSection = sectionsByGroupId[event.groupId]
-                val members = groupSection?.members?.map { friend ->
-                    EventMemberUI(
-                        uid = friend.uid,
-                        username = friend.username,
-                        photoUrl = friend.photoUrl,
-                        status = event.getStatusForUser(friend.uid)
-                    )
-                }.orEmpty()
+
+                // Current user is the first member
+                val userMember = EventMemberUI(
+                    uid = currentUser.uid,
+                    username = currentUser.username,
+                    photoUrl = currentUser.photoUrl,
+                    status = event.getStatusForUser(currentUser.uid)
+                )
+
+                // Other group members
+                val otherMembers = groupSection?.members
+                    ?.filter { it.uid != currentUser.uid }
+                    ?.map { friend ->
+                        EventMemberUI(
+                            uid = friend.uid,
+                            username = friend.username,
+                            photoUrl = friend.photoUrl,
+                            status = event.getStatusForUser(friend.uid)
+                        )
+                    }.orEmpty()
+
+                val allMembers = listOf(userMember) + otherMembers
 
                 EventUI(
                     eventId = event.uid,
@@ -330,9 +346,8 @@ class HomeScreenViewModel(
                         toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
                     ),
                     iconUrl = event.eventIconUrl,
-                    isYourEvent = event.creatorId == currentUserId,
-                    userStatus = event.getStatusForUser(currentUserId),
-                    members = members,
+                    isYourEvent = event.creatorId == currentUser.uid,
+                    members = allMembers,
                 )
             } else {
                 null

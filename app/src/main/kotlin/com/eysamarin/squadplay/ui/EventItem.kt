@@ -1,6 +1,7 @@
 package com.eysamarin.squadplay.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,17 +50,8 @@ fun EventItem(
     maxVisibleAvatars: Int = 4,
     onDetailsTap: () -> Unit = {},
 ) {
-    val isAllAccepted = if (members.isNotEmpty()) {
-        members.all { it.status == EventResponseStatus.ACCEPTED }
-    } else {
-        event.userStatus == EventResponseStatus.ACCEPTED
-    }
-
-    val isAnyRejected = if (members.isNotEmpty()) {
-        members.any { it.status == EventResponseStatus.REJECTED }
-    } else {
-        event.userStatus == EventResponseStatus.REJECTED
-    }
+    val isAllAccepted = members.isNotEmpty() && members.all { it.status == EventResponseStatus.ACCEPTED }
+    val isAnyRejected = members.any { it.status == EventResponseStatus.REJECTED }
 
     val border = if (isAllAccepted) {
         BorderStroke(2.dp, Color(0xFF4CAF50).copy(alpha = 0.6f))
@@ -98,19 +90,19 @@ fun EventItem(
                     contentDescription = event.title,
                     modifier = Modifier
                         .width(90.dp)
-                        .fillMaxHeight()
+                        .height(120.dp)
                         .clip(coverShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Fit,
                 )
             } else {
-                Icon(
+                Image(
                     painter = painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub),
                     contentDescription = event.title,
                     modifier = Modifier
                         .width(90.dp)
-                        .fillMaxHeight()
+                        .height(120.dp)
                         .clip(coverShape),
-                    tint = Color.Unspecified,
+                    contentScale = ContentScale.Fit,
                 )
             }
 
@@ -154,11 +146,7 @@ fun EventItem(
                             "$acceptedCount/${members.size} ready"
                         }
                     } else {
-                        when (event.userStatus) {
-                            EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
-                            EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
-                            EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
-                        }
+                        stringResource(R.string.content_description_status_not_set)
                     }
 
                     Icon(
@@ -283,7 +271,6 @@ private fun EventItemPreview() {
         title = "APEX LEGENDS - RANKED GRIND",
         subtitle = "20:00 - 23:00",
         iconUrl = null,
-        userStatus = EventResponseStatus.ACCEPTED
     )
 
     val confirmedMembers = listOf(
