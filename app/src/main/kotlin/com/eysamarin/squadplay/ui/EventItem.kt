@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -85,17 +86,18 @@ fun EventItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(10.dp)
                 .height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Game cover image banner
-            val coverShape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+            val coverShape = RoundedCornerShape(12.dp)
             if (!event.iconUrl.isNullOrEmpty()) {
                 AsyncImage(
                     model = event.iconUrl,
                     contentDescription = event.title,
                     modifier = Modifier
-                        .width(96.dp)
+                        .width(90.dp)
                         .fillMaxHeight()
                         .clip(coverShape),
                     contentScale = ContentScale.Crop
@@ -105,18 +107,18 @@ fun EventItem(
                     painter = painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub),
                     contentDescription = event.title,
                     modifier = Modifier
-                        .width(96.dp)
+                        .width(90.dp)
                         .fillMaxHeight()
                         .clip(coverShape),
                     tint = Color.Unspecified
                 )
             }
 
+            Spacer(modifier = Modifier.width(12.dp))
+
             // Event details
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(12.dp),
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
