@@ -132,46 +132,60 @@ val PREVIEW_CALENDAR_UI = CalendarUI(
     ),
 )
 
+val PREVIEW_EVENT_MEMBERS_ALL_ACCEPTED = listOf(
+    EventMemberUI(uid = "1", username = "Alex", photoUrl = null, status = EventResponseStatus.ACCEPTED),
+    EventMemberUI(uid = "2", username = "Dmitry", photoUrl = null, status = EventResponseStatus.ACCEPTED),
+    EventMemberUI(uid = "3", username = "Elena", photoUrl = null, status = EventResponseStatus.ACCEPTED),
+    EventMemberUI(uid = "4", username = "Ivan", photoUrl = null, status = EventResponseStatus.ACCEPTED),
+)
+
+val PREVIEW_EVENT_MEMBERS_MIXED = listOf(
+    EventMemberUI(uid = "1", username = "Alex", photoUrl = null, status = EventResponseStatus.ACCEPTED),
+    EventMemberUI(uid = "2", username = "Dmitry", photoUrl = null, status = EventResponseStatus.REJECTED),
+    EventMemberUI(uid = "3", username = "Elena", photoUrl = null, status = EventResponseStatus.ACCEPTED),
+    EventMemberUI(uid = "4", username = "Ivan", photoUrl = null, status = EventResponseStatus.NOT_SET),
+)
+
 val PREVIEW_EVENTS = listOf(
     EventUI(
         eventId = UUID.randomUUID().toString(),
         title = "Dark souls",
+        groupTitle = "Alpha Squad",
         iconUrl = null,
-        subtitle = "from 12:00 to 14:00",
+        subtitle = "12:00 - 14:00",
         isYourEvent = false,
         userStatus = EventResponseStatus.ACCEPTED,
+        members = PREVIEW_EVENT_MEMBERS_ALL_ACCEPTED,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
         title = "Nino Kuni",
+        groupTitle = "Alpha Squad",
         iconUrl = null,
-        subtitle = "from 12:00 to 14:00",
+        subtitle = "14:00 - 16:00",
         isYourEvent = false,
         userStatus = EventResponseStatus.REJECTED,
+        members = PREVIEW_EVENT_MEMBERS_MIXED,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
         title = "Dota 2",
+        groupTitle = "Beta Squad",
         iconUrl = null,
-        subtitle = "from 12:00 to 14:00",
+        subtitle = "18:00 - 20:00",
         isYourEvent = true,
-        userStatus = EventResponseStatus.NOT_SET,
+        userStatus = EventResponseStatus.ACCEPTED,
+        members = PREVIEW_EVENT_MEMBERS_ALL_ACCEPTED,
     ),
     EventUI(
         eventId = UUID.randomUUID().toString(),
         title = "Minecraft",
+        groupTitle = "Beta Squad",
         iconUrl = null,
-        subtitle = "from 12:00 to 14:00",
+        subtitle = "20:00 - 22:00",
         isYourEvent = false,
         userStatus = EventResponseStatus.NOT_SET,
-    ),
-    EventUI(
-        eventId = UUID.randomUUID().toString(),
-        title = "Fortnight",
-        iconUrl = null,
-        subtitle = "from 12:00 to 14:00",
-        isYourEvent = true,
-        userStatus = EventResponseStatus.NOT_SET,
+        members = PREVIEW_EVENT_MEMBERS_MIXED,
     ),
 )
 
