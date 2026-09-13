@@ -185,11 +185,11 @@ class EventAttendanceTest {
 
         val otherEventUI = eventUIs.first { it.eventId == "event-other-accepted" }
         assertFalse(otherEventUI.isYourEvent)
-        assertEquals(EventResponseStatus.ACCEPTED, otherEventUI.userStatus)
+        assertEquals(EventResponseStatus.ACCEPTED, otherEventUI.members.first().status)
 
         val ownEventUI = eventUIs.first { it.eventId == "event-own" }
         assertTrue(ownEventUI.isYourEvent)
-        assertEquals(EventResponseStatus.ACCEPTED, ownEventUI.userStatus)
+        assertEquals(EventResponseStatus.ACCEPTED, ownEventUI.members.first().status)
 
         viewModel.onAction(HomeScreenAction.OnEventTap(otherEventUI))
         testDispatcher.scheduler.advanceUntilIdle()
