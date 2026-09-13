@@ -106,7 +106,7 @@ class CalendarUIProviderImpl: CalendarUIProvider {
             dates = target.dates.map { item ->
                 when {
                     item.dayOfMonth == selectedDate.dayOfMonth && item.enabled-> item.copy(isSelected = true)
-                    item.isSelected == true -> item.copy(isSelected = false)
+                    item.isSelected -> item.copy(isSelected = false)
                     else -> item
                 }
             }
