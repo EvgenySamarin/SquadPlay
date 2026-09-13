@@ -50,6 +50,7 @@
     <string name="schedule_event">Запланировать событие</string>
     <string name="invite_new_friend">Пригласить приятеля</string>
     <string name="select_group">Выберите группу</string>
+    <string name="no_squad_create_event_hint">Готовы к игре? Создайте или вступите в отряд, чтобы планировать игровые сессии!</string>
     <!-- endregion -->
 
     <!-- region profile screen -->

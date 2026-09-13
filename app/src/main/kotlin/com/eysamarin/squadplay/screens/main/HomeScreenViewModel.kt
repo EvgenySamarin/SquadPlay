@@ -124,7 +124,7 @@ class HomeScreenViewModel(
             )
             val today = todayProvider()
             val dayOfMonth = selectedDate?.dayOfMonth
-            val isCreateEventButtonVisible = if (selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
+            val isCreateEventButtonVisible = if (userInfo.groups.isNotEmpty() && selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
                 val selectedLocalDate = LocalDate(
                     year = selectedDate.year ?: eventBasedCalendar.yearMonth.year,
                     monthNumber = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
@@ -195,6 +195,12 @@ class HomeScreenViewModel(
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
+        logger.d { "onAddGameEventTap" }
+        val currentUser = userInfoState.value
+        if (currentUser == null || currentUser.groups.isEmpty()) {
+            logger.w { "User has no groups, cannot add game event" }
+            return@launch
+        }
         val calendarUi = calendarUIState.value
         val selectedDate = calendarUi.dates.firstOrNull { it.enabled && it.isSelected }
 

@@ -253,6 +253,62 @@ class HomeScreenEventNavigationTest {
     }
 
     @Test
+    fun homeScreenViewModel_userHasNoGroups_hidesCreateEventButtonEvenIfFutureDateSelected() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val futureDate = Date(dayOfMonth = 10, monthNumber = 9, countEvents = 0, isSelected = true, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(futureDate))
+        val profileProvider = FakeProfileProvider(
+            user = User(
+                uid = "user-1",
+                username = "Player One",
+                email = "tester@test.com",
+                photoUrl = null,
+                groups = emptyList(),
+            )
+        )
+        val viewModel = createHomeScreenViewModel(
+            fakeNavigator = fakeNavigator,
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is UiState.Normal)
+        val data = (state as UiState.Normal).data
+        assertFalse(data.isCreateEventButtonVisible)
+    }
+
+    @Test
+    fun homeScreenViewModel_userHasNoGroups_onAddGameEventTap_doesNotNavigate() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val futureDate = Date(dayOfMonth = 10, monthNumber = 9, countEvents = 0, isSelected = true, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(futureDate))
+        val profileProvider = FakeProfileProvider(
+            user = User(
+                uid = "user-1",
+                username = "Player One",
+                email = "tester@test.com",
+                photoUrl = null,
+                groups = emptyList(),
+            )
+        )
+        val viewModel = createHomeScreenViewModel(
+            fakeNavigator = fakeNavigator,
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(HomeScreenAction.OnAddGameEventTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(0, fakeNavigator.navigatedDestinations.size)
+    }
+
+    @Test
     fun homeScreenViewModel_eventsOnSelectedDate_filtersByYear_doesNotShowEventsFromOtherYears() = runTest(testDispatcher) {
         val fakeNavigator = FakeNavigator()
         val user = User(
@@ -563,7 +619,13 @@ class HomeScreenEventNavigationTest {
     }
 
     private class FakeProfileProvider(
-        var user: User? = User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList()),
+        var user: User? = User(
+            uid = "user1",
+            username = "tester",
+            email = "test@example.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "group-1", title = "Squad 1", members = listOf("user1"))),
+        ),
         val userFlow: Flow<User?>? = null,
     ) : ProfileProvider {
         override fun getUserInfoFlow(): Flow<User?> = userFlow ?: flowOf(user)

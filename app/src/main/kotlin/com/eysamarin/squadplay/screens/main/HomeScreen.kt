@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import com.eysamarin.squadplay.R
@@ -221,6 +222,19 @@ private fun HomeScreenMediumLayout(
                     onDateTap = { onAction(HomeScreenAction.OnDateTap(it)) }
                 )
             }
+            if (state.data.user.groups.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.no_squad_create_event_hint),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        style = DesignSystemTheme.typography.bodyMedium,
+                        color = DesignSystemTheme.extendedColors.orange,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
             item {
                 HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
             }
@@ -307,7 +321,19 @@ private fun MainScreenExpandedLayout(
                     onDateTap = { onAction(HomeScreenAction.OnDateTap(it)) }
                 )
             }
-
+            if (state.data.user.groups.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.no_squad_create_event_hint),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        style = DesignSystemTheme.typography.bodyMedium,
+                        color = DesignSystemTheme.extendedColors.orange,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
         Column(modifier = Modifier.weight(1f)) {
             GreetingBar(windowSize = windowSize, user = state.data.user, onAvatarTap = {
