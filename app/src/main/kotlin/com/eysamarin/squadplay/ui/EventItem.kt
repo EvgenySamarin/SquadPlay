@@ -45,7 +45,7 @@ import com.eysamarin.squadplay.models.EventUI
 fun EventItem(
     event: EventUI,
     modifier: Modifier = Modifier,
-    members: List<EventMemberUI> = emptyList(),
+    members: List<EventMemberUI> = event.members,
     maxVisibleAvatars: Int = 4,
     onDetailsTap: () -> Unit = {},
 ) {
@@ -110,7 +110,7 @@ fun EventItem(
                         .width(90.dp)
                         .fillMaxHeight()
                         .clip(coverShape),
-                    tint = Color.Unspecified
+                    tint = Color.Unspecified,
                 )
             }
 

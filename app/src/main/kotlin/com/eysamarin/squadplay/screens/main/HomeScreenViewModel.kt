@@ -14,12 +14,14 @@ import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventMemberUI
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import com.eysamarin.squadplay.models.UserGroupSection
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -70,6 +73,7 @@ class HomeScreenViewModel(
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
+    private val groupSectionsState = MutableStateFlow<List<UserGroupSection>>(emptyList())
     private val calendarUIState = MutableStateFlow<CalendarUI>(
         calendarUIProvider.provideCalendarUIBy(yearMonth = todayProvider().run { LocalDate(year, month.number, 1) })
     )
@@ -92,12 +96,24 @@ class HomeScreenViewModel(
                 logger.d { "User info received: $it" }
                 userInfoState.emit(it)
             }
-            .map { user -> user.groups.map { it.uid }.toSet() }
-            .distinctUntilChanged()
-            .flatMapLatest { groupIds -> eventProvider.getEventsFlow(groupIds) }
-            .onEach {
-                logger.d { "Events received: [${it.firstOrNull()}]..." }
-                eventsState.emit(it)
+            .map { user -> user.groups }
+            .distinctUntilChanged { old, new -> old.map { it.uid }.toSet() == new.map { it.uid }.toSet() }
+            .flatMapLatest { groups ->
+                val groupIds = groups.map { it.uid }.toSet()
+                val eventsFlow = eventProvider.getEventsFlow(groupIds)
+                val sectionsFlow = if (groups.isNotEmpty()) {
+                    profileProvider.getGroupsMembersInfoFlow(groups)
+                } else {
+                    flowOf(emptyList())
+                }
+                combine(eventsFlow, sectionsFlow) { events, sections ->
+                    events to sections
+                }
+            }
+            .onEach { (events, sections) ->
+                logger.d { "Events & Sections received: ${events.size} events, ${sections.size} sections" }
+                eventsState.emit(events)
+                groupSectionsState.emit(sections)
             }
             .launchIn(viewModelScope)
 
@@ -105,7 +121,8 @@ class HomeScreenViewModel(
             userInfoState,
             calendarUIState,
             eventsState,
-        ) { userInfo, calendar, events ->
+            groupSectionsState,
+        ) { userInfo, calendar, events, groupSections ->
             userInfo ?: return@combine null
 
             val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(
@@ -121,6 +138,7 @@ class HomeScreenViewModel(
                 calendarYear = eventBasedCalendar.yearMonth.year,
                 currentUserId = userInfo.uid,
                 userGroups = userInfo.groups,
+                groupSections = groupSections,
             )
             val today = todayProvider()
             val dayOfMonth = selectedDate?.dayOfMonth
@@ -276,6 +294,7 @@ class HomeScreenViewModel(
         calendarYear: Int,
         currentUserId: String,
         userGroups: List<Group> = emptyList(),
+        groupSections: List<UserGroupSection> = emptyList(),
     ): List<EventUI> {
         if (selectedDate == null || events.isEmpty()) return emptyList()
         val selectedDay = selectedDate.dayOfMonth ?: return emptyList()
@@ -283,6 +302,7 @@ class HomeScreenViewModel(
         val selectedYear = selectedDate.year ?: calendarYear
 
         val groupsById = userGroups.associateBy { it.uid }
+        val sectionsByGroupId = groupSections.associateBy { it.groupId }
 
         return events.mapNotNull { event ->
             val fromDate = event.fromDateTime
@@ -290,6 +310,16 @@ class HomeScreenViewModel(
                 fromDate.month.number == selectedMonth &&
                 fromDate.year == selectedYear
             ) {
+                val groupSection = sectionsByGroupId[event.groupId]
+                val members = groupSection?.members?.map { friend ->
+                    EventMemberUI(
+                        uid = friend.uid,
+                        username = friend.username,
+                        photoUrl = friend.photoUrl,
+                        status = event.getStatusForUser(friend.uid)
+                    )
+                }.orEmpty()
+
                 EventUI(
                     eventId = event.uid,
                     title = event.title,
@@ -302,6 +332,7 @@ class HomeScreenViewModel(
                     iconUrl = event.eventIconUrl,
                     isYourEvent = event.creatorId == currentUserId,
                     userStatus = event.getStatusForUser(currentUserId),
+                    members = members,
                 )
             } else {
                 null

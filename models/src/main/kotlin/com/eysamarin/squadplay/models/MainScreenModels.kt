@@ -87,6 +87,7 @@ data class EventUI(
     val iconUrl: String? = null,
     val isYourEvent: Boolean = false,
     val userStatus: EventResponseStatus = EventResponseStatus.NOT_SET,
+    val members: List<EventMemberUI> = emptyList(),
 )
 
 val PREVIEW_CALENDAR_UI = CalendarUI(
