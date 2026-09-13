@@ -7,8 +7,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,7 +34,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.designSystem.compose.DSButton
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.models.EventMemberUI
@@ -82,142 +82,131 @@ fun EventItem(
         ),
         border = border
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            // Game cover image banner
+            val coverShape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+            if (!event.iconUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = event.iconUrl,
+                    contentDescription = event.title,
+                    modifier = Modifier
+                        .width(96.dp)
+                        .fillMaxHeight()
+                        .clip(coverShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    painter = painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub),
+                    contentDescription = event.title,
+                    modifier = Modifier
+                        .width(96.dp)
+                        .fillMaxHeight()
+                        .clip(coverShape),
+                    tint = Color.Unspecified
+                )
+            }
+
+            // Event details
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Game cover image
-                val coverShape = RoundedCornerShape(12.dp)
-                if (!event.iconUrl.isNullOrEmpty()) {
-                    AsyncImage(
-                        model = event.iconUrl,
-                        contentDescription = event.title,
-                        modifier = Modifier
-                            .size(88.dp)
-                            .clip(coverShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub),
-                        contentDescription = event.title,
-                        modifier = Modifier
-                            .size(88.dp)
-                            .clip(coverShape),
-                        tint = Color.Unspecified
-                    )
-                }
+                Text(
+                    text = event.title.uppercase(),
+                    style = DesignSystemTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = DesignSystemTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // Event details
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                val subtitle = event.subtitle
+                if (!subtitle.isNullOrEmpty()) {
                     Text(
-                        text = event.title.uppercase(),
-                        style = DesignSystemTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = DesignSystemTheme.colorScheme.onSurface,
+                        text = subtitle,
+                        style = DesignSystemTheme.typography.bodyMedium,
+                        color = DesignSystemTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                }
 
-                    val subtitle = event.subtitle
-                    if (!subtitle.isNullOrEmpty()) {
-                        Text(
-                            text = subtitle,
-                            style = DesignSystemTheme.typography.bodyMedium,
-                            color = DesignSystemTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                // Status row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val acceptedCount = members.count { it.status == EventResponseStatus.ACCEPTED }
+                    val statusText = if (members.isNotEmpty()) {
+                        if (acceptedCount == members.size) {
+                            "$acceptedCount/${members.size} confirmed"
+                        } else {
+                            "$acceptedCount/${members.size} ready"
+                        }
+                    } else {
+                        when (event.userStatus) {
+                            EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
+                            EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
+                            EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
+                        }
                     }
 
-                    // Status row
+                    Icon(
+                        painter = painterResource(statusIconRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = statusTint
+                    )
+
+                    Text(
+                        text = statusText,
+                        style = DesignSystemTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = DesignSystemTheme.colorScheme.onSurface
+                    )
+                }
+
+                // Participant avatars row
+                if (members.isNotEmpty()) {
                     Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier.padding(top = 4.dp)
                     ) {
-                        val acceptedCount = members.count { it.status == EventResponseStatus.ACCEPTED }
-                        val statusText = if (members.isNotEmpty()) {
-                            if (acceptedCount == members.size) {
-                                "$acceptedCount/${members.size} confirmed"
-                            } else {
-                                "$acceptedCount/${members.size} ready"
-                            }
-                        } else {
-                            when (event.userStatus) {
-                                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
-                                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
-                                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
-                            }
+                        val visibleMembers = members.take(maxVisibleAvatars)
+                        val remainingCount = members.size - visibleMembers.size
+
+                        visibleMembers.forEach { member ->
+                            MemberAvatarItem(member = member)
                         }
 
-                        Icon(
-                            painter = painterResource(statusIconRes),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = statusTint
-                        )
-
-                        Text(
-                            text = statusText,
-                            style = DesignSystemTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DesignSystemTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    // Participant avatars row
-                    if (members.isNotEmpty()) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(top = 4.dp)
-                        ) {
-                            val visibleMembers = members.take(maxVisibleAvatars)
-                            val remainingCount = members.size - visibleMembers.size
-
-                            visibleMembers.forEach { member ->
-                                MemberAvatarItem(member = member)
-                            }
-
-                            if (remainingCount > 0) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(DesignSystemTheme.colorScheme.surfaceVariant),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "+$remainingCount",
-                                        style = DesignSystemTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = DesignSystemTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
+                        if (remainingCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(DesignSystemTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "+$remainingCount",
+                                    style = DesignSystemTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DesignSystemTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Details button
-            DSButton(
-                text = stringResource(R.string.view_details),
-                modifier = Modifier.fillMaxWidth(),
-                onTap = onDetailsTap
-            )
         }
     }
 }
