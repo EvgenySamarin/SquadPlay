@@ -39,8 +39,6 @@ import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
 import com.eysamarin.squadplay.models.EventMemberUI
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.EventUI
-import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
-import com.eysamarin.squadplay.ui.squircle.SquircleShape
 
 @Composable
 fun EventItem(
@@ -50,18 +48,39 @@ fun EventItem(
     maxVisibleAvatars: Int = 4,
     onDetailsTap: () -> Unit = {},
 ) {
-    val cardShape = SquircleShape(cornerSmoothing = CornerSmoothing.High)
-    val glowColor = Color(0xFF4CAF50)
+    val isAllAccepted = if (members.isNotEmpty()) {
+        members.all { it.status == EventResponseStatus.ACCEPTED }
+    } else {
+        event.userStatus == EventResponseStatus.ACCEPTED
+    }
+
+    val isAnyRejected = if (members.isNotEmpty()) {
+        members.any { it.status == EventResponseStatus.REJECTED }
+    } else {
+        event.userStatus == EventResponseStatus.REJECTED
+    }
+
+    val border = if (isAllAccepted) {
+        BorderStroke(2.dp, Color(0xFF4CAF50).copy(alpha = 0.6f))
+    } else {
+        null
+    }
+
+    val (statusIconRes, statusTint) = when {
+        isAllAccepted -> R.drawable.ic_check_circle_24 to Color(0xFF4CAF50)
+        isAnyRejected -> R.drawable.ic_cancel_24 to Color(0xFFF44336)
+        else -> R.drawable.ic_help_24 to Color.Gray
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onDetailsTap() },
-        shape = cardShape,
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = DesignSystemTheme.colorScheme.surfaceContainerHigh
         ),
-        border = BorderStroke(1.dp, glowColor.copy(alpha = 0.6f))
+        border = border
     ) {
         Column(
             modifier = Modifier
@@ -142,10 +161,10 @@ fun EventItem(
                         }
 
                         Icon(
-                            painter = painterResource(R.drawable.ic_check_circle_24),
+                            painter = painterResource(statusIconRes),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = glowColor
+                            tint = statusTint
                         )
 
                         Text(
@@ -276,22 +295,43 @@ private fun EventItemPreview() {
         userStatus = EventResponseStatus.ACCEPTED
     )
 
-    val sampleMembers = listOf(
+    val confirmedMembers = listOf(
         EventMemberUI("1", "User 1", null, EventResponseStatus.ACCEPTED),
         EventMemberUI("2", "User 2", null, EventResponseStatus.ACCEPTED),
         EventMemberUI("3", "User 3", null, EventResponseStatus.ACCEPTED),
         EventMemberUI("4", "User 4", null, EventResponseStatus.ACCEPTED),
-        EventMemberUI("5", "User 5", null, EventResponseStatus.ACCEPTED),
-        EventMemberUI("6", "User 6", null, EventResponseStatus.ACCEPTED),
-        EventMemberUI("7", "User 7", null, EventResponseStatus.ACCEPTED),
-        EventMemberUI("8", "User 8", null, EventResponseStatus.ACCEPTED),
+    )
+
+    val rejectedMembers = listOf(
+        EventMemberUI("1", "User 1", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("2", "User 2", null, EventResponseStatus.REJECTED),
+        EventMemberUI("3", "User 3", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("4", "User 4", null, EventResponseStatus.ACCEPTED),
+    )
+
+    val pendingMembers = listOf(
+        EventMemberUI("1", "User 1", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("2", "User 2", null, EventResponseStatus.NOT_SET),
+        EventMemberUI("3", "User 3", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("4", "User 4", null, EventResponseStatus.ACCEPTED),
     )
 
     DesignSystemTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             EventItem(
                 event = sampleEvent,
-                members = sampleMembers
+                members = confirmedMembers
+            )
+            EventItem(
+                event = sampleEvent,
+                members = rejectedMembers
+            )
+            EventItem(
+                event = sampleEvent,
+                members = pendingMembers
             )
         }
     }
