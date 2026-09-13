@@ -41,7 +41,7 @@
     <string name="want_to_join_squad">Want to join %s squad?</string>
     <string name="join_squad_success">You joined the squad</string>
     <string name="join_squad_failed">You failed joining the squad</string>
-    <string name="from_to_date">from %s to %s</string>
+    <string name="from_to_date">%s - %s</string>
     <string name="you_have_no_squad">You have no squads to save event, find your squad first</string>
     <string name="event_saved">Event saved successfully</string>
     <string name="event_save_failed">Failed to save event</string>

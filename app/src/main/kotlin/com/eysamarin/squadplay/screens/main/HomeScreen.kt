@@ -244,6 +244,7 @@ private fun HomeScreenMediumLayout(
                 items(items = state.data.gameEventsOnDate) { item ->
                     EventItem(
                         event = item,
+                        members = item.members,
                         modifier = Modifier.padding(horizontal = 16.dp),
                         onDetailsTap = { onAction(HomeScreenAction.OnEventTap(item)) }
                     )
@@ -311,6 +312,7 @@ private fun MainScreenExpandedLayout(
                 items(items = state.data.gameEventsOnDate) { item ->
                     EventItem(
                         event = item,
+                        members = item.members,
                         modifier = Modifier.padding(horizontal = 16.dp),
                         onDetailsTap = { onAction(HomeScreenAction.OnEventTap(item)) }
                     )

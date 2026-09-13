@@ -39,7 +39,7 @@
     <string name="want_to_join_squad">Хотите вступить в отряд %s?</string>
     <string name="join_squad_success">Вы вступили в отряд</string>
     <string name="join_squad_failed">Не удалось вступить в отряд</string>
-    <string name="from_to_date">с %s по %s</string>
+    <string name="from_to_date">%s - %s</string>
     <string name="you_have_no_squad">Вас нет ни в одном отряде, сначала соберите свою группу</string>
     <string name="event_saved">Событие успешно сохранено</string>
     <string name="event_save_failed">Не удалось сохранить событие</string>
