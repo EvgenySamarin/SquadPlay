@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -251,41 +250,6 @@ fun ContentItem(
                             .size(5.dp)
                             .clip(CircleShape)
                             .background(dotColor)
-                    )
-                }
-            }
-        }
-
-        if (date.countEvents > 0) {
-            Badge(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(6.dp, (-6).dp),
-                containerColor = when {
-                    !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
-                    date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
-                    else -> DesignSystemTheme.colorScheme.primary
-                },
-                contentColor = when {
-                    !date.enabled -> DesignSystemTheme.colorScheme.surface
-                    date.isSelected -> DesignSystemTheme.colorScheme.primary
-                    else -> DesignSystemTheme.colorScheme.onPrimary
-                }
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(4.dp)
-                ) {
-                    if (date.hasUserEvents) {
-                        Text(
-                            text = "★",
-                            style = adaptiveLabelByHeight(windowSize),
-                            modifier = Modifier.padding(end = 2.dp)
-                        )
-                    }
-                    Text(
-                        text = date.countEvents.toString(),
-                        style = adaptiveLabelByHeight(windowSize)
                     )
                 }
             }
