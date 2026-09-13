@@ -38,8 +38,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +64,7 @@ import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.ui.EmptyContent
+import com.eysamarin.squadplay.ui.EventItem
 import com.eysamarin.squadplay.ui.UserAvatar
 import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
@@ -243,47 +242,10 @@ private fun HomeScreenMediumLayout(
                 item { EmptyContent(windowSize, modifier = Modifier.fillMaxSize()) }
             } else {
                 items(items = state.data.gameEventsOnDate) { item ->
-                    DSListItem(
-                        overline = item.groupTitle,
-                        headline = item.title,
-                        supportingText = item.subtitle,
-                        leadingType = DSListItemLeadingType.Image,
-                        leadingPainter = if (item.iconUrl != null) {
-                            rememberAsyncImagePainter(model = item.iconUrl)
-                        } else {
-                            painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
-                        },
-                        trailingIconPainter = if (item.isYourEvent) {
-                            painterResource(R.drawable.ic_star_24)
-                        } else {
-                            when (item.userStatus) {
-                                EventResponseStatus.ACCEPTED -> painterResource(R.drawable.ic_check_circle_24)
-                                EventResponseStatus.REJECTED -> painterResource(R.drawable.ic_cancel_24)
-                                EventResponseStatus.NOT_SET -> painterResource(R.drawable.ic_help_24)
-                            }
-                        },
-                        trailingIconTint = if (item.isYourEvent) {
-                            null
-                        } else {
-                            when (item.userStatus) {
-                                EventResponseStatus.ACCEPTED -> Color(0xFF4CAF50)
-                                EventResponseStatus.REJECTED -> Color(0xFFF44336)
-                                EventResponseStatus.NOT_SET -> Color.Gray
-                            }
-                        },
-                        trailingIconContentDescription = if (item.isYourEvent) {
-                            stringResource(R.string.content_description_your_event)
-                        } else {
-                            when (item.userStatus) {
-                                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
-                                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
-                                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
-                            }
-                        },
-                        onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
-                        sizes = DSListItemDefaults.sizes(
-                            maxHeight = 72.dp
-                        )
+                    EventItem(
+                        event = item,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        onDetailsTap = { onAction(HomeScreenAction.OnEventTap(item)) }
                     )
                 }
             }
@@ -347,49 +309,10 @@ private fun MainScreenExpandedLayout(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(items = state.data.gameEventsOnDate) { item ->
-                    DSListItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        overline = item.groupTitle,
-                        headline = item.title,
-                        supportingText = item.subtitle,
-                        leadingType = DSListItemLeadingType.Image,
-                        leadingPainter = if (item.iconUrl != null) {
-                            rememberAsyncImagePainter(model = item.iconUrl)
-                        } else {
-                            painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub)
-                        },
-                        trailingIconPainter = if (item.isYourEvent) {
-                            painterResource(R.drawable.ic_star_24)
-                        } else {
-                            when (item.userStatus) {
-                                EventResponseStatus.ACCEPTED -> painterResource(R.drawable.ic_check_circle_24)
-                                EventResponseStatus.REJECTED -> painterResource(R.drawable.ic_cancel_24)
-                                EventResponseStatus.NOT_SET -> painterResource(R.drawable.ic_help_24)
-                            }
-                        },
-                        trailingIconTint = if (item.isYourEvent) {
-                            null
-                        } else {
-                            when (item.userStatus) {
-                                EventResponseStatus.ACCEPTED -> Color(0xFF4CAF50)
-                                EventResponseStatus.REJECTED -> Color(0xFFF44336)
-                                EventResponseStatus.NOT_SET -> Color.Gray
-                            }
-                        },
-                        trailingIconContentDescription = if (item.isYourEvent) {
-                            stringResource(R.string.content_description_your_event)
-                        } else {
-                            when (item.userStatus) {
-                                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
-                                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
-                                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
-                            }
-                        },
-                        onClick = { onAction(HomeScreenAction.OnEventTap(item)) },
-                        sizes = DSListItemDefaults.sizes(
-                            imageWidth = 150.dp,
-                            maxHeight = 100.dp
-                        )
+                    EventItem(
+                        event = item,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        onDetailsTap = { onAction(HomeScreenAction.OnEventTap(item)) }
                     )
                 }
             }
