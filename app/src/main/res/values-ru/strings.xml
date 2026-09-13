@@ -88,6 +88,7 @@
     <string name="event_accept">Принять</string>
     <string name="event_reject">Отклонить</string>
     <string name="event_members_label">Участники</string>
+    <string name="view_details">ПОДРОБНЕЕ</string>
     <!-- endregion -->
 
     <!-- region content description -->

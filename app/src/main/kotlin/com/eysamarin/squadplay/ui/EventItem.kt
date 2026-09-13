@@ -1,0 +1,298 @@
+package com.eysamarin.squadplay.ui
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.eysamarin.squadplay.R
+import com.eysamarin.squadplay.designSystem.compose.DSButton
+import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
+import com.eysamarin.squadplay.designSystem.compose.utils.DarkLightModePreview
+import com.eysamarin.squadplay.models.EventMemberUI
+import com.eysamarin.squadplay.models.EventResponseStatus
+import com.eysamarin.squadplay.models.EventUI
+import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
+import com.eysamarin.squadplay.ui.squircle.SquircleShape
+
+@Composable
+fun EventItem(
+    event: EventUI,
+    modifier: Modifier = Modifier,
+    members: List<EventMemberUI> = emptyList(),
+    maxVisibleAvatars: Int = 4,
+    onDetailsTap: () -> Unit = {},
+) {
+    val cardShape = SquircleShape(cornerSmoothing = CornerSmoothing.High)
+    val glowColor = Color(0xFF4CAF50)
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onDetailsTap() },
+        shape = cardShape,
+        colors = CardDefaults.cardColors(
+            containerColor = DesignSystemTheme.colorScheme.surfaceContainerHigh
+        ),
+        border = BorderStroke(1.dp, glowColor.copy(alpha = 0.6f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Game cover image
+                val coverShape = RoundedCornerShape(12.dp)
+                if (!event.iconUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = event.iconUrl,
+                        contentDescription = event.title,
+                        modifier = Modifier
+                            .size(88.dp)
+                            .clip(coverShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(com.eysamarin.squadplay.designSystem.R.drawable.img_stub),
+                        contentDescription = event.title,
+                        modifier = Modifier
+                            .size(88.dp)
+                            .clip(coverShape),
+                        tint = Color.Unspecified
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Event details
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = event.title.uppercase(),
+                        style = DesignSystemTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = DesignSystemTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    val subtitle = event.subtitle
+                    if (!subtitle.isNullOrEmpty()) {
+                        Text(
+                            text = subtitle,
+                            style = DesignSystemTheme.typography.bodyMedium,
+                            color = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    // Status row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val acceptedCount = members.count { it.status == EventResponseStatus.ACCEPTED }
+                        val statusText = if (members.isNotEmpty()) {
+                            if (acceptedCount == members.size) {
+                                "$acceptedCount/${members.size} confirmed"
+                            } else {
+                                "$acceptedCount/${members.size} ready"
+                            }
+                        } else {
+                            when (event.userStatus) {
+                                EventResponseStatus.ACCEPTED -> stringResource(R.string.content_description_status_accepted)
+                                EventResponseStatus.REJECTED -> stringResource(R.string.content_description_status_rejected)
+                                EventResponseStatus.NOT_SET -> stringResource(R.string.content_description_status_not_set)
+                            }
+                        }
+
+                        Icon(
+                            painter = painterResource(R.drawable.ic_check_circle_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = glowColor
+                        )
+
+                        Text(
+                            text = statusText,
+                            style = DesignSystemTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = DesignSystemTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Participant avatars row
+                    if (members.isNotEmpty()) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
+                            val visibleMembers = members.take(maxVisibleAvatars)
+                            val remainingCount = members.size - visibleMembers.size
+
+                            visibleMembers.forEach { member ->
+                                MemberAvatarItem(member = member)
+                            }
+
+                            if (remainingCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(DesignSystemTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "+$remainingCount",
+                                        style = DesignSystemTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DesignSystemTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Details button
+            DSButton(
+                text = stringResource(R.string.view_details),
+                modifier = Modifier.fillMaxWidth(),
+                onTap = onDetailsTap
+            )
+        }
+    }
+}
+
+@Composable
+private fun MemberAvatarItem(
+    member: EventMemberUI,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier.size(32.dp)
+    ) {
+        val avatarShape = CircleShape
+        if (!member.photoUrl.isNullOrEmpty()) {
+            AsyncImage(
+                model = member.photoUrl,
+                contentDescription = member.username,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(avatarShape)
+                    .align(Alignment.Center),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.default_avatar),
+                contentDescription = member.username,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(avatarShape)
+                    .align(Alignment.Center),
+                tint = Color.Unspecified
+            )
+        }
+
+        val badgeColor = when (member.status) {
+            EventResponseStatus.ACCEPTED -> Color(0xFF4CAF50)
+            EventResponseStatus.REJECTED -> Color(0xFFF44336)
+            EventResponseStatus.NOT_SET -> Color.Gray
+        }
+
+        val badgeIcon = when (member.status) {
+            EventResponseStatus.ACCEPTED -> R.drawable.ic_check_circle_24
+            EventResponseStatus.REJECTED -> R.drawable.ic_cancel_24
+            EventResponseStatus.NOT_SET -> R.drawable.ic_help_24
+        }
+
+        Box(
+            modifier = Modifier
+                .size(14.dp)
+                .align(Alignment.BottomEnd)
+                .clip(CircleShape)
+                .background(badgeColor)
+                .border(1.dp, Color.Black, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(badgeIcon),
+                contentDescription = null,
+                modifier = Modifier.size(10.dp),
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@DarkLightModePreview
+@Composable
+private fun EventItemPreview() {
+    val sampleEvent = EventUI(
+        eventId = "1",
+        title = "APEX LEGENDS - RANKED GRIND",
+        subtitle = "20:00 - 23:00",
+        iconUrl = null,
+        userStatus = EventResponseStatus.ACCEPTED
+    )
+
+    val sampleMembers = listOf(
+        EventMemberUI("1", "User 1", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("2", "User 2", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("3", "User 3", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("4", "User 4", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("5", "User 5", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("6", "User 6", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("7", "User 7", null, EventResponseStatus.ACCEPTED),
+        EventMemberUI("8", "User 8", null, EventResponseStatus.ACCEPTED),
+    )
+
+    DesignSystemTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            EventItem(
+                event = sampleEvent,
+                members = sampleMembers
+            )
+        }
+    }
+}

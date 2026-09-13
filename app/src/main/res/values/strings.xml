@@ -90,6 +90,7 @@
     <string name="event_accept">Accept</string>
     <string name="event_reject">Reject</string>
     <string name="event_members_label">Members</string>
+    <string name="view_details">VIEW DETAILS</string>
     <!-- endregion -->
 
     <!-- region content description -->
