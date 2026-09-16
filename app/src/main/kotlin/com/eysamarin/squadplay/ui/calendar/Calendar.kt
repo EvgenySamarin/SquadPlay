@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -223,36 +222,32 @@ fun ContentItem(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = date.dayOfMonth?.toString() ?: "",
-                    color = when {
-                        !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
-                        date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
-                        else -> DesignSystemTheme.colorScheme.onSurface
-                    },
-                    style = adaptiveBodyByHeight(windowSize),
-                )
+            Text(
+                text = date.dayOfMonth?.toString() ?: "",
+                color = when {
+                    !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                    date.isSelected -> DesignSystemTheme.colorScheme.onPrimary
+                    else -> DesignSystemTheme.colorScheme.onSurface
+                },
+                style = adaptiveBodyByHeight(windowSize),
+            )
 
-                if (date.countEvents > 0) {
-                    val dotColor = when {
-                        !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
-                        date.hasAdminEvents -> DesignSystemTheme.extendedColors.green
-                        date.hasUserEvents -> DesignSystemTheme.extendedColors.blue
-                        else -> DesignSystemTheme.extendedColors.orange
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 2.dp)
-                            .size(5.dp)
-                            .clip(CircleShape)
-                            .background(dotColor)
-                    )
+            if (date.countEvents > 0) {
+                val dotColor = when {
+                    !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                    date.hasAdminEvents -> DesignSystemTheme.extendedColors.green
+                    date.hasUserEvents -> DesignSystemTheme.extendedColors.blue
+                    else -> DesignSystemTheme.extendedColors.orange
                 }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 8.dp)
+                        .size(5.dp)
+                        .clip(CircleShape)
+                        .background(dotColor)
+                )
             }
         }
     }

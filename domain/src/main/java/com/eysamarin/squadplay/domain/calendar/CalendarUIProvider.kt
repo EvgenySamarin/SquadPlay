@@ -43,6 +43,14 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         daysOfWeek
     }
 
+    /**
+     * Merges event statistics into the provided [CalendarUI].
+     *
+     * Performance optimizations:
+     * - Uses a primitive [Int] key via [dateKey] to prevent object allocations.
+     * - Uses [MutableDateSummary] accumulator to avoid per-event allocations.
+     * - Evaluates flags lazily to skip redundant computations.
+     */
     override fun mergedCalendarWithEvents(
         calendar: CalendarUI,
         events: List<Event>,
@@ -50,32 +58,35 @@ class CalendarUIProviderImpl: CalendarUIProvider {
         groupMembers: Map<String, List<Friend>>,
     ): CalendarUI {
         if (events.isEmpty()) {
+            val hasAnyEvents = calendar.dates.any { it.countEvents > 0 || it.hasUserEvents || it.hasAdminEvents }
+            if (!hasAnyEvents) return calendar
             return calendar.copy(
                 dates = calendar.dates.map { date ->
-                    if (date.countEvents == 0 && !date.hasUserEvents) date
-                    else date.copy(countEvents = 0, hasUserEvents = false)
+                    if (date.countEvents == 0 && !date.hasUserEvents && !date.hasAdminEvents) date
+                    else date.copy(countEvents = 0, hasUserEvents = false, hasAdminEvents = false)
                 }
             )
         }
 
-        data class DateEventSummary(val count: Int, val hasUserEvents: Boolean, val hasAdminEvents: Boolean)
-        val eventsByDate = mutableMapOf<Triple<Int, Int, Int>, DateEventSummary>()
+        val eventsByDate = mutableMapOf<Int, MutableDateSummary>()
+
         for (event in events) {
-            val key = Triple(event.fromDateTime.year, event.fromDateTime.month.number, event.fromDateTime.day)
-            val current = eventsByDate[key]
-            val isUserEvent = event.creatorId == currentUserId
-            val members = groupMembers[event.groupId]
-            val eventAcceptedByAllMembers = !members.isNullOrEmpty() && members.all { member ->
-                event.getStatusForUser(member.uid) == EventResponseStatus.ACCEPTED
+            val key = dateKey(event.fromDateTime.year, event.fromDateTime.month.number, event.fromDateTime.day)
+            val summary = eventsByDate.getOrPut(key) { MutableDateSummary() }
+
+            summary.count++
+
+            // Lazy evaluation: skip setting if user event status is already true for this date
+            if (!summary.hasUserEvents && event.creatorId == currentUserId) {
+                summary.hasUserEvents = true
             }
-            eventsByDate[key] = if (current == null) {
-                DateEventSummary(count = 1, hasUserEvents = isUserEvent, hasAdminEvents = eventAcceptedByAllMembers)
-            } else {
-                DateEventSummary(
-                    count = current.count + 1,
-                    hasUserEvents = current.hasUserEvents || isUserEvent,
-                    hasAdminEvents = current.hasAdminEvents || eventAcceptedByAllMembers
-                )
+
+            // Lazy evaluation: skip expensive member acceptance checks if an event on this date is already accepted by all
+            if (!summary.hasAdminEvents) {
+                val members = groupMembers[event.groupId]
+                if (!members.isNullOrEmpty() && members.all { event.getStatusForUser(it.uid) == EventResponseStatus.ACCEPTED }) {
+                    summary.hasAdminEvents = true
+                }
             }
         }
 
@@ -85,7 +96,8 @@ class CalendarUIProviderImpl: CalendarUIProvider {
                 val month = date.monthNumber
                 val year = date.year ?: calendar.yearMonth.year
                 if (day != null && month != null) {
-                    val summary = eventsByDate[Triple(year, month, day)]
+                    val key = dateKey(year, month, day)
+                    val summary = eventsByDate[key]
                     date.copy(
                         countEvents = summary?.count ?: 0,
                         hasUserEvents = summary?.hasUserEvents ?: false,
@@ -97,6 +109,24 @@ class CalendarUIProviderImpl: CalendarUIProvider {
             }
         )
     }
+
+    /**
+     * Mutable accumulator used during calendar event merging to avoid heap allocation
+     * of summary data objects on each event iteration.
+     */
+    private class MutableDateSummary {
+        var count: Int = 0
+        var hasUserEvents: Boolean = false
+        var hasAdminEvents: Boolean = false
+    }
+
+    /**
+     * Encodes year, month, and day into a primitive [Int] key (format: YYYYMMDD).
+     *
+     * Using a primitive integer key avoids object allocation of [Triple] or [LocalDate]
+     * instances during event grouping.
+     */
+    private fun dateKey(year: Int, month: Int, day: Int): Int = year * 10000 + month * 100 + day
 
     override fun provideCalendarUIBy(yearMonth: LocalDate): CalendarUI {
         val dates = dataSource.getDates(yearMonth)
