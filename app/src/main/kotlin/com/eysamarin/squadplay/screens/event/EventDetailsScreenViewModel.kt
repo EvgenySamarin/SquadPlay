@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
 
 class EventDetailsScreenViewModel(
     private val navigator: Navigator,
@@ -29,6 +30,16 @@ class EventDetailsScreenViewModel(
     private val analyticsProvider: AnalyticsProvider,
     private val logger: AppLogger,
 ) : ViewModel() {
+
+    companion object {
+        internal var defaultNowProvider: () -> LocalDateTime = {
+            java.time.LocalDateTime.now().let {
+                LocalDateTime(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute, it.second)
+            }
+        }
+    }
+
+    internal var nowProvider: () -> LocalDateTime = defaultNowProvider
 
     private var currentUserId: String? = null
     private var membersJob: Job? = null
@@ -70,6 +81,7 @@ class EventDetailsScreenViewModel(
                 isYourEvent = args.isYourEvent,
                 userStatus = args.userStatus,
                 groupId = args.groupId,
+                isObsolete = args.isObsolete,
             )
         }
         loadGroupMembers(args.groupId, args.eventId)
@@ -100,7 +112,7 @@ class EventDetailsScreenViewModel(
     }
 
     fun updateEventResponse(status: EventResponseStatus) {
-        if (_uiState.value.isYourEvent) return
+        if (_uiState.value.isYourEvent || _uiState.value.isObsolete) return
         val eventId = _uiState.value.eventId
         val userId = currentUserId
         val newStatus = if (_uiState.value.userStatus == status) {
@@ -130,6 +142,7 @@ class EventDetailsScreenViewModel(
     }
 
     fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) = viewModelScope.launch {
+        if (_uiState.value.isObsolete) return@launch
         _uiState.update { current ->
             val updatedMembers = current.members.map { member ->
                 if (member.uid == userId) member.copy(status = status) else member
@@ -176,12 +189,14 @@ class EventDetailsScreenViewModel(
                     val latestUserStatus = currentUserId?.let { uid ->
                         matchingEvent?.getStatusForUser(uid)
                     }
-                    Pair(membersList, latestUserStatus)
-                }.collect { (memberUIs, latestUserStatus) ->
+                    val isObsolete = matchingEvent?.isObsolete(nowProvider())
+                    Triple(membersList, latestUserStatus, isObsolete)
+                }.collect { (memberUIs, latestUserStatus, isObsolete) ->
                     _uiState.update { current ->
                         current.copy(
                             members = memberUIs,
-                            userStatus = if (current.isYourEvent) current.userStatus else (latestUserStatus ?: current.userStatus)
+                            userStatus = if (current.isYourEvent) current.userStatus else (latestUserStatus ?: current.userStatus),
+                            isObsolete = isObsolete ?: current.isObsolete,
                         )
                     }
                 }

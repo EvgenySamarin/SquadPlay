@@ -77,6 +77,8 @@ data class Event(
             else -> EventResponseStatus.NOT_SET
         }
     }
+
+    fun isObsolete(now: LocalDateTime): Boolean = toDateTime < now
 }
 
 data class EventUI(

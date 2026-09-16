@@ -57,6 +57,7 @@ class HomeScreenEventNavigationTest {
         Dispatchers.setMain(testDispatcher)
         HomeScreenViewModel.defaultIoDispatcher = testDispatcher
         HomeScreenViewModel.defaultTodayProvider = { LocalDate(2026, 9, 9) }
+        HomeScreenViewModel.defaultNowProvider = { LocalDateTime(2026, 9, 9, 12, 0) }
     }
 
     @After
@@ -65,6 +66,11 @@ class HomeScreenEventNavigationTest {
         HomeScreenViewModel.defaultIoDispatcher = Dispatchers.IO
         HomeScreenViewModel.defaultTodayProvider = {
             java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
+        }
+        HomeScreenViewModel.defaultNowProvider = {
+            java.time.LocalDateTime.now().let {
+                LocalDateTime(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute, it.second)
+            }
         }
     }
 

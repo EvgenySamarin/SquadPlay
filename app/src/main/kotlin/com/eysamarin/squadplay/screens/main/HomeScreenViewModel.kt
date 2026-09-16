@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.number
 
 class HomeScreenViewModel(
@@ -61,10 +62,16 @@ class HomeScreenViewModel(
         internal var defaultTodayProvider: () -> LocalDate = {
             java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
         }
+        internal var defaultNowProvider: () -> LocalDateTime = {
+            java.time.LocalDateTime.now().let {
+                LocalDateTime(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute, it.second)
+            }
+        }
     }
 
     internal var ioDispatcher: CoroutineDispatcher = defaultIoDispatcher
     internal var todayProvider: () -> LocalDate = defaultTodayProvider
+    internal var nowProvider: () -> LocalDateTime = defaultNowProvider
 
     val uiState: StateFlow<UiState<HomeScreenUI>>
         field = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
@@ -260,6 +267,7 @@ class HomeScreenViewModel(
         }
         val targetGroupId = event.groupId ?: matchingEvent?.groupId.orEmpty()
         val userStatus = event.members.firstOrNull()?.status ?: EventResponseStatus.NOT_SET
+        val isObsolete = matchingEvent?.isObsolete(nowProvider()) ?: false
         navigator.navigate(
             Destination.EventDetailsScreen(
                 eventId = event.eventId,
@@ -269,6 +277,7 @@ class HomeScreenViewModel(
                 isYourEvent = event.isYourEvent,
                 userStatus = userStatus,
                 groupId = targetGroupId,
+                isObsolete = isObsolete,
             )
         )
     }
