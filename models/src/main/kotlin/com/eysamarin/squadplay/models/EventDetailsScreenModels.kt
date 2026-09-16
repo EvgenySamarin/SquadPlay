@@ -30,6 +30,7 @@ data class EventDetailsScreenUI(
     val userStatus: EventResponseStatus = EventResponseStatus.NOT_SET,
     val groupId: String = "",
     val members: List<EventMemberUI> = emptyList(),
+    val isObsolete: Boolean = false,
 )
 
 val PREVIEW_EVENT_MEMBERS = listOf(

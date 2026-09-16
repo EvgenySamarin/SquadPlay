@@ -57,6 +57,8 @@ class EventAttendanceTest {
         Dispatchers.setMain(testDispatcher)
         HomeScreenViewModel.defaultIoDispatcher = testDispatcher
         HomeScreenViewModel.defaultTodayProvider = { LocalDate(2026, 9, 12) }
+        HomeScreenViewModel.defaultNowProvider = { LocalDateTime(2026, 9, 12, 12, 0) }
+        EventDetailsScreenViewModel.defaultNowProvider = { LocalDateTime(2026, 9, 12, 12, 0) }
     }
 
     @After
@@ -65,6 +67,16 @@ class EventAttendanceTest {
         HomeScreenViewModel.defaultIoDispatcher = Dispatchers.IO
         HomeScreenViewModel.defaultTodayProvider = {
             java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
+        }
+        HomeScreenViewModel.defaultNowProvider = {
+            java.time.LocalDateTime.now().let {
+                LocalDateTime(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute, it.second)
+            }
+        }
+        EventDetailsScreenViewModel.defaultNowProvider = {
+            java.time.LocalDateTime.now().let {
+                LocalDateTime(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute, it.second)
+            }
         }
     }
 
@@ -479,6 +491,198 @@ class EventAttendanceTest {
         assertEquals("Bob", memberWithoutNickname.username)
         assertNull(memberWithoutNickname.nickname)
         assertEquals("Bob", memberWithoutNickname.displayName)
+    }
+
+    @Test
+    fun event_isObsolete_evaluatesCorrectlyBasedOnToDateTime() {
+        val pastEvent = Event(
+            uid = "event-past",
+            creatorId = "creator-1",
+            groupId = "group-1",
+            title = "Past Event",
+            fromDateTime = LocalDateTime(2026, 9, 12, 9, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 11, 0),
+        )
+        val futureEvent = Event(
+            uid = "event-future",
+            creatorId = "creator-1",
+            groupId = "group-1",
+            title = "Future Event",
+            fromDateTime = LocalDateTime(2026, 9, 12, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 16, 0),
+        )
+
+        val now = LocalDateTime(2026, 9, 12, 12, 0)
+        assertTrue(pastEvent.isObsolete(now))
+        assertFalse(futureEvent.isObsolete(now))
+    }
+
+    @Test
+    fun homeScreenViewModel_onEventTap_propagatesIsObsoleteFlag() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val pastEvent = Event(
+            uid = "event-past",
+            creatorId = "creator-1",
+            groupId = "group-1",
+            title = "Past Event",
+            fromDateTime = LocalDateTime(2026, 9, 12, 9, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 11, 0),
+        )
+        val futureEvent = Event(
+            uid = "event-future",
+            creatorId = "creator-1",
+            groupId = "group-1",
+            title = "Future Event",
+            fromDateTime = LocalDateTime(2026, 9, 12, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 16, 0),
+        )
+
+        val viewModel = HomeScreenViewModel(
+            navigator = fakeNavigator,
+            authProvider = FakeAuthProvider(),
+            calendarUIProvider = FakeCalendarUIProvider(),
+            eventProvider = FakeEventProvider(events = listOf(pastEvent, futureEvent)),
+            snackbar = FakeSnackbarProvider(),
+            profileProvider = FakeProfileProvider(groupInfo = Group("group-1", "Alpha Squad", emptyList())),
+            stringProvider = FakeStringProvider(),
+            analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
+        )
+        viewModel.nowProvider = { LocalDateTime(2026, 9, 12, 12, 0) }
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Tap past event
+        viewModel.onAction(HomeScreenAction.OnEventTap(
+            com.eysamarin.squadplay.models.EventUI(eventId = "event-past", title = "Past Event", isYourEvent = false)
+        ))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val pastDest = fakeNavigator.navigatedDestinations.removeAt(fakeNavigator.navigatedDestinations.lastIndex) as Destination.EventDetailsScreen
+        assertTrue(pastDest.isObsolete)
+
+        // Tap future event
+        viewModel.onAction(HomeScreenAction.OnEventTap(
+            com.eysamarin.squadplay.models.EventUI(eventId = "event-future", title = "Future Event", isYourEvent = false)
+        ))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val futureDest = fakeNavigator.navigatedDestinations.removeAt(fakeNavigator.navigatedDestinations.lastIndex) as Destination.EventDetailsScreen
+        assertFalse(futureDest.isObsolete)
+    }
+
+    @Test
+    fun eventDetailsScreenViewModel_obsoleteEvent_guardsAttendanceUpdates() = runTest(testDispatcher) {
+        val fakeEventProvider = FakeEventProvider()
+        val fakeProfileProvider = FakeProfileProvider(
+            user = User(uid = "user-regular", username = "regular_user", email = "reg@example.com", photoUrl = null, groups = emptyList())
+        )
+        val viewModel = EventDetailsScreenViewModel(
+            navigator = FakeNavigator(),
+            eventProvider = fakeEventProvider,
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
+        )
+        viewModel.nowProvider = { LocalDateTime(2026, 9, 12, 12, 0) }
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Initialize with obsolete = true
+        viewModel.initData(
+            Destination.EventDetailsScreen(
+                eventId = "obsolete-event-1",
+                title = "Old Tournament",
+                date = "10:00 - 11:00",
+                imageUrl = null,
+                isYourEvent = false,
+                userStatus = EventResponseStatus.NOT_SET,
+                groupId = "group-1",
+                isObsolete = true,
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.isObsolete)
+        assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
+
+        // Attempt Accept tap
+        viewModel.onAction(EventDetailsScreenAction.OnAcceptTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
+        assertNull(fakeEventProvider.lastUpdatedResponseStatus)
+
+        // Attempt Reject tap
+        viewModel.onAction(EventDetailsScreenAction.OnRejectTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
+        assertNull(fakeEventProvider.lastUpdatedResponseStatus)
+
+        // Attempt direct updateEventResponse
+        viewModel.updateEventResponse(EventResponseStatus.ACCEPTED)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
+        assertNull(fakeEventProvider.lastUpdatedResponseStatus)
+
+        // Attempt direct overload updateEventResponse(eventId, userId, status)
+        viewModel.updateEventResponse("obsolete-event-1", "user-regular", EventResponseStatus.ACCEPTED)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
+        assertNull(fakeEventProvider.lastUpdatedResponseStatus)
+    }
+
+    @Test
+    fun eventDetailsScreenViewModel_loadGroupMembers_dynamicallyEvaluatesIsObsolete() = runTest(testDispatcher) {
+        val obsoleteEvent = Event(
+            uid = "dyn-event-1",
+            creatorId = "creator-1",
+            groupId = "group-1",
+            title = "Dynamic Obsolete Event",
+            fromDateTime = LocalDateTime(2026, 9, 12, 8, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 10, 0),
+        )
+        val fakeEventProvider = FakeEventProvider(events = listOf(obsoleteEvent))
+        val group = Group(uid = "group-1", title = "Squad 1", members = listOf("creator-1", "user-1"))
+        val fakeProfileProvider = FakeProfileProvider(
+            user = User(uid = "user-1", username = "gamer", email = "gamer@example.com", photoUrl = null, groups = emptyList()),
+            groupInfo = group,
+            groupSections = listOf(
+                UserGroupSection(
+                    groupId = "group-1",
+                    title = "Squad 1",
+                    members = listOf(
+                        Friend(uid = "creator-1", username = "creator", groupTitleFrom = "Squad 1", photoUrl = null),
+                        Friend(uid = "user-1", username = "gamer", groupTitleFrom = "Squad 1", photoUrl = null),
+                    )
+                )
+            )
+        )
+
+        val viewModel = EventDetailsScreenViewModel(
+            navigator = FakeNavigator(),
+            eventProvider = fakeEventProvider,
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
+        )
+        viewModel.nowProvider = { LocalDateTime(2026, 9, 12, 12, 0) }
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Pass isObsolete = false initially
+        viewModel.initData(
+            Destination.EventDetailsScreen(
+                eventId = "dyn-event-1",
+                title = "Dynamic Obsolete Event",
+                date = "08:00 - 10:00",
+                imageUrl = null,
+                isYourEvent = false,
+                userStatus = EventResponseStatus.NOT_SET,
+                groupId = "group-1",
+                isObsolete = false,
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // After reactive flow collection, isObsolete should dynamically become true
+        assertTrue(viewModel.uiState.value.isObsolete)
     }
 
     private class FakeNavigator : Navigator {

@@ -149,7 +149,7 @@ fun EventDetailsScreen(
                             style = adaptiveBodyByHeight(windowSize),
                             color = DesignSystemTheme.colorScheme.onSurface,
                         )
-                        if (!state.isYourEvent) {
+                        if (!state.isYourEvent && !state.isObsolete) {
                             Spacer(modifier = Modifier.height(24.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
