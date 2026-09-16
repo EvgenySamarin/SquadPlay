@@ -24,6 +24,7 @@ data class Friend(
     val username: String,
     val groupTitleFrom: String,
     val photoUrl: String?,
+    val nickname: String? = null,
 )
 
 data class UserGroupSection(

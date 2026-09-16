@@ -14,7 +14,11 @@ data class EventMemberUI(
     val username: String,
     val photoUrl: String? = null,
     val status: EventResponseStatus = EventResponseStatus.NOT_SET,
-)
+    val nickname: String? = null,
+) {
+    val displayName: String
+        get() = nickname?.takeIf { it.isNotBlank() } ?: username
+}
 
 data class EventDetailsScreenUI(
     val eventId: String,
