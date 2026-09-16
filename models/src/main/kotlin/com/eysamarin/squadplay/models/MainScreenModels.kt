@@ -36,6 +36,7 @@ data class Date(
     val isSelected: Boolean,
     val enabled: Boolean,
     val hasUserEvents: Boolean = false,
+    val hasAdminEvents: Boolean = false,
     val year: Int? = null,
 ) {
     companion object {
