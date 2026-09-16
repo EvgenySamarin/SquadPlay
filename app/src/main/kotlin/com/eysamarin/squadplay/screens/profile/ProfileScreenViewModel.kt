@@ -44,6 +44,7 @@ class ProfileScreenViewModel(
     private val userInfoFlow = MutableStateFlow<User?>(null)
     private val userGroupsFlow = MutableStateFlow<List<UserGroupSection>>(emptyList())
     private val isCreateGroupBottomSheetVisibleFlow = MutableStateFlow(false)
+    private val isChangeNicknameBottomSheetVisibleFlow = MutableStateFlow(false)
 
     init {
         collectUserInfo()
@@ -78,23 +79,21 @@ class ProfileScreenViewModel(
         combine(
             userInfoFlow,
             userGroupsFlow,
-            isCreateGroupBottomSheetVisibleFlow
-        ) { userInfo, groupSections, isBottomSheetVisible ->
+            isCreateGroupBottomSheetVisibleFlow,
+            isChangeNicknameBottomSheetVisibleFlow,
+        ) { userInfo, groupSections, isBottomSheetVisible, isNicknameSheetVisible ->
             userInfo?.let {
-                Triple(userInfo, groupSections, isBottomSheetVisible)
+                ProfileScreenUI(
+                    user = userInfo,
+                    groupSections = groupSections,
+                    isCreateGroupBottomSheetVisible = isBottomSheetVisible,
+                    isChangeNicknameBottomSheetVisible = isNicknameSheetVisible,
+                )
             }
         }
             .filterNotNull()
-            .onEach { (userInfo, groupSections, isBottomSheetVisible) ->
-                uiState.emit(
-                    UiState.Normal(
-                        ProfileScreenUI(
-                            user = userInfo,
-                            groupSections = groupSections,
-                            isCreateGroupBottomSheetVisible = isBottomSheetVisible,
-                        )
-                    )
-                )
+            .onEach { profileScreenUI ->
+                uiState.emit(UiState.Normal(profileScreenUI))
             }
             .launchIn(viewModelScope)
     }
@@ -199,6 +198,31 @@ class ProfileScreenViewModel(
         }
     }
 
+    fun onAvatarTap() {
+        isChangeNicknameBottomSheetVisibleFlow.value = true
+    }
+
+    fun onDismissChangeNicknameBottomSheet() {
+        isChangeNicknameBottomSheetVisibleFlow.value = false
+    }
+
+    fun onConfirmChangeNickname(newNickname: String) = viewModelScope.launch {
+        isChangeNicknameBottomSheetVisibleFlow.value = false
+        val trimmed = newNickname.trim().removePrefix("@")
+        val words = if (trimmed.isEmpty()) emptyList() else trimmed.split("\\s+".toRegex())
+        if (words.size != 1) return@launch
+
+        val currentUiState = uiState.value
+        if (currentUiState !is UiState.Normal) return@launch
+        val userId = currentUiState.data.user.uid
+        val isSuccess = profileProvider.updateNickname(userId = userId, nickname = trimmed)
+        if (isSuccess) {
+            logger.d { "Nickname updated successfully: $userId to $trimmed" }
+        } else {
+            logger.w { "Failed to update nickname for $userId" }
+        }
+    }
+
     fun onAction(action: ProfileScreenAction) {
         when (action) {
             ProfileScreenAction.OnBackButtonTap -> onBackButtonTap()
@@ -214,6 +238,9 @@ class ProfileScreenViewModel(
             is ProfileScreenAction.OnConfirmEditGroup -> onConfirmEditGroup(action.groupId, action.newTitle)
             is ProfileScreenAction.OnConfirmDeleteGroup -> onConfirmDeleteGroup(action.groupId)
             is ProfileScreenAction.OnConfirmLeaveGroup -> onConfirmLeaveGroup(action.groupId)
+            ProfileScreenAction.OnAvatarTap -> onAvatarTap()
+            ProfileScreenAction.OnDismissChangeNicknameBottomSheet -> onDismissChangeNicknameBottomSheet()
+            is ProfileScreenAction.OnConfirmChangeNickname -> onConfirmChangeNickname(action.newNickname)
         }
     }
 }

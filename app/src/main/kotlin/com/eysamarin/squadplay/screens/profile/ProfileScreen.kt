@@ -154,6 +154,17 @@ fun ProfileScreen(
         )
     }
 
+    if (state is UiState.Normal && state.data.isChangeNicknameBottomSheetVisible) {
+        ChangeNicknameBottomSheet(
+            initialNickname = state.data.user.nickname ?: "",
+            windowSize = windowSize,
+            onDismiss = { onAction(ProfileScreenAction.OnDismissChangeNicknameBottomSheet) },
+            onConfirm = { newNickname ->
+                onAction(ProfileScreenAction.OnConfirmChangeNickname(newNickname))
+            },
+        )
+    }
+
     editingGroup?.let { group ->
         EditGroupBottomSheet(
             initialTitle = group.title,
@@ -251,9 +262,19 @@ private fun ProfileScreenMediumLayout(
                         color = DesignSystemTheme.colorScheme.onSurface
                     )
                 }
+                val nickname = state.data.user.nickname?.takeIf { it.isNotBlank() }
+                    ?: stringResource(R.string.default_nickname)
+                Text(
+                    text = "@$nickname",
+                    style = adaptiveBodyByHeight(windowSize),
+                    color = DesignSystemTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             UserAvatar(
+                modifier = Modifier
+                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High))
+                    .clickable { onAction(ProfileScreenAction.OnAvatarTap) },
                 imageUrl = state.data.user.photoUrl,
             )
         }
@@ -625,6 +646,71 @@ private fun ConfirmationBottomSheet(
                     onTap = onConfirm,
                 )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChangeNicknameBottomSheet(
+    initialNickname: String,
+    windowSize: WindowSizeClass,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var nickname by rememberSaveable(initialNickname) { mutableStateOf(initialNickname) }
+    val trimmedNickname = nickname.trim().removePrefix("@").trim()
+    val words = remember(trimmedNickname) {
+        if (trimmedNickname.isEmpty()) emptyList() else trimmedNickname.split("\\s+".toRegex())
+    }
+    val hasError = words.size > 1
+    val isButtonEnabled = words.size == 1
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = DesignSystemTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.change_nickname_title),
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface,
+            )
+            OutlinedTextField(
+                value = nickname,
+                onValueChange = { nickname = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.nickname_label)) },
+                prefix = { Text("@") },
+                isError = hasError,
+                supportingText = {
+                    if (hasError) {
+                        Text(stringResource(R.string.error_single_word_nickname))
+                    }
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                    unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
+                )
+            )
+            DSButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.confirm),
+                enabled = isButtonEnabled,
+                onTap = {
+                    if (isButtonEnabled) {
+                        onConfirm(trimmedNickname)
+                    }
+                }
+            )
         }
     }
 }
