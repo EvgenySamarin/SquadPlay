@@ -9,6 +9,7 @@ data class User(
     val email: String?,
     val photoUrl: String?,
     val groups: List<Group>,
+    val nickname: String? = null,
 )
 
 data class Group(

@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -52,6 +53,7 @@ interface FirebaseFirestoreDataSource {
     suspend fun renameGroup(groupId: String, newTitle: String): Boolean
     suspend fun deleteGroup(groupId: String): Boolean
     suspend fun leaveGroup(userId: String, groupId: String): Boolean
+    suspend fun updateNickname(userId: String, nickname: String): Boolean
     fun clearListeners()
 
     companion object {
@@ -313,15 +315,18 @@ class FirebaseFirestoreDataSourceImpl(
     }
 
     override suspend fun saveUserProfile(user: User) {
-        val userDataMap = hashMapOf(
+        val userDataMap = hashMapOf<String, Any?>(
             "uid" to user.uid,
             "username" to user.username,
             "email" to user.email,
             "photoUrl" to user.photoUrl,
         )
+        if (user.nickname != null) {
+            userDataMap["nickname"] = user.nickname
+        }
 
         firebaseFirestore.collection(USERS_COLLECTION).document(user.uid)
-            .set(userDataMap)
+            .set(userDataMap, SetOptions.merge())
             .addOnSuccessListener {
                 logger.d(tag = "Firestore") { "User profile saved successfully" }
             }
@@ -375,7 +380,8 @@ class FirebaseFirestoreDataSourceImpl(
                 username = userData["username"] as String? ?: "User",
                 email = userData["email"] as String?,
                 photoUrl = userData["photoUrl"] as String?,
-                groups = emptyList()
+                groups = emptyList(),
+                nickname = userData["nickname"] as String?,
             )
             trySend(user)
         }
@@ -698,5 +704,17 @@ class FirebaseFirestoreDataSourceImpl(
             logger.e(tag = "Firestore", throwable = exception) { "Error leaving group: ${exception.message}" }
             false
         }
+    }
+
+    override suspend fun updateNickname(userId: String, nickname: String): Boolean = try {
+        logger.d(tag = "Firestore") { "Updating nickname for $userId to $nickname" }
+        firebaseFirestore.collection(USERS_COLLECTION).document(userId)
+            .set(mapOf("nickname" to nickname), SetOptions.merge())
+            .await()
+        logger.d(tag = "Firestore") { "Nickname updated successfully for $userId" }
+        true
+    } catch (e: Exception) {
+        logger.e(tag = "Firestore", throwable = e) { "Error updating nickname for $userId: ${e.message}" }
+        false
     }
 }

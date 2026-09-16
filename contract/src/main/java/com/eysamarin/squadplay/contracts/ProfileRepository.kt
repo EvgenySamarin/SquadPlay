@@ -18,4 +18,5 @@ interface ProfileRepository {
     suspend fun renameGroup(groupId: String, newTitle: String): Boolean
     suspend fun deleteGroup(groupId: String): Boolean
     suspend fun leaveGroup(userId: String, groupId: String): Boolean
+    suspend fun updateNickname(userId: String, nickname: String): Boolean
 }

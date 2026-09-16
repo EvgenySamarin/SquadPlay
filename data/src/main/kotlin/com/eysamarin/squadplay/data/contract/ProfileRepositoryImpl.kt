@@ -79,4 +79,7 @@ class ProfileRepositoryImpl(
 
     override suspend fun leaveGroup(userId: String, groupId: String): Boolean =
         firestoreDataSource.leaveGroup(userId = userId, groupId = groupId)
+
+    override suspend fun updateNickname(userId: String, nickname: String): Boolean =
+        firestoreDataSource.updateNickname(userId = userId, nickname = nickname)
 }

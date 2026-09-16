@@ -182,6 +182,7 @@ class LogoutLoadingTest {
         override suspend fun renameGroup(groupId: String, newTitle: String): Boolean = true
         override suspend fun deleteGroup(groupId: String): Boolean = true
         override suspend fun leaveGroup(userId: String, groupId: String): Boolean = true
+        override suspend fun updateNickname(userId: String, nickname: String): Boolean = true
     }
 
     private class FakeCalendarUIProvider : CalendarUIProvider {

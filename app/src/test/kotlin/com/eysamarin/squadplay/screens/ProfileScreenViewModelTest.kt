@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -351,6 +352,116 @@ class ProfileScreenViewModelTest {
         assertTrue(fakeAnalyticsProvider.trackedEvents.contains(AnalyticsEvent.GroupLeft("group-1")))
     }
 
+    @Test
+    fun onAvatarTap_showsChangeNicknameBottomSheet() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Tester",
+            email = "test@example.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val viewModel = createViewModel(profileProvider = FakeProfileProvider(userInfo = user))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnAvatarTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertTrue(uiState is UiState.Normal)
+        assertTrue((uiState as UiState.Normal).data.isChangeNicknameBottomSheetVisible)
+    }
+
+    @Test
+    fun onDismissChangeNicknameBottomSheet_hidesBottomSheet() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Tester",
+            email = "test@example.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val viewModel = createViewModel(profileProvider = FakeProfileProvider(userInfo = user))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnAvatarTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.onAction(ProfileScreenAction.OnDismissChangeNicknameBottomSheet)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertTrue(uiState is UiState.Normal)
+        assertFalse((uiState as UiState.Normal).data.isChangeNicknameBottomSheetVisible)
+    }
+
+    @Test
+    fun onConfirmChangeNickname_updatesNickname_andHidesBottomSheet() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-123",
+            username = "Tester",
+            email = "test@example.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val fakeProfileProvider = FakeProfileProvider(userInfo = user)
+        val viewModel = createViewModel(profileProvider = fakeProfileProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnAvatarTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.onAction(ProfileScreenAction.OnConfirmChangeNickname("shadow_ninja"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeProfileProvider.updateNicknameCalls)
+        assertEquals("user-123", fakeProfileProvider.lastUpdateNicknameUserId)
+        assertEquals("shadow_ninja", fakeProfileProvider.lastUpdateNickname)
+        val uiState = viewModel.uiState.value
+        assertTrue(uiState is UiState.Normal)
+        assertFalse((uiState as UiState.Normal).data.isChangeNicknameBottomSheetVisible)
+    }
+
+    @Test
+    fun onConfirmChangeNickname_withLeadingAt_stripsAtSign() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-123",
+            username = "Tester",
+            email = "test@example.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val fakeProfileProvider = FakeProfileProvider(userInfo = user)
+        val viewModel = createViewModel(profileProvider = fakeProfileProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmChangeNickname("@hunter"))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, fakeProfileProvider.updateNicknameCalls)
+        assertEquals("hunter", fakeProfileProvider.lastUpdateNickname)
+    }
+
+    @Test
+    fun onConfirmChangeNickname_withMultipleWordsOrEmpty_doesNotUpdate() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-123",
+            username = "Tester",
+            email = "test@example.com",
+            photoUrl = null,
+            groups = emptyList(),
+        )
+        val fakeProfileProvider = FakeProfileProvider(userInfo = user)
+        val viewModel = createViewModel(profileProvider = fakeProfileProvider)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmChangeNickname("two words"))
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, fakeProfileProvider.updateNicknameCalls)
+
+        viewModel.onAction(ProfileScreenAction.OnConfirmChangeNickname("   "))
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, fakeProfileProvider.updateNicknameCalls)
+    }
+
     private fun createViewModel(
         profileProvider: ProfileProvider = FakeProfileProvider(),
         navigator: Navigator = FakeNavigator(),
@@ -418,6 +529,17 @@ class ProfileScreenViewModelTest {
             leaveGroupCalls++
             lastLeaveGroupUserId = userId
             lastLeaveGroupId = groupId
+            return true
+        }
+
+        var updateNicknameCalls = 0
+        var lastUpdateNicknameUserId: String? = null
+        var lastUpdateNickname: String? = null
+
+        override suspend fun updateNickname(userId: String, nickname: String): Boolean {
+            updateNicknameCalls++
+            lastUpdateNicknameUserId = userId
+            lastUpdateNickname = nickname
             return true
         }
     }

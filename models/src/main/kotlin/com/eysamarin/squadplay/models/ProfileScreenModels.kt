@@ -16,12 +16,16 @@ sealed interface ProfileScreenAction {
     object OnCreateNewGroupTap : ProfileScreenAction
     object OnDismissCreateGroupBottomSheet : ProfileScreenAction
     data class OnConfirmCreateGroup(val title: String) : ProfileScreenAction
+    data object OnAvatarTap : ProfileScreenAction
+    data object OnDismissChangeNicknameBottomSheet : ProfileScreenAction
+    data class OnConfirmChangeNickname(val newNickname: String) : ProfileScreenAction
 }
 
 data class ProfileScreenUI(
     val user: User,
     val groupSections: List<UserGroupSection>,
     val isCreateGroupBottomSheetVisible: Boolean = false,
+    val isChangeNicknameBottomSheetVisible: Boolean = false,
 )
 
 val PREVIEW_USER = User(

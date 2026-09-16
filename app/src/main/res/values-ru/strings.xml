@@ -68,6 +68,10 @@
     <string name="delete_group_message">Вы уверены, что хотите удалить эту группу?</string>
     <string name="leave_group_title">Покинуть группу</string>
     <string name="leave_group_message">Вы уверены, что хотите покинуть эту группу?</string>
+    <string name="change_nickname_title">Изменить никнейм</string>
+    <string name="nickname_label">Никнейм</string>
+    <string name="default_nickname">recrut</string>
+    <string name="error_single_word_nickname">Никнейм должен состоять из одного слова</string>
     <!-- endregion -->
 
     <!-- region Settings screen -->
