@@ -6,6 +6,7 @@ import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
+import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
@@ -22,7 +23,6 @@ import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
-import com.eysamarin.squadplay.navigation.DefaultDeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.NavigationAction
 import com.eysamarin.squadplay.navigation.Navigator
@@ -40,7 +40,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -412,7 +411,12 @@ class HomeScreenEventNavigationTest {
                 Date(dayOfMonth = 9, monthNumber = 9, year = 2027, countEvents = 0, isSelected = false, enabled = true)
             )
         )
-        val merged2027 = provider.mergedCalendarWithEvents(calendar2027, listOf(event2026), "user-1")
+        val merged2027 = provider.mergedCalendarWithEvents(
+            calendar = calendar2027,
+            events = listOf(event2026),
+            currentUserId = "user-1",
+            groupMembers = mapOf("group-1" to emptyList())
+        )
         assertEquals(0, merged2027.dates.first().countEvents)
         assertFalse(merged2027.dates.first().hasUserEvents)
 
@@ -423,9 +427,63 @@ class HomeScreenEventNavigationTest {
                 Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 0, isSelected = false, enabled = true)
             )
         )
-        val merged2026 = provider.mergedCalendarWithEvents(calendar2026, listOf(event2026), "user-1")
+        val merged2026 = provider.mergedCalendarWithEvents(
+            calendar = calendar2026,
+            events = listOf(event2026),
+            currentUserId = "user-1",
+            groupMembers = mapOf("group-1" to emptyList())
+        )
         assertEquals(1, merged2026.dates.first().countEvents)
         assertTrue(merged2026.dates.first().hasUserEvents)
+    }
+
+    @Test
+    fun calendarUIProviderImpl_mergedCalendarWithEvents_setsHasAdminEventsCorrectly() {
+        val provider = CalendarUIProviderImpl()
+        val members = listOf(
+            Friend(uid = "user-1", username = "Alice", groupTitleFrom = "Alpha", photoUrl = null),
+            Friend(uid = "user-2", username = "Bob", groupTitleFrom = "Alpha", photoUrl = null),
+        )
+        val eventAllAccepted = Event(
+            uid = "event-1",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Match All Accepted",
+            fromDateTime = LocalDateTime(2026, 9, 9, 10, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 12, 0),
+            responses = mapOf("user-2" to EventResponseStatus.ACCEPTED.name),
+        )
+        val calendar = CalendarUI(
+            daysOfWeek = emptyList(),
+            yearMonth = LocalDate(2026, 9, 1),
+            dates = listOf(
+                Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 0, isSelected = false, enabled = true)
+            )
+        )
+        val mergedAllAccepted = provider.mergedCalendarWithEvents(
+            calendar = calendar,
+            events = listOf(eventAllAccepted),
+            currentUserId = "user-1",
+            groupMembers = mapOf("group-1" to members)
+        )
+        assertTrue(mergedAllAccepted.dates.first().hasAdminEvents)
+
+        val eventNotAllAccepted = Event(
+            uid = "event-2",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Match Pending",
+            fromDateTime = LocalDateTime(2026, 9, 9, 10, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 12, 0),
+            responses = emptyMap(),
+        )
+        val mergedPending = provider.mergedCalendarWithEvents(
+            calendar = calendar,
+            events = listOf(eventNotAllAccepted),
+            currentUserId = "user-1",
+            groupMembers = mapOf("group-1" to members)
+        )
+        assertFalse(mergedPending.dates.first().hasAdminEvents)
     }
 
     @Test
@@ -659,7 +717,8 @@ class HomeScreenEventNavigationTest {
         override fun mergedCalendarWithEvents(
             calendar: CalendarUI,
             events: List<Event>,
-            currentUserId: String
+            currentUserId: String,
+            groupMembers: Map<String, List<Friend>>
         ): CalendarUI = calendar
     }
 

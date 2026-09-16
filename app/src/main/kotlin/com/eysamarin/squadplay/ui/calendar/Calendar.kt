@@ -240,6 +240,7 @@ fun ContentItem(
                 if (date.countEvents > 0) {
                     val dotColor = when {
                         !date.enabled -> DesignSystemTheme.colorScheme.outlineVariant
+                        date.hasAdminEvents -> DesignSystemTheme.extendedColors.green
                         date.hasUserEvents -> DesignSystemTheme.extendedColors.blue
                         else -> DesignSystemTheme.extendedColors.orange
                     }

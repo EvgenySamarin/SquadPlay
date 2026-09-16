@@ -3,6 +3,8 @@ package com.eysamarin.squadplay.domain.calendar
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
+import com.eysamarin.squadplay.models.EventResponseStatus
+import com.eysamarin.squadplay.models.Friend
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -18,7 +20,8 @@ interface CalendarUIProvider {
     fun mergedCalendarWithEvents(
         calendar: CalendarUI,
         events: List<Event>,
-        currentUserId: String
+        currentUserId: String,
+        groupMembers: Map<String, List<Friend>>
     ): CalendarUI
 }
 
@@ -43,7 +46,8 @@ class CalendarUIProviderImpl: CalendarUIProvider {
     override fun mergedCalendarWithEvents(
         calendar: CalendarUI,
         events: List<Event>,
-        currentUserId: String
+        currentUserId: String,
+        groupMembers: Map<String, List<Friend>>,
     ): CalendarUI {
         if (events.isEmpty()) {
             return calendar.copy(
@@ -54,18 +58,23 @@ class CalendarUIProviderImpl: CalendarUIProvider {
             )
         }
 
-        data class DateEventSummary(val count: Int, val hasUserEvents: Boolean)
+        data class DateEventSummary(val count: Int, val hasUserEvents: Boolean, val hasAdminEvents: Boolean)
         val eventsByDate = mutableMapOf<Triple<Int, Int, Int>, DateEventSummary>()
         for (event in events) {
             val key = Triple(event.fromDateTime.year, event.fromDateTime.month.number, event.fromDateTime.day)
             val current = eventsByDate[key]
             val isUserEvent = event.creatorId == currentUserId
+            val members = groupMembers[event.groupId]
+            val eventAcceptedByAllMembers = !members.isNullOrEmpty() && members.all { member ->
+                event.getStatusForUser(member.uid) == EventResponseStatus.ACCEPTED
+            }
             eventsByDate[key] = if (current == null) {
-                DateEventSummary(count = 1, hasUserEvents = isUserEvent)
+                DateEventSummary(count = 1, hasUserEvents = isUserEvent, hasAdminEvents = eventAcceptedByAllMembers)
             } else {
                 DateEventSummary(
                     count = current.count + 1,
-                    hasUserEvents = current.hasUserEvents || isUserEvent
+                    hasUserEvents = current.hasUserEvents || isUserEvent,
+                    hasAdminEvents = current.hasAdminEvents || eventAcceptedByAllMembers
                 )
             }
         }
@@ -79,10 +88,11 @@ class CalendarUIProviderImpl: CalendarUIProvider {
                     val summary = eventsByDate[Triple(year, month, day)]
                     date.copy(
                         countEvents = summary?.count ?: 0,
-                        hasUserEvents = summary?.hasUserEvents ?: false
+                        hasUserEvents = summary?.hasUserEvents ?: false,
+                        hasAdminEvents = summary?.hasAdminEvents ?: false
                     )
                 } else {
-                    date.copy(countEvents = 0, hasUserEvents = false)
+                    date.copy(countEvents = 0, hasUserEvents = false, hasAdminEvents = false)
                 }
             }
         )

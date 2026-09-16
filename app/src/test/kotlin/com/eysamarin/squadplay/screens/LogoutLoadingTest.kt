@@ -19,7 +19,6 @@ import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
-import com.eysamarin.squadplay.navigation.DeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.NavigationAction
 import com.eysamarin.squadplay.navigation.Navigator
@@ -29,7 +28,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -194,7 +192,8 @@ class LogoutLoadingTest {
         override fun mergedCalendarWithEvents(
             calendar: CalendarUI,
             events: List<Event>,
-            currentUserId: String
+            currentUserId: String,
+            groupMembers: Map<String, List<Friend>>
         ): CalendarUI = calendar
     }
 
