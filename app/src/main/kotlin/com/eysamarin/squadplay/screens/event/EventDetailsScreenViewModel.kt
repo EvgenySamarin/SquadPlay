@@ -170,6 +170,7 @@ class EventDetailsScreenViewModel(
                             username = friend.username,
                             photoUrl = friend.photoUrl,
                             status = memberStatus,
+                            nickname = friend.nickname,
                         )
                     }
                     val latestUserStatus = currentUserId?.let { uid ->

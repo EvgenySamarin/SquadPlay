@@ -15,6 +15,7 @@ import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventDetailsScreenAction
+import com.eysamarin.squadplay.models.EventMemberUI
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
@@ -41,6 +42,7 @@ import kotlinx.datetime.LocalDateTime
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -389,6 +391,94 @@ class EventAttendanceTest {
         assertEquals(EventResponseStatus.REJECTED, viewModel.uiState.value.userStatus)
         val updatedAcceptedMember = viewModel.uiState.value.members.first { it.uid == "user-accepted" }
         assertEquals(EventResponseStatus.REJECTED, updatedAcceptedMember.status)
+    }
+
+    @Test
+    fun `EventMemberUI displayName returns plain nickname when set`() {
+        val memberWithNickname = EventMemberUI(
+            uid = "user-1",
+            username = "OriginalUsername",
+            nickname = "shadow_ninja",
+        )
+        assertEquals("shadow_ninja", memberWithNickname.displayName)
+    }
+
+    @Test
+    fun `EventMemberUI displayName returns username when nickname is null or blank`() {
+        val memberWithNullNickname = EventMemberUI(
+            uid = "user-1",
+            username = "OriginalUsername",
+            nickname = null,
+        )
+        assertEquals("OriginalUsername", memberWithNullNickname.displayName)
+
+        val memberWithBlankNickname = EventMemberUI(
+            uid = "user-2",
+            username = "OriginalUsername",
+            nickname = "   ",
+        )
+        assertEquals("OriginalUsername", memberWithBlankNickname.displayName)
+    }
+
+    @Test
+    fun `EventDetailsScreenViewModel maps member nickname and resolves displayName correctly`() = runTest(testDispatcher) {
+        val fakeNavigator = FakeNavigator()
+        val group = Group(uid = "group-1", title = "Alpha Squad", members = listOf("u1", "u2"))
+        val event = Event(
+            uid = "event-1",
+            creatorId = "u1",
+            groupId = "group-1",
+            title = "Apex Games",
+            eventIconUrl = null,
+            fromDateTime = LocalDateTime(2026, 3, 10, 18, 0),
+            toDateTime = LocalDateTime(2026, 3, 10, 20, 0),
+            responses = emptyMap(),
+        )
+        val fakeEventProvider = FakeEventProvider(events = listOf(event))
+        val members = listOf(
+            Friend(uid = "u1", username = "Alice", groupTitleFrom = "Alpha Squad", photoUrl = null, nickname = "Valkyrie"),
+            Friend(uid = "u2", username = "Bob", groupTitleFrom = "Alpha Squad", photoUrl = null, nickname = null),
+        )
+        val fakeProfileProvider = FakeProfileProvider(
+            user = User(uid = "u1", username = "Alice", email = "alice@test.com", photoUrl = null, groups = listOf(group)),
+            groupInfo = group,
+            groupSections = listOf(UserGroupSection(groupId = "group-1", title = "Alpha Squad", members = members)),
+        )
+
+        val viewModel = EventDetailsScreenViewModel(
+            navigator = fakeNavigator,
+            eventProvider = fakeEventProvider,
+            profileProvider = fakeProfileProvider,
+            analyticsProvider = FakeAnalyticsProvider(),
+            logger = FakeAppLogger(),
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.initData(
+            Destination.EventDetailsScreen(
+                eventId = "event-1",
+                title = "Apex Games",
+                date = "18:00 - 20:00",
+                imageUrl = null,
+                isYourEvent = true,
+                userStatus = EventResponseStatus.ACCEPTED,
+                groupId = "group-1",
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals(2, uiState.members.size)
+
+        val memberWithNickname = uiState.members.first { it.uid == "u1" }
+        assertEquals("Alice", memberWithNickname.username)
+        assertEquals("Valkyrie", memberWithNickname.nickname)
+        assertEquals("Valkyrie", memberWithNickname.displayName)
+
+        val memberWithoutNickname = uiState.members.first { it.uid == "u2" }
+        assertEquals("Bob", memberWithoutNickname.username)
+        assertNull(memberWithoutNickname.nickname)
+        assertEquals("Bob", memberWithoutNickname.displayName)
     }
 
     private class FakeNavigator : Navigator {

@@ -503,7 +503,8 @@ class FirebaseFirestoreDataSourceImpl(
                 val uid = data["uid"] as? String ?: document.id
                 val username = data["username"] as? String ?: "User"
                 val photoUrl = data["photoUrl"] as? String
-                uid to (username to photoUrl)
+                val nickname = data["nickname"] as? String
+                uid to Triple(username, photoUrl, nickname)
             }.toMap()
 
             val sections = groups.map { group ->
@@ -517,6 +518,7 @@ class FirebaseFirestoreDataSourceImpl(
                             username = memberData.first,
                             photoUrl = memberData.second,
                             groupTitleFrom = group.title,
+                            nickname = memberData.third,
                         )
                     },
                     ownerId = group.ownerId,

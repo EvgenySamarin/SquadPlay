@@ -269,7 +269,7 @@ private fun EventMemberRow(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = member.username,
+                text = member.displayName,
                 style = adaptiveTitleByHeight(windowSize),
                 color = DesignSystemTheme.colorScheme.onSurface,
             )
