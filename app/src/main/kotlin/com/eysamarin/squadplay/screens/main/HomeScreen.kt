@@ -22,8 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,12 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil3.compose.rememberAsyncImagePainter
 import com.eysamarin.squadplay.R
-import com.eysamarin.squadplay.models.EventResponseStatus
-import com.eysamarin.squadplay.designSystem.compose.DSListItem
-import com.eysamarin.squadplay.designSystem.compose.DSListItemDefaults
-import com.eysamarin.squadplay.designSystem.compose.DSListItemLeadingType
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.PhoneLightModePreview
@@ -71,7 +64,6 @@ import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     state: UiState<HomeScreenUI>,
@@ -323,7 +315,6 @@ private fun MainScreenExpandedLayout(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun GreetingBar(
     modifier: Modifier = Modifier,
     windowSize: WindowSizeClass,
