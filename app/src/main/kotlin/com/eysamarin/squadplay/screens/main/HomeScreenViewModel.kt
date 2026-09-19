@@ -154,8 +154,8 @@ class HomeScreenViewModel(
             val isCreateEventButtonVisible = if (userInfo.groups.isNotEmpty() && selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
                 val selectedLocalDate = LocalDate(
                     year = selectedDate.year ?: eventBasedCalendar.yearMonth.year,
-                    monthNumber = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
-                    dayOfMonth = dayOfMonth,
+                    month = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
+                    day = dayOfMonth
                 )
                 selectedLocalDate >= today
             } else {
@@ -240,8 +240,8 @@ class HomeScreenViewModel(
         val today = todayProvider()
         val selectedLocalDate = LocalDate(
             year = selectedDate.year ?: calendarUi.yearMonth.year,
-            monthNumber = selectedDate.monthNumber ?: calendarUi.yearMonth.month.number,
-            dayOfMonth = dayOfMonth,
+            month = selectedDate.monthNumber ?: calendarUi.yearMonth.month.number,
+            day = dayOfMonth
         )
         if (selectedLocalDate < today) {
             logger.w { "Selected date is in the past, cannot add game event" }
