@@ -17,10 +17,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedSecureTextField
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -138,7 +138,7 @@ private fun EmailPasswordSignIn(
         }
     }
 
-    TextField(
+    OutlinedTextField(
         state = emailState,
         isError = emailHasErrors,
         lineLimits = TextFieldLineLimits.SingleLine,
@@ -151,7 +151,7 @@ private fun EmailPasswordSignIn(
         }
     )
 
-    SecureTextField(
+    OutlinedSecureTextField(
         state = passwordState,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         label = { Text(stringResource(R.string.label_password)) },
