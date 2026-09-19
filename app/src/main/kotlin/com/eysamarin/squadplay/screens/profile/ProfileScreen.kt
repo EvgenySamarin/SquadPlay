@@ -21,9 +21,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -515,7 +515,7 @@ private fun CreateGroupBottomSheet(
                     }
                 },
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = TextFieldDefaults.colors(
                     focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
                     unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
                 )
@@ -579,7 +579,7 @@ private fun EditGroupBottomSheet(
                     }
                 },
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = TextFieldDefaults.colors(
                     focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
                     unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
                 )
@@ -696,7 +696,7 @@ private fun ChangeNicknameBottomSheet(
                     }
                 },
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = TextFieldDefaults.colors(
                     focusedTextColor = DesignSystemTheme.colorScheme.onSurface,
                     unfocusedTextColor = DesignSystemTheme.colorScheme.onSurface,
                 )
