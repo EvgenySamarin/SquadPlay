@@ -16,13 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedSecureTextField
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -127,7 +125,6 @@ private fun AuthScreenExpandedLayout(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmailPasswordSignIn(
     onAction: (AuthScreenAction) -> Unit
@@ -137,15 +134,11 @@ private fun EmailPasswordSignIn(
     val emailHasErrors by remember {
         derivedStateOf {
             val emailText = emailState.text.toString()
-            if (emailText.isNotEmpty()) {
-                !Patterns.EMAIL_ADDRESS.matcher(emailText).matches()
-            } else {
-                false
-            }
+            emailText.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(emailText).matches()
         }
     }
 
-    OutlinedTextField(
+    TextField(
         state = emailState,
         isError = emailHasErrors,
         lineLimits = TextFieldLineLimits.SingleLine,
@@ -158,7 +151,7 @@ private fun EmailPasswordSignIn(
         }
     )
 
-    OutlinedSecureTextField(
+    SecureTextField(
         state = passwordState,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         label = { Text(stringResource(R.string.label_password)) },
@@ -167,7 +160,7 @@ private fun EmailPasswordSignIn(
 
     val isEmailValid = emailState.text.isNotEmpty() && !emailHasErrors
     Column(
-        modifier = Modifier.width(OutlinedTextFieldDefaults.MinWidth),
+        modifier = Modifier.width(280.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
