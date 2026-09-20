@@ -1,6 +1,5 @@
 package com.eysamarin.squadplay.screens
 
-import androidx.navigation.NavOptionsBuilder
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
@@ -162,7 +161,7 @@ class LogoutLoadingTest {
     private class FakeNavigator : Navigator {
         var navigateToAuthGraphCalls = 0
         override val navigationActions: Flow<NavigationAction> = emptyFlow()
-        override suspend fun navigate(destination: Destination, navOptions: NavOptionsBuilder.() -> Unit) {}
+        override suspend fun navigate(destination: Destination) {}
         override suspend fun navigateToHomeGraph() {}
         override suspend fun navigateToAuthGraph() {
             navigateToAuthGraphCalls++

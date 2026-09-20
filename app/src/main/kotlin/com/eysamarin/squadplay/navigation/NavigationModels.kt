@@ -1,40 +1,39 @@
 package com.eysamarin.squadplay.navigation
 
-import androidx.navigation.NavOptionsBuilder
+import androidx.navigation3.runtime.NavKey
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.EventResponseStatus
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.serializer
 
 sealed interface NavigationAction {
     data class Navigate(
         val destination: Destination,
-        val navOptions: NavOptionsBuilder.() -> Unit = {},
     ) : NavigationAction
 
-    object NavigateUp : NavigationAction
+    data object NavigateUp : NavigationAction
 }
 
-sealed interface Destination {
+@Serializable
+sealed interface Destination : NavKey {
     val screenName: String? get() = null
 
     @Serializable
-    data object AuthGraph: Destination
+    data object AuthGraph : Destination
 
     @Serializable
-    object AuthScreen: Destination {
+    data object AuthScreen : Destination {
         const val SCREEN_NAME = "AuthScreen"
         override val screenName: String get() = SCREEN_NAME
     }
 
     @Serializable
-    object RegistrationScreen: Destination {
+    data object RegistrationScreen : Destination {
         const val SCREEN_NAME = "RegistrationScreen"
         override val screenName: String get() = SCREEN_NAME
     }
 
     @Serializable
-    data object HomeGraph: Destination
+    data object HomeGraph : Destination
 
     @Serializable
     data object HomeScreen : Destination {
@@ -43,13 +42,13 @@ sealed interface Destination {
     }
 
     @Serializable
-    object ProfileScreen: Destination {
+    data object ProfileScreen : Destination {
         const val SCREEN_NAME = "ProfileScreen"
         override val screenName: String get() = SCREEN_NAME
     }
 
     @Serializable
-    object SettingsScreen : Destination {
+    data object SettingsScreen : Destination {
         const val SCREEN_NAME = "SettingsScreen"
         override val screenName: String get() = SCREEN_NAME
     }
@@ -58,15 +57,11 @@ sealed interface Destination {
     data class NewEventScreen(
         val selectedDate: Date,
         val yearMonth: String,
-    ): Destination {
+    ) : Destination {
         companion object {
             const val SCREEN_NAME = "NewEventScreen"
         }
         override val screenName: String get() = SCREEN_NAME
-
-        object CustomNavType {
-            val DateType = serializableNavType(serializer<Date>())
-        }
     }
 
     @Serializable

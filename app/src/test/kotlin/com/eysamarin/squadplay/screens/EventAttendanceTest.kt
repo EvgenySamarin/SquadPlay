@@ -1,6 +1,5 @@
 package com.eysamarin.squadplay.screens
 
-import androidx.navigation.NavOptionsBuilder
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.data.entity.EventEntity
@@ -689,7 +688,7 @@ class EventAttendanceTest {
         val navigatedDestinations = mutableListOf<Destination>()
         var navigateUpCalls = 0
         override val navigationActions: Flow<NavigationAction> = emptyFlow()
-        override suspend fun navigate(destination: Destination, navOptions: NavOptionsBuilder.() -> Unit) {
+        override suspend fun navigate(destination: Destination) {
             navigatedDestinations.add(destination)
         }
         override suspend fun navigateToHomeGraph() {}

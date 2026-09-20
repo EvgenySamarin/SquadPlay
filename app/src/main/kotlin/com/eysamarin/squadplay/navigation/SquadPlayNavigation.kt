@@ -1,5 +1,3 @@
-@file:Suppress("kotlin:S1128")
-
 package com.eysamarin.squadplay.navigation
 
 import android.app.Activity
@@ -9,7 +7,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -22,23 +19,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
-import androidx.navigation.toRoute
-import com.eysamarin.squadplay.screens.main.ConfirmationDialog
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.messaging.SnackbarProvider
-import com.eysamarin.squadplay.models.Date
-import com.eysamarin.squadplay.models.EventDetailsScreenUI
 import com.eysamarin.squadplay.models.SettingsScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.screens.auth.AuthScreen
@@ -47,6 +37,7 @@ import com.eysamarin.squadplay.screens.event.EventDetailsScreen
 import com.eysamarin.squadplay.screens.event.EventDetailsScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreen
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
+import com.eysamarin.squadplay.screens.main.ConfirmationDialog
 import com.eysamarin.squadplay.screens.main.HomeScreen
 import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreen
@@ -62,34 +53,25 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import kotlin.reflect.typeOf
 
 @Composable
 fun SquadPlayNavigation(
     windowSize: WindowSizeClass,
     startDestination: Destination,
 ) {
+    val initialKey: NavKey = when (startDestination) {
+        Destination.HomeGraph -> Destination.HomeScreen
+        Destination.AuthGraph -> Destination.AuthScreen
+        else -> startDestination
+    }
 
-    val navController = rememberNavController()
+    val backStack = rememberNavBackStack(initialKey)
     val navigator = koinInject<Navigator>()
     val analyticsProvider = koinInject<AnalyticsProvider>()
-
-    DisposableEffect(navController) {
-        val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
-            destination.toAnalyticsScreenName()?.let { screenName ->
-                analyticsProvider.trackScreenView(screenName)
-            }
-        }
-        navController.addOnDestinationChangedListener(listener)
-        onDispose {
-            navController.removeOnDestinationChangedListener(listener)
-        }
-    }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarProvider = koinInject<SnackbarProvider>()
     val coroutineScope = rememberCoroutineScope()
-
 
     LifecycleEffect(snackbarProvider.messagesChannel) {
         coroutineScope.launch { snackbarHostState.showSnackbar(message = it) }
@@ -97,31 +79,54 @@ fun SquadPlayNavigation(
 
     LifecycleEffect(flow = navigator.navigationActions) { action ->
         when (action) {
-            is NavigationAction.Navigate -> navController.navigate(action.destination) {
-                action.navOptions(this)
+            is NavigationAction.Navigate -> {
+                when (action.destination) {
+                    Destination.HomeGraph -> {
+                        backStack.clear()
+                        backStack.add(Destination.HomeScreen)
+                    }
+                    Destination.AuthGraph -> {
+                        backStack.clear()
+                        backStack.add(Destination.AuthScreen)
+                    }
+                    else -> {
+                        backStack.add(action.destination)
+                    }
+                }
             }
-
-            NavigationAction.NavigateUp -> navController.navigateUp()
+            NavigationAction.NavigateUp -> {
+                if (backStack.size > 1) {
+                    backStack.removeLastOrNull()
+                }
+            }
         }
     }
 
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val homeGraphEntry = remember(currentBackStackEntry) {
-        runCatching { navController.getBackStackEntry<Destination.HomeGraph>() }.getOrNull()
-    }
-    if (homeGraphEntry != null) {
-        HomeGraphDeepLinkHandler(
-            homeGraphEntry = homeGraphEntry,
-            windowSize = windowSize,
-        )
+    LaunchedEffect(backStack.lastOrNull()) {
+        (backStack.lastOrNull() as? Destination)?.screenName?.let { screenName ->
+            analyticsProvider.trackScreenView(screenName)
+        }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
-        navigation<Destination.AuthGraph>(startDestination = Destination.AuthScreen) {
-            composable<Destination.AuthScreen> {
+    val currentKey = backStack.lastOrNull()
+    val isInHomeGraph = currentKey is Destination.HomeScreen ||
+            currentKey is Destination.NewEventScreen ||
+            currentKey is Destination.EventDetailsScreen ||
+            currentKey is Destination.ProfileScreen ||
+            currentKey is Destination.SettingsScreen
+
+    if (isInHomeGraph) {
+        HomeGraphDeepLinkHandler(windowSize = windowSize)
+    }
+
+    val saveableDecorator = rememberSaveableStateHolderNavEntryDecorator<NavKey>()
+    val decorators = remember(saveableDecorator) { listOf(saveableDecorator) }
+
+    val entries = rememberDecoratedNavEntries(
+        backStack = backStack,
+        entryDecorators = decorators,
+        entryProvider = entryProvider {
+            entry<Destination.AuthScreen> {
                 val viewModel: AuthScreenViewModel = koinViewModel()
 
                 RootScreenBackHandler(snackbarHostState = snackbarHostState)
@@ -132,7 +137,7 @@ fun SquadPlayNavigation(
                     onAction = viewModel::onAction,
                 )
             }
-            composable<Destination.RegistrationScreen> {
+            entry<Destination.RegistrationScreen> {
                 val viewModel: RegistrationScreenViewModel = koinViewModel()
 
                 RegistrationScreen(
@@ -141,10 +146,7 @@ fun SquadPlayNavigation(
                     onAction = viewModel::onAction,
                 )
             }
-        }
-
-        navigation<Destination.HomeGraph>(startDestination = Destination.HomeScreen) {
-            composable<Destination.HomeScreen> {
+            entry<Destination.HomeScreen> {
                 val viewModel: HomeScreenViewModel = koinViewModel()
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -160,14 +162,11 @@ fun SquadPlayNavigation(
                     onAction = viewModel::onAction,
                 )
             }
-            composable<Destination.NewEventScreen>(
-                typeMap = mapOf(
-                    typeOf<Date>() to Destination.NewEventScreen.CustomNavType.DateType,
-                )
-            ) { backStackEntry ->
+            entry<Destination.NewEventScreen> { key ->
                 val viewModel: NewEventScreenViewModel = koinViewModel()
-                val args = backStackEntry.toRoute<Destination.NewEventScreen>()
-                viewModel.updateSelectedDate(args)
+                LaunchedEffect(key) {
+                    viewModel.updateSelectedDate(key)
+                }
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -177,11 +176,10 @@ fun SquadPlayNavigation(
                     onAction = viewModel::onAction,
                 )
             }
-            composable<Destination.EventDetailsScreen> { backStackEntry ->
+            entry<Destination.EventDetailsScreen> { key ->
                 val viewModel: EventDetailsScreenViewModel = koinViewModel()
-                val args = backStackEntry.toRoute<Destination.EventDetailsScreen>()
-                LaunchedEffect(args) {
-                    viewModel.initData(args)
+                LaunchedEffect(key) {
+                    viewModel.initData(key)
                 }
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -192,7 +190,7 @@ fun SquadPlayNavigation(
                     onAction = viewModel::onAction,
                 )
             }
-            composable<Destination.ProfileScreen> {
+            entry<Destination.ProfileScreen> {
                 val viewModel: ProfileScreenViewModel = koinViewModel()
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -218,7 +216,7 @@ fun SquadPlayNavigation(
                     viewModel.hideShareLink()
                 }
             }
-            composable<Destination.SettingsScreen> {
+            entry<Destination.SettingsScreen> {
                 val viewModel: SettingsScreenViewModel = koinViewModel()
 
                 val context = LocalContext.current
@@ -242,7 +240,16 @@ fun SquadPlayNavigation(
                 )
             }
         }
-    }
+    )
+
+    NavDisplay(
+        entries = entries,
+        onBack = {
+            if (backStack.size > 1) {
+                backStack.removeLastOrNull()
+            }
+        }
+    )
 }
 
 @Composable
@@ -284,23 +291,11 @@ fun <T> LifecycleEffect(
     }
 }
 
-fun NavDestination.toAnalyticsScreenName(): String? = when {
-    hasRoute(Destination.HomeScreen::class) -> Destination.HomeScreen.SCREEN_NAME
-    hasRoute(Destination.NewEventScreen::class) -> Destination.NewEventScreen.SCREEN_NAME
-    hasRoute(Destination.EventDetailsScreen::class) -> Destination.EventDetailsScreen.SCREEN_NAME
-    hasRoute(Destination.ProfileScreen::class) -> Destination.ProfileScreen.SCREEN_NAME
-    hasRoute(Destination.SettingsScreen::class) -> Destination.SettingsScreen.SCREEN_NAME
-    hasRoute(Destination.AuthScreen::class) -> Destination.AuthScreen.SCREEN_NAME
-    hasRoute(Destination.RegistrationScreen::class) -> Destination.RegistrationScreen.SCREEN_NAME
-    else -> null
-}
-
 @Composable
 private fun HomeGraphDeepLinkHandler(
-    homeGraphEntry: NavBackStackEntry,
     windowSize: WindowSizeClass,
 ) {
-    val viewModel: HomeGraphViewModel = koinViewModel(viewModelStoreOwner = homeGraphEntry)
+    val viewModel: HomeGraphViewModel = koinViewModel()
     val confirmInviteDialogState by viewModel.confirmInviteDialogState.collectAsStateWithLifecycle()
 
     if (confirmInviteDialogState is UiState.Normal<String>) {

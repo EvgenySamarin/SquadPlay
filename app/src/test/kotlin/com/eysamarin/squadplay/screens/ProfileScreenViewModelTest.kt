@@ -1,6 +1,5 @@
 package com.eysamarin.squadplay.screens
 
-import androidx.navigation.NavOptionsBuilder
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
@@ -546,7 +545,7 @@ class ProfileScreenViewModelTest {
 
     private class FakeNavigator : Navigator {
         override val navigationActions: Flow<NavigationAction> = emptyFlow()
-        override suspend fun navigate(destination: Destination, navOptions: NavOptionsBuilder.() -> Unit) {}
+        override suspend fun navigate(destination: Destination) {}
         override suspend fun navigateToHomeGraph() {}
         override suspend fun navigateToAuthGraph() {}
         override suspend fun navigateUp() {}
