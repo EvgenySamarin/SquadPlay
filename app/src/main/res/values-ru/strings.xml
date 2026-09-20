@@ -44,8 +44,8 @@
     <string name="event_saved">Событие успешно сохранено</string>
     <string name="event_save_failed">Не удалось сохранить событие</string>
     <string name="new_game_event">Новое игровое событие</string>
-    <string name="greeting_text">С возвращением, %1$s!</string>
-    <string name="create_new_event">Создать игровое событие на дату: %1$s.%2$s.%3$s</string>
+    <string name="greeting_text">С возвращением, %s!</string>
+    <string name="create_new_event">Создать игровое событие на дату: %s</string>
     <string name="from_to_time_warning">Если время \'До\' меньше, чем время \'С\', событие будет учитывать следующий день</string>
     <string name="schedule_event">Запланировать событие</string>
     <string name="invite_new_friend">Пригласить приятеля</string>
