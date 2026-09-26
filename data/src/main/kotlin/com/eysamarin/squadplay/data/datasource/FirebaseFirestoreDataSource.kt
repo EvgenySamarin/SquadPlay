@@ -7,8 +7,6 @@ import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Compa
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
 import com.eysamarin.squadplay.data.entity.EventEntity
 import com.eysamarin.squadplay.data.security.isAppCheckAttestationFailure
-import com.eysamarin.squadplay.data.toLocalDateTime
-import com.eysamarin.squadplay.data.toTimestamp
 import com.eysamarin.squadplay.models.AppError
 import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.Event
@@ -320,14 +318,14 @@ class FirebaseFirestoreDataSourceImpl(
             val userDocumentRef = firebaseFirestore.collection(USERS_COLLECTION).document(userId)
             val groupsCollectionRef = firebaseFirestore.collection(USERS_COLLECTION)
             val groupsDocuments = getCollectionDocuments(groupsCollectionRef)
-                .also { it.forEach { unsubscribeFromGroupTopic(it.id) } }
+                .onEach { unsubscribeFromGroupTopic(it.id) }
 
             firebaseFirestore.runTransaction { transaction ->
                 groupsDocuments.forEach {
                     if (!it.exists()) return@forEach
 
-                    val members = it["members"]?.let {
-                        val anyList = it as? List<*>
+                    val members = it["members"]?.let { members ->
+                        val anyList = members as? List<*>
                         anyList?.filterIsInstance<String>()
                     } ?: emptyList()
                     transaction.update(it.reference, mapOf("members" to members.minus(userId)))

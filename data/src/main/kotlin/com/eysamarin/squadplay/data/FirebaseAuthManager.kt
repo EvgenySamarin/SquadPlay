@@ -21,7 +21,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.tasks.await
 
 interface FirebaseAuthManager {
@@ -61,8 +60,7 @@ class FirebaseAuthManagerImpl(
         return try {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
 
-            val firebaseUser = result.user
-            if (firebaseUser == null) return UiState.Error("User does not exist")
+            val firebaseUser = result.user ?: return UiState.Error("User does not exist")
 
             logger.d(tag = "Auth") { "signUpWithEmailPassword:success" }
 
@@ -89,8 +87,7 @@ class FirebaseAuthManagerImpl(
         return try {
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
 
-            val firebaseUser = result.user
-            if (firebaseUser == null) return UiState.Error("User does not exist")
+            val firebaseUser = result.user ?: return UiState.Error("User does not exist")
 
             logger.d(tag = "Auth") { "signInWithEmailPassword:success" }
 
@@ -153,14 +150,12 @@ class FirebaseAuthManagerImpl(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun firebaseAuthWithGoogle(idToken: String): User? {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         return try {
             val result = firebaseAuth.signInWithCredential(credential).await()
 
-            val firebaseUser = result.user
-            if (firebaseUser == null) return null
+            val firebaseUser = result.user ?: return null
 
             logger.d(tag = "Auth") { "signInWithCredential:success" }
 

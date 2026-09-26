@@ -36,10 +36,10 @@ class LaunchApplicationViewModel(
         viewModelScope.launch {
             val isUserExists = try {
                 authProvider.isUserExists()
-            } catch (e: AppErrorException) {
+            } catch (_: AppErrorException) {
                 securityLockoutManager.triggerLockout()
                 false
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
             val inviteGroupId = deepLinkManager.extractInviteGroupId(intentUri)
