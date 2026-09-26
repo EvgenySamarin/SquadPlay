@@ -75,6 +75,7 @@ com-google-firebase-firestore = { group = "com.google.firebase", name = "firebas
 com-google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 com-google-firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 com-google-firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
+com-google-firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 
 jakewharton-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 

@@ -56,6 +56,7 @@ import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -204,9 +205,12 @@ class SquadPlayApplication : Application() {
         val logger = getKoin().get<AppLogger>()
 
         Firebase.initialize(this)
-        Firebase.appCheck.installAppCheckProviderFactory(
-            PlayIntegrityAppCheckProviderFactory.getInstance(),
-        )
+        val appCheckProviderFactory = if (BuildConfig.DEBUG) {
+            DebugAppCheckProviderFactory.getInstance()
+        } else {
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        }
+        Firebase.appCheck.installAppCheckProviderFactory(appCheckProviderFactory)
 
         FirebaseMessaging.getInstance().register()
             .addOnFailureListener { exception ->
