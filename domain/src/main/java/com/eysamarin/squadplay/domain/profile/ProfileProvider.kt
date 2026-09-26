@@ -6,7 +6,9 @@ import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 
 interface ProfileProvider {
@@ -31,13 +33,15 @@ class ProfileProviderImpl(
     private val authRepository: AuthRepository,
 ) : ProfileProvider {
 
-    override fun getUserInfoFlow(): Flow<User?> {
-        val userUid = authRepository.getCurrentUserId()
-
-        if (userUid.isNullOrBlank()) return flowOf(null)
-
-        return profileRepository.getUserInfoFlow(userUid)
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getUserInfoFlow(): Flow<User?> = authRepository.getCurrentUserIdFlow()
+        .flatMapLatest { userUid ->
+            if (userUid.isNullOrBlank()) {
+                flowOf(null)
+            } else {
+                profileRepository.getUserInfoFlow(userUid)
+            }
+        }
 
     override suspend fun createNewUserGroup(userId: String, title: String): String {
         return profileRepository.createNewUserGroup(userId, title)

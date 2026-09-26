@@ -12,6 +12,7 @@ import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -59,6 +60,7 @@ class AuthRepositorySignOutTest {
             }
             override fun getUserUid(): String? = "test_user_id"
             override fun getCurrentUserId(): String = "test_user_id"
+            override fun getCurrentUserIdFlow(): Flow<String?> = flowOf("test_user_id")
         }
 
         val fakeProfileRepository = object : ProfileRepository {

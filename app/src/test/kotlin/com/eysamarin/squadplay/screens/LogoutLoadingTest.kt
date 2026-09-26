@@ -158,6 +158,7 @@ class LogoutLoadingTest {
             return signOutDeferred?.await() ?: true
         }
         override suspend fun isUserExists(): Boolean = true
+        override fun getCurrentUserIdFlow(): Flow<String?> = flowOf("user1")
     }
 
     private class FakeNavigator : Navigator {

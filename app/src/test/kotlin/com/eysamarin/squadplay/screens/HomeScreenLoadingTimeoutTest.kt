@@ -162,17 +162,16 @@ class HomeScreenLoadingTimeoutTest {
     }
 
     @Test
-    fun `initData resets isTimeoutDialogVisible and isLoggingOut and restarts data collection`() = runTest(testDispatcher) {
+    fun `onRetryLoadingTap resets isTimeoutDialogVisible and restarts data collection`() = runTest(testDispatcher) {
         val userFlow = MutableSharedFlow<User?>()
         val viewModel = createViewModel(userFlow)
         viewModel.loadingTimeoutMillis = 1000L
 
-        viewModel.initData()
         advanceTimeBy(1100)
         testDispatcher.scheduler.runCurrent()
         assertTrue(viewModel.isTimeoutDialogVisible.value)
 
-        viewModel.initData()
+        viewModel.onRetryLoadingTap()
         testDispatcher.scheduler.runCurrent()
 
         assertFalse(viewModel.isTimeoutDialogVisible.value)
@@ -223,6 +222,7 @@ class HomeScreenLoadingTimeoutTest {
         override suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean> = UiState.Normal(true)
         override suspend fun signOut(): Boolean = true
         override suspend fun isUserExists(): Boolean = true
+        override fun getCurrentUserIdFlow(): Flow<String?> = flowOf("user1")
     }
 
     private class FakeNavigator : Navigator {
