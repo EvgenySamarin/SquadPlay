@@ -10,8 +10,6 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
-import com.eysamarin.squadplay.messaging.SnackbarProvider
-import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventMemberUI
@@ -40,7 +38,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -49,10 +46,10 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.number
+import kotlin.time.Duration.Companion.milliseconds
 
 class HomeScreenViewModel(
     private val navigator: Navigator,
-    private val snackbar: SnackbarProvider,
     private val calendarUIProvider: CalendarUIProvider,
     private val eventProvider: EventProvider,
     private val authProvider: AuthProvider,
@@ -84,17 +81,17 @@ class HomeScreenViewModel(
         field = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
 
     val isLoggingOut: StateFlow<Boolean>
-        field = MutableStateFlow<Boolean>(false)
+        field = MutableStateFlow(false)
 
     val isTimeoutDialogVisible: StateFlow<Boolean>
-        field = MutableStateFlow<Boolean>(false)
+        field = MutableStateFlow(false)
 
     private var dataCollectionJob: Job? = null
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
     private val groupSectionsState = MutableStateFlow<List<UserGroupSection>>(emptyList())
-    private val calendarUIState = MutableStateFlow<CalendarUI>(
+    private val calendarUIState = MutableStateFlow(
         calendarUIProvider.provideCalendarUIBy(yearMonth = todayProvider().run { LocalDate(year, month.number, 1) })
     )
 
@@ -111,7 +108,7 @@ class HomeScreenViewModel(
         dataCollectionJob = viewModelScope.launch {
             launch {
                 try {
-                    withTimeout(loadingTimeoutMillis) {
+                    withTimeout(loadingTimeoutMillis.milliseconds) {
                         uiState.first { it is UiState.Normal }
                     }
                 } catch (_: TimeoutCancellationException) {
@@ -302,10 +299,8 @@ class HomeScreenViewModel(
         val matchingEvent = eventsState.value.firstOrNull { it.uid == event.eventId }
         val dateText = if (matchingEvent != null && !event.subtitle.isNullOrBlank()) {
             "${matchingEvent.fromDateTime.date}, ${event.subtitle}"
-        } else if (matchingEvent != null) {
-            matchingEvent.fromDateTime.date.toString()
         } else {
-            event.subtitle.orEmpty()
+            matchingEvent?.fromDateTime?.date?.toString() ?: event.subtitle.orEmpty()
         }
         val targetGroupId = event.groupId ?: matchingEvent?.groupId.orEmpty()
         val userStatus = event.members.firstOrNull()?.status ?: EventResponseStatus.NOT_SET

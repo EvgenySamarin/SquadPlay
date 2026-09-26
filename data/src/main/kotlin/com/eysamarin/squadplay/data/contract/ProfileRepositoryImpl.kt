@@ -5,7 +5,6 @@ import com.eysamarin.squadplay.contracts.ProfileRepository
 import com.eysamarin.squadplay.contracts.SecurityLockoutManager
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.models.AppErrorException
-import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.UserGroupSection
@@ -25,7 +24,10 @@ class ProfileRepositoryImpl(
     override suspend fun isUserProfileExists(userId: String): Boolean = try {
         firestoreDataSource.isUserProfileExists(userId)
     } catch (e: AppErrorException) {
-        logger.w(tag = "ProfileRepository", throwable = e) { "App Check attestation failure in isUserProfileExists: ${e.message}" }
+        logger.w(
+            tag = "ProfileRepository",
+            throwable = e
+        ) { "App Check attestation failure in isUserProfileExists: ${e.message}" }
         securityLockoutManager?.triggerLockout()
         throw e
     }
@@ -38,21 +40,31 @@ class ProfileRepositoryImpl(
             user
         } else {
             val groupsExcludingCurrentUserMember = groups.map {
-                it.copy(members = it.members.filter { it != userId })
+                it.copy(members = it.members.filter { memberId -> memberId != userId })
             }
             user?.copy(groups = groupsExcludingCurrentUserMember)
         }
     }.catch {
-        if (it is AppErrorException) {
-            logger.w(tag = "ProfileRepository", throwable = it) { "App Check attestation failure in getUserInfoFlow: ${it.message}" }
-            securityLockoutManager?.triggerLockout()
-            throw it
-        } else if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-            logger.d(tag = "ProfileRepository") { "Permission denied for user info: ${it.message}" }
-            emit(null)
-        } else {
-            logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get user info cause: ${it.message}" }
-            throw it
+        when (it) {
+            is AppErrorException -> {
+                logger.w(tag = "ProfileRepository", throwable = it) {
+                    "App Check attestation failure in getUserInfoFlow: ${it.message}"
+                }
+                securityLockoutManager?.triggerLockout()
+                throw it
+            }
+
+            is FirebaseFirestoreException if it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
+                logger.d(tag = "ProfileRepository") { "Permission denied for user info: ${it.message}" }
+                emit(null)
+            }
+
+            else -> {
+                logger.e(tag = "ProfileRepository", throwable = it) {
+                    "Cannot get user info cause: ${it.message}"
+                }
+                throw it
+            }
         }
     }
 
@@ -60,8 +72,8 @@ class ProfileRepositoryImpl(
     override suspend fun deleteUserProfile(userId: String) = firestoreDataSource
         .deleteUserProfile(userId)
 
-    override suspend fun createNewUserGroup(userId: String, title: String): String = firestoreDataSource
-        .createNewUserGroup(userId, title)
+    override suspend fun createNewUserGroup(userId: String, title: String): String =
+        firestoreDataSource.createNewUserGroup(userId, title)
 
     override suspend fun joinGroup(userId: String, groupId: String): Boolean = firestoreDataSource
         .joinGroup(userId = userId, groupId = groupId)
@@ -78,15 +90,26 @@ class ProfileRepositoryImpl(
         groups: List<Group>
     ): Flow<List<UserGroupSection>> = firestoreDataSource.getGroupsMembersInfoFlow(groups)
         .catch {
-            if (it is AppErrorException) {
-                logger.w(tag = "ProfileRepository", throwable = it) { "App Check attestation failure in getGroupsMembersInfoFlow: ${it.message}" }
-                securityLockoutManager?.triggerLockout()
-                throw it
-            } else if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                logger.d(tag = "ProfileRepository") { "Permission denied for groups member info: ${it.message}" }
-                emit(emptyList())
-            } else {
-                logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get groups member info cause: ${it.message}" }
+            when (it) {
+                is AppErrorException -> {
+                    logger.w(
+                        tag = "ProfileRepository",
+                        throwable = it
+                    ) { "App Check attestation failure in getGroupsMembersInfoFlow: ${it.message}" }
+                    securityLockoutManager?.triggerLockout()
+                    throw it
+                }
+
+                is FirebaseFirestoreException if it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
+                    logger.d(tag = "ProfileRepository") { "Permission denied for groups member info: ${it.message}" }
+                    emit(emptyList())
+                }
+
+                else -> {
+                    logger.e(tag = "ProfileRepository", throwable = it) {
+                        "Cannot get groups member info cause: ${it.message}"
+                    }
+                }
             }
         }
 

@@ -34,14 +34,14 @@ class AuthProviderImpl(
         password: String,
     ): UiState<Boolean> = authRepository
         .signUpWithEmailPassword(email, password)
-        .suspendMap { it.handleSignIn() == true }
+        .suspendMap { it.handleSignIn() }
 
     override suspend fun signInWithEmailPassword(
         email: String,
         password: String,
     ): UiState<Boolean> = authRepository
         .signInWithEmailPassword(email, password)
-        .suspendMap { it.handleSignIn() == true }
+        .suspendMap { it.handleSignIn() }
 
     override suspend fun signInWithGoogle(): Boolean = authRepository.signInWithGoogle()
             ?.handleSignIn() == true

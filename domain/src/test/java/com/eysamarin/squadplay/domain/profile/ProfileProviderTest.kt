@@ -2,7 +2,6 @@ package com.eysamarin.squadplay.domain.profile
 
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
-import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
@@ -11,11 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 
 class ProfileProviderTest {
@@ -68,7 +65,7 @@ class ProfileProviderTest {
         )
 
         val emissions = mutableListOf<User?>()
-        val job = kotlinx.coroutines.launch {
+        val job = launch {
             provider.getUserInfoFlow().collect { emissions.add(it) }
         }
 

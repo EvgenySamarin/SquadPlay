@@ -8,7 +8,6 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
-import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
@@ -140,7 +139,6 @@ class LogoutLoadingTest {
             authProvider = authProvider,
             calendarUIProvider = FakeCalendarUIProvider(),
             eventProvider = FakeEventProvider(),
-            snackbar = FakeSnackbarProvider(),
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
             analyticsProvider = FakeAnalyticsProvider(),
@@ -205,11 +203,6 @@ class LogoutLoadingTest {
         override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = flowOf(emptyList())
         override suspend fun deleteEvent(eventId: String): Boolean = true
         override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) {}
-    }
-
-    private class FakeSnackbarProvider : SnackbarProvider {
-        override val messagesChannel: Flow<String> = emptyFlow()
-        override suspend fun showMessage(message: String) {}
     }
 
     private class FakeStringProvider : StringProvider {

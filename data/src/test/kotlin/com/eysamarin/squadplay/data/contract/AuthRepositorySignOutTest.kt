@@ -58,7 +58,7 @@ class AuthRepositorySignOutTest {
                 executionOrder.add("firebaseAuthSignOut")
                 return true
             }
-            override fun getUserUid(): String? = "test_user_id"
+            override fun getUserUid(): String = "test_user_id"
             override fun getCurrentUserId(): String = "test_user_id"
             override fun getCurrentUserIdFlow(): Flow<String?> = flowOf("test_user_id")
         }

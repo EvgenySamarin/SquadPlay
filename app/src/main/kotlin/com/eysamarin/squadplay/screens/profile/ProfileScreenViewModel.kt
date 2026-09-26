@@ -36,7 +36,7 @@ class ProfileScreenViewModel(
         field = MutableStateFlow<UiState<ProfileScreenUI>>(UiState.Loading)
 
     val isLoggingOut: StateFlow<Boolean>
-        field = MutableStateFlow<Boolean>(false)
+        field = MutableStateFlow(false)
 
     val inviteLinkState: StateFlow<UiState<String>>
         field = MutableStateFlow<UiState<String>>(UiState.Empty)

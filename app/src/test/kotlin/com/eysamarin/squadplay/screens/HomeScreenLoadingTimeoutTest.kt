@@ -8,7 +8,6 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
-import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
@@ -41,6 +40,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeScreenLoadingTimeoutTest {
@@ -70,11 +70,11 @@ class HomeScreenLoadingTimeoutTest {
         assertTrue(viewModel.uiState.value is UiState.Loading)
         assertFalse(viewModel.isTimeoutDialogVisible.value)
 
-        advanceTimeBy(500)
+        advanceTimeBy(500.milliseconds)
         testDispatcher.scheduler.runCurrent()
         assertFalse(viewModel.isTimeoutDialogVisible.value)
 
-        advanceTimeBy(600)
+        advanceTimeBy(600.milliseconds)
         testDispatcher.scheduler.runCurrent()
         assertTrue(viewModel.isTimeoutDialogVisible.value)
     }
@@ -88,7 +88,7 @@ class HomeScreenLoadingTimeoutTest {
         viewModel.onRetryLoadingTap()
         testDispatcher.scheduler.runCurrent()
 
-        advanceTimeBy(300)
+        advanceTimeBy(300.milliseconds)
         userFlow.emit(User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList()))
         testDispatcher.scheduler.runCurrent()
 
@@ -96,7 +96,7 @@ class HomeScreenLoadingTimeoutTest {
         assertFalse(viewModel.isTimeoutDialogVisible.value)
 
         // Advance beyond the original timeout; dialog must remain hidden
-        advanceTimeBy(1500)
+        advanceTimeBy(1500.milliseconds)
         testDispatcher.scheduler.runCurrent()
         assertFalse(viewModel.isTimeoutDialogVisible.value)
         assertTrue(viewModel.uiState.value is UiState.Normal)
@@ -109,7 +109,7 @@ class HomeScreenLoadingTimeoutTest {
         viewModel.loadingTimeoutMillis = 1000L
 
         viewModel.onRetryLoadingTap()
-        advanceTimeBy(1100)
+        advanceTimeBy(1100.milliseconds)
         testDispatcher.scheduler.runCurrent()
         assertTrue(viewModel.isTimeoutDialogVisible.value)
 
@@ -121,7 +121,7 @@ class HomeScreenLoadingTimeoutTest {
         assertTrue(viewModel.uiState.value is UiState.Loading)
 
         // Now data arrives before the new timeout expires
-        advanceTimeBy(500)
+        advanceTimeBy(500.milliseconds)
         userFlow.emit(User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList()))
         testDispatcher.scheduler.runCurrent()
 
@@ -136,7 +136,7 @@ class HomeScreenLoadingTimeoutTest {
         viewModel.loadingTimeoutMillis = 1000L
 
         viewModel.onRetryLoadingTap()
-        advanceTimeBy(1100)
+        advanceTimeBy(1100.milliseconds)
         testDispatcher.scheduler.runCurrent()
         assertTrue(viewModel.isTimeoutDialogVisible.value)
 
@@ -167,7 +167,7 @@ class HomeScreenLoadingTimeoutTest {
         val viewModel = createViewModel(userFlow)
         viewModel.loadingTimeoutMillis = 1000L
 
-        advanceTimeBy(1100)
+        advanceTimeBy(1100.milliseconds)
         testDispatcher.scheduler.runCurrent()
         assertTrue(viewModel.isTimeoutDialogVisible.value)
 
@@ -190,7 +190,6 @@ class HomeScreenLoadingTimeoutTest {
         }
         val vm = HomeScreenViewModel(
             navigator = FakeNavigator(),
-            snackbar = FakeSnackbarProvider(),
             calendarUIProvider = FakeCalendarUIProvider(),
             eventProvider = FakeEventProvider(),
             authProvider = FakeAuthProvider(),
@@ -251,11 +250,6 @@ class HomeScreenLoadingTimeoutTest {
         override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = flowOf(emptyList())
         override suspend fun deleteEvent(eventId: String): Boolean = true
         override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) {}
-    }
-
-    private class FakeSnackbarProvider : SnackbarProvider {
-        override val messagesChannel: Flow<String> = emptyFlow()
-        override suspend fun showMessage(message: String) {}
     }
 
     private class FakeStringProvider : StringProvider {
