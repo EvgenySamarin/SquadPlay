@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.data.security
 
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.models.AppError
+import com.google.firebase.FirebaseException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -46,6 +47,20 @@ class AppCheckSecurityTest {
         val exception = RuntimeException("HTTP 403: App Check token is invalid or missing")
         assertTrue(exception.isAppCheckAttestationFailure())
         assertEquals(AppError.SecurityAttestationFailed, exception.toAppError())
+    }
+
+    @Test
+    fun `isAppCheckAttestationFailure matches FirebaseException with invalid App Check token`() {
+        val exception = FirebaseException("An internal error has occurred. [ Firebase App Check token is invalid. ]")
+        assertTrue(exception.isAppCheckAttestationFailure())
+        assertEquals(AppError.SecurityAttestationFailed, exception.toAppError())
+    }
+
+    @Test
+    fun `isAppCheckAttestationFailure returns false for standard FirebaseException without App Check`() {
+        val exception = FirebaseException("An internal error has occurred. [ PROJECT_NOT_FOUND ]")
+        assertFalse(exception.isAppCheckAttestationFailure())
+        assertNull(exception.toAppError())
     }
 
     @Test
