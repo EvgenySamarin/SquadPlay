@@ -9,7 +9,6 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
-import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
@@ -180,7 +179,6 @@ class EventAttendanceTest {
             authProvider = FakeAuthProvider(),
             calendarUIProvider = fakeCalendarProvider,
             eventProvider = fakeEventProvider,
-            snackbar = FakeSnackbarProvider(),
             profileProvider = fakeProfileProvider,
             stringProvider = FakeStringProvider(),
             analyticsProvider = FakeAnalyticsProvider(),
@@ -541,7 +539,6 @@ class EventAttendanceTest {
             authProvider = FakeAuthProvider(),
             calendarUIProvider = FakeCalendarUIProvider(),
             eventProvider = FakeEventProvider(events = listOf(pastEvent, futureEvent)),
-            snackbar = FakeSnackbarProvider(),
             profileProvider = FakeProfileProvider(groupInfo = Group("group-1", "Alpha Squad", emptyList())),
             stringProvider = FakeStringProvider(),
             analyticsProvider = FakeAnalyticsProvider(),
@@ -603,7 +600,7 @@ class EventAttendanceTest {
         assertTrue(viewModel.uiState.value.isObsolete)
         assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
 
-        // Attempt Accept tap
+        // Attempt to Accept tap
         viewModel.onAction(EventDetailsScreenAction.OnAcceptTap)
         testDispatcher.scheduler.advanceUntilIdle()
         assertEquals(EventResponseStatus.NOT_SET, viewModel.uiState.value.userStatus)
@@ -758,11 +755,6 @@ class EventAttendanceTest {
             lastUpdatedResponseUserId = userId
             lastUpdatedResponseStatus = status
         }
-    }
-
-    private class FakeSnackbarProvider : SnackbarProvider {
-        override val messagesChannel: Flow<String> = emptyFlow()
-        override suspend fun showMessage(message: String) {}
     }
 
     private class FakeStringProvider : StringProvider {

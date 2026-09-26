@@ -14,5 +14,6 @@ dependencies {
     implementation(libs.org.jetbrains.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)
 
+    testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
     testImplementation(libs.junit)
 }

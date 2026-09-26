@@ -9,7 +9,6 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
-import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.CalendarUI
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
@@ -81,7 +80,6 @@ class HomeScreenEventNavigationTest {
             authProvider = FakeAuthProvider(),
             calendarUIProvider = FakeCalendarUIProvider(),
             eventProvider = FakeEventProvider(),
-            snackbar = FakeSnackbarProvider(),
             profileProvider = FakeProfileProvider(),
             stringProvider = FakeStringProvider(),
             analyticsProvider = FakeAnalyticsProvider(),
@@ -651,7 +649,6 @@ class HomeScreenEventNavigationTest {
             authProvider = FakeAuthProvider(),
             calendarUIProvider = calendarProvider,
             eventProvider = eventProvider,
-            snackbar = FakeSnackbarProvider(),
             profileProvider = profileProvider,
             stringProvider = FakeStringProvider(),
             analyticsProvider = FakeAnalyticsProvider(),
@@ -746,11 +743,6 @@ class HomeScreenEventNavigationTest {
             return true
         }
         override suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus) {}
-    }
-
-    private class FakeSnackbarProvider : SnackbarProvider {
-        override val messagesChannel: Flow<String> = emptyFlow()
-        override suspend fun showMessage(message: String) {}
     }
 
     private class FakeStringProvider : StringProvider {
