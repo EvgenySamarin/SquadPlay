@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eysamarin.squadplay.screens.security.SecurityVerificationErrorScreen
 import com.eysamarin.squadplay.designSystem.compose.theme.DesignSystemTheme
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.SquadPlayNavigation
@@ -101,10 +102,38 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                if (!isLoading) {
+                val isSecurityLockedOut by viewModel.isSecurityLockedOut.collectAsStateWithLifecycle()
+                val isRetryingAttestation by viewModel.isRetryingAttestation.collectAsStateWithLifecycle()
+
+                if (isSecurityLockedOut) {
+                    SecurityVerificationErrorScreen(
+                        isRetrying = isRetryingAttestation,
+                        onRetryTap = viewModel::retrySecurityAttestation,
+                        onOpenPlayStoreTap = ::openGooglePlayStore,
+                        onExitAppTap = { finishAffinity() },
+                    )
+                } else if (!isLoading) {
                     SquadPlayNavigation(windowSize, startDestination)
                 }
             }
+        }
+    }
+
+    private fun openGooglePlayStore() {
+        try {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=$packageName")
+                )
+            )
+        } catch (_: Exception) {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                )
+            )
         }
     }
 

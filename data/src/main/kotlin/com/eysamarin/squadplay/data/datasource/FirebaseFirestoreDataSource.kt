@@ -1,12 +1,16 @@
 package com.eysamarin.squadplay.data.datasource
 
 import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.contracts.SecurityLockoutManager
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.EVENTS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.GROUPS_COLLECTION
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource.Companion.USERS_COLLECTION
 import com.eysamarin.squadplay.data.entity.EventEntity
+import com.eysamarin.squadplay.data.security.isAppCheckAttestationFailure
 import com.eysamarin.squadplay.data.toLocalDateTime
 import com.eysamarin.squadplay.data.toTimestamp
+import com.eysamarin.squadplay.models.AppError
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.Friend
@@ -42,13 +46,17 @@ interface FirebaseFirestoreDataSource {
     suspend fun joinGroup(userId: String, groupId: String): Boolean
     fun getGroupsMembersInfoFlow(groups: List<Group>): Flow<List<UserGroupSection>>
     suspend fun saveUserProfile(user: User)
+    @Throws(AppErrorException::class)
     suspend fun isUserProfileExists(userId: String): Boolean
     suspend fun deleteUserProfile(userId: String)
+    @Throws(AppErrorException::class)
     suspend fun saveEvent(event: Event): Boolean
     fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>>
     suspend fun subscribeToGroupTopic(groupId: String)
     suspend fun unsubscribeFromGroupTopic(groupId: String)
+    @Throws(AppErrorException::class)
     suspend fun deleteEvent(eventId: String): Boolean
+    @Throws(AppErrorException::class)
     suspend fun updateEventResponse(eventId: String, userId: String, status: EventResponseStatus)
     suspend fun renameGroup(groupId: String, newTitle: String): Boolean
     suspend fun deleteGroup(groupId: String): Boolean
@@ -67,6 +75,7 @@ class FirebaseFirestoreDataSourceImpl(
     private val firebaseFirestore: FirebaseFirestore,
     private val firebaseMessaging: FirebaseMessaging,
     private val logger: AppLogger,
+    private val securityLockoutManager: SecurityLockoutManager? = null,
 ): FirebaseFirestoreDataSource {
 
     private val activeListeners = Collections.synchronizedSet(mutableSetOf<ListenerRegistration>())
@@ -97,6 +106,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
     }
 
+    @Throws(AppErrorException::class)
     override suspend fun saveEvent(event: Event): Boolean {
         logger.d(tag = "Firestore") { "saveEvent: ${event.uid}" }
 
@@ -132,11 +142,18 @@ class FirebaseFirestoreDataSourceImpl(
                 true
             }.await()
         } catch (exception: Exception) {
-            logger.e(tag = "Firestore", throwable = exception) { "Error saving new event: ${exception.message}" }
+            if (exception.isAppCheckAttestationFailure()) {
+                logger.w(tag = "Firestore", throwable = exception) { "App Check attestation failed saving event: ${exception.message}" }
+                securityLockoutManager?.triggerLockout()
+                throw AppErrorException(AppError.SecurityAttestationFailed, cause = exception)
+            } else {
+                logger.e(tag = "Firestore", throwable = exception) { "Error saving new event: ${exception.message}" }
+            }
             false
         }
     }
 
+    @Throws(AppErrorException::class)
     override suspend fun deleteEvent(eventId: String): Boolean = try {
         logger.d(tag = "Firestore") { "Deleting event data for $eventId" }
 
@@ -163,7 +180,13 @@ class FirebaseFirestoreDataSourceImpl(
         logger.d(tag = "Firestore") { "Event data deleted successfully for $eventId" }
         true
     } catch (e: Exception) {
-        logger.e(tag = "Firestore", throwable = e) { "Error deleting event data for $eventId: ${e.message}" }
+        if (e.isAppCheckAttestationFailure()) {
+            logger.w(tag = "Firestore", throwable = e) { "App Check attestation failed deleting event: ${e.message}" }
+            securityLockoutManager?.triggerLockout()
+            throw AppErrorException(AppError.SecurityAttestationFailed, cause = e)
+        } else {
+            logger.e(tag = "Firestore", throwable = e) { "Error deleting event data for $eventId: ${e.message}" }
+        }
         false
     }
 
@@ -191,6 +214,12 @@ class FirebaseFirestoreDataSourceImpl(
             .whereIn("groupId", groupIds)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    if (error.isAppCheckAttestationFailure()) {
+                        logger.w(tag = "Firestore", throwable = error) { "App Check attestation failed for events: ${error.message}" }
+                        securityLockoutManager?.triggerLockout()
+                        close(AppErrorException(AppError.SecurityAttestationFailed, cause = error))
+                        return@addSnapshotListener
+                    }
                     if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                         logger.d(tag = "Firestore") { "Permission denied for events (unauthenticated or unauthorized): ${error.message}" }
                         trySend(emptyList())
@@ -260,6 +289,7 @@ class FirebaseFirestoreDataSourceImpl(
         }
     }
 
+    @Throws(AppErrorException::class)
     override suspend fun updateEventResponse(
         eventId: String,
         userId: String,
@@ -272,7 +302,16 @@ class FirebaseFirestoreDataSourceImpl(
             EventResponseStatus.NOT_SET -> null
         }
         val updates = mapOf("responses.$userId" to statusString)
-        firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId).update(updates).await()
+        try {
+            firebaseFirestore.collection(EVENTS_COLLECTION).document(eventId).update(updates).await()
+        } catch (e: Exception) {
+            if (e.isAppCheckAttestationFailure()) {
+                logger.w(tag = "Firestore", throwable = e) { "App Check attestation failed in updateEventResponse: ${e.message}" }
+                securityLockoutManager?.triggerLockout()
+                throw AppErrorException(AppError.SecurityAttestationFailed, cause = e)
+            }
+            throw e
+        }
     }
 
     override suspend fun deleteUserProfile(userId: String) {
@@ -336,11 +375,17 @@ class FirebaseFirestoreDataSourceImpl(
             .await()
     }
 
+    @Throws(AppErrorException::class)
     override suspend fun isUserProfileExists(userId: String): Boolean = try {
         val userDocumentSnapshot = firebaseFirestore.collection(USERS_COLLECTION)
             .document(userId).get().await()
         userDocumentSnapshot.exists()
-    } catch (_: FirebaseFirestoreException) {
+    } catch (e: FirebaseFirestoreException) {
+        if (e.isAppCheckAttestationFailure()) {
+            logger.w(tag = "Firestore", throwable = e) { "App Check attestation failed in isUserProfileExists: ${e.message}" }
+            securityLockoutManager?.triggerLockout()
+            throw AppErrorException(AppError.SecurityAttestationFailed, cause = e)
+        }
         false
     }
 
@@ -352,6 +397,12 @@ class FirebaseFirestoreDataSourceImpl(
         logger.d(tag = "Firestore") { "Subscribe on user info flow for userId: $userId" }
         val listenerRegistration = userDocument.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
+                if (exception.isAppCheckAttestationFailure()) {
+                    logger.w(tag = "Firestore", throwable = exception) { "App Check attestation failed for user data: ${exception.message}" }
+                    securityLockoutManager?.triggerLockout()
+                    close(AppErrorException(AppError.SecurityAttestationFailed, cause = exception))
+                    return@addSnapshotListener
+                }
                 if (exception.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                     logger.d(tag = "Firestore") { "Permission denied for user data (unauthenticated or unauthorized): ${exception.message}" }
                     trySend(null)
@@ -402,6 +453,12 @@ class FirebaseFirestoreDataSourceImpl(
             .whereArrayContains("members", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    if (error.isAppCheckAttestationFailure()) {
+                        logger.w(tag = "Firestore", throwable = error) { "App Check attestation failed for groups: ${error.message}" }
+                        securityLockoutManager?.triggerLockout()
+                        close(AppErrorException(AppError.SecurityAttestationFailed, cause = error))
+                        return@addSnapshotListener
+                    }
                     if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                         logger.d(tag = "Firestore") { "Permission denied for groups (unauthenticated or unauthorized): ${error.message}" }
                         trySend(emptyList())
@@ -473,6 +530,12 @@ class FirebaseFirestoreDataSourceImpl(
         logger.d(tag = "Firestore") { "Subscribe on user friends flow" }
         val listenerRegistration = friendsQuery.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
+                if (exception.isAppCheckAttestationFailure()) {
+                    logger.w(tag = "Firestore", throwable = exception) { "App Check attestation failed for groups members info: ${exception.message}" }
+                    securityLockoutManager?.triggerLockout()
+                    close(AppErrorException(AppError.SecurityAttestationFailed, cause = exception))
+                    return@addSnapshotListener
+                }
                 if (exception.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                     logger.d(tag = "Firestore") { "Permission denied for groups members info (unauthenticated or unauthorized): ${exception.message}" }
                     trySend(emptyList())

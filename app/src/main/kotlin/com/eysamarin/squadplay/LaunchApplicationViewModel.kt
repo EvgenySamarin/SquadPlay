@@ -5,7 +5,9 @@ import android.os.Build
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eysamarin.squadplay.contracts.SecurityLockoutManager
 import com.eysamarin.squadplay.domain.auth.AuthProvider
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.navigation.DeepLinkManager
 import com.eysamarin.squadplay.navigation.Destination
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +17,14 @@ import kotlinx.coroutines.launch
 class LaunchApplicationViewModel(
     private val authProvider: AuthProvider,
     private val deepLinkManager: DeepLinkManager,
+    private val securityLockoutManager: SecurityLockoutManager,
 ) : ViewModel() {
     val visiblePermissionDialogQueue = mutableStateListOf<String>()
+
+    val isSecurityLockedOut: StateFlow<Boolean> = securityLockoutManager.isLockedOut
+
+    val isRetryingAttestation: StateFlow<Boolean>
+        field = MutableStateFlow(false)
 
     val isLoading: StateFlow<Boolean>
         field = MutableStateFlow(true)
@@ -26,7 +34,14 @@ class LaunchApplicationViewModel(
 
     fun handleIncomingIntent(intentUri: Uri?) {
         viewModelScope.launch {
-            val isUserExists = authProvider.isUserExists()
+            val isUserExists = try {
+                authProvider.isUserExists()
+            } catch (e: AppErrorException) {
+                securityLockoutManager.triggerLockout()
+                false
+            } catch (e: Exception) {
+                false
+            }
             val inviteGroupId = deepLinkManager.extractInviteGroupId(intentUri)
 
             if (inviteGroupId != null) {
@@ -39,6 +54,15 @@ class LaunchApplicationViewModel(
                 startDestination.value = Destination.AuthGraph
             }
             isLoading.value = false
+        }
+    }
+
+    fun retrySecurityAttestation() {
+        if (isRetryingAttestation.value) return
+        viewModelScope.launch {
+            isRetryingAttestation.value = true
+            securityLockoutManager.retryAttestation()
+            isRetryingAttestation.value = false
         }
     }
 
