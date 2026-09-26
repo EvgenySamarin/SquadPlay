@@ -21,6 +21,8 @@ fun ConfirmationDialog(
     windowSize: WindowSizeClass,
     title: String? = null,
     text: String? = null,
+    confirmButtonText: String = stringResource(R.string.yes),
+    dismissButtonText: String = stringResource(R.string.no),
     onConfirmTap: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -37,10 +39,10 @@ fun ConfirmationDialog(
         text = textComposable,
         onDismissRequest = onDismiss,
         confirmButton = {
-            DSButton(text = stringResource(R.string.yes), onTap = onConfirmTap)
+            DSButton(text = confirmButtonText, onTap = onConfirmTap)
         },
         dismissButton = {
-            DSButton(text = stringResource(R.string.no), onTap = onDismiss, variant = ButtonStyle.Text)
+            DSButton(text = dismissButtonText, onTap = onDismiss, variant = ButtonStyle.Text)
         },
     )
 }

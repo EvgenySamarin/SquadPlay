@@ -70,6 +70,7 @@ import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
 fun HomeScreen(
     state: UiState<HomeScreenUI>,
     isLoggingOut: Boolean = false,
+    isTimeoutDialogVisible: Boolean = false,
     snackbarHost: @Composable () -> Unit = {},
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (HomeScreenAction) -> Unit,
@@ -175,6 +176,18 @@ fun HomeScreen(
         ) {
             LoadingIndicator()
         }
+    }
+
+    if (isTimeoutDialogVisible) {
+        ConfirmationDialog(
+            windowSize = windowSize,
+            title = stringResource(R.string.loading_timeout_title),
+            text = stringResource(R.string.loading_timeout_message),
+            confirmButtonText = stringResource(R.string.retry),
+            dismissButtonText = stringResource(R.string.cancel),
+            onConfirmTap = { onAction(HomeScreenAction.OnRetryLoadingTap) },
+            onDismiss = { onAction(HomeScreenAction.OnDismissTimeoutDialog) },
+        )
     }
 }
 

@@ -28,8 +28,11 @@ import com.eysamarin.squadplay.navigation.Navigator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -58,6 +61,7 @@ class HomeScreenViewModel(
 ) : ViewModel() {
 
     companion object {
+        const val DEFAULT_LOADING_TIMEOUT_MS: Long = 10_000L
         internal var defaultIoDispatcher: CoroutineDispatcher = Dispatchers.IO
         internal var defaultTodayProvider: () -> LocalDate = {
             java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
@@ -72,12 +76,19 @@ class HomeScreenViewModel(
     internal var ioDispatcher: CoroutineDispatcher = defaultIoDispatcher
     internal var todayProvider: () -> LocalDate = defaultTodayProvider
     internal var nowProvider: () -> LocalDateTime = defaultNowProvider
+    internal var loadingTimeoutMillis: Long = DEFAULT_LOADING_TIMEOUT_MS
 
     val uiState: StateFlow<UiState<HomeScreenUI>>
         field = MutableStateFlow<UiState<HomeScreenUI>>(UiState.Loading)
 
     val isLoggingOut: StateFlow<Boolean>
         field = MutableStateFlow<Boolean>(false)
+
+    val isTimeoutDialogVisible: StateFlow<Boolean>
+        field = MutableStateFlow<Boolean>(false)
+
+    private var dataCollectionJob: Job? = null
+    private var timeoutJob: Job? = null
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
@@ -92,90 +103,119 @@ class HomeScreenViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
-        profileProvider.getUserInfoFlow()
-            .onEach {
-                logger.d { "New user fetched: $it" }
-                if (it == null) {
-                    navigator.navigateToAuthGraph()
+        dataCollectionJob?.cancel()
+        timeoutJob?.cancel()
+
+        if (uiState.value is UiState.Loading) {
+            timeoutJob = viewModelScope.launch {
+                delay(loadingTimeoutMillis)
+                if (uiState.value is UiState.Loading) {
+                    logger.w { "HomeScreen data loading timed out after ${loadingTimeoutMillis}ms" }
+                    isTimeoutDialogVisible.value = true
                 }
             }
-            .filterNotNull()
-            .onEach {
-                logger.d { "User info received: $it" }
-                userInfoState.emit(it)
-            }
-            .map { user -> user.groups }
-            .distinctUntilChanged { old, new -> old.map { it.uid }.toSet() == new.map { it.uid }.toSet() }
-            .flatMapLatest { groups ->
-                val groupIds = groups.map { it.uid }.toSet()
-                val eventsFlow = eventProvider.getEventsFlow(groupIds)
-                val sectionsFlow = if (groups.isNotEmpty()) {
-                    profileProvider.getGroupsMembersInfoFlow(groups)
-                } else {
-                    flowOf(emptyList())
-                }
-                combine(eventsFlow, sectionsFlow) { events, sections ->
-                    events to sections
-                }
-            }
-            .onEach { (events, sections) ->
-                logger.d { "Events & Sections received: ${events.size} events, ${sections.size} sections" }
-                eventsState.emit(events)
-                groupSectionsState.emit(sections)
-            }
-            .launchIn(viewModelScope)
-
-        combine(
-            userInfoState,
-            calendarUIState,
-            eventsState,
-            groupSectionsState,
-        ) { userInfo, calendar, events, groupSections ->
-            userInfo ?: return@combine null
-
-            val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(
-                calendar = calendar,
-                events = events,
-                currentUserId = userInfo.uid,
-                groupMembers = groupSections.associate { it.groupId to it.members },
-            )
-
-            val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
-            val eventsBySelectedDate = getEventsBySelectedDate(
-                events = events,
-                selectedDate = selectedDate,
-                calendarYear = eventBasedCalendar.yearMonth.year,
-                currentUser = userInfo,
-                userGroups = userInfo.groups,
-                groupSections = groupSections,
-            )
-            val today = todayProvider()
-            val dayOfMonth = selectedDate?.dayOfMonth
-            val isCreateEventButtonVisible = if (userInfo.groups.isNotEmpty() && selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
-                val selectedLocalDate = LocalDate(
-                    year = selectedDate.year ?: eventBasedCalendar.yearMonth.year,
-                    month = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
-                    day = dayOfMonth
-                )
-                selectedLocalDate >= today
-            } else {
-                false
-            }
-            HomeScreenUI(
-                user = userInfo,
-                calendarUI = eventBasedCalendar,
-                gameEventsOnDate = eventsBySelectedDate,
-                isCreateEventButtonVisible = isCreateEventButtonVisible,
-            )
         }
-            .filterNotNull()
-            .onEach { homeScreenUI ->
-                uiState.update {
-                    UiState.Normal(homeScreenUI)
-                }
+
+        dataCollectionJob = viewModelScope.launch {
+            launch {
+                profileProvider.getUserInfoFlow()
+                    .catch { throwable ->
+                        logger.w(throwable = throwable) { "Failed to fetch user info flow: ${throwable.message}" }
+                        timeoutJob?.cancel()
+                        isTimeoutDialogVisible.value = true
+                    }
+                    .onEach {
+                        logger.d { "New user fetched: $it" }
+                        if (it == null) {
+                            navigator.navigateToAuthGraph()
+                        }
+                    }
+                    .filterNotNull()
+                    .onEach {
+                        logger.d { "User info received: $it" }
+                        userInfoState.emit(it)
+                    }
+                    .map { user -> user.groups }
+                    .distinctUntilChanged { old, new -> old.map { it.uid }.toSet() == new.map { it.uid }.toSet() }
+                    .flatMapLatest { groups ->
+                        val groupIds = groups.map { it.uid }.toSet()
+                        val eventsFlow = eventProvider.getEventsFlow(groupIds)
+                        val sectionsFlow = if (groups.isNotEmpty()) {
+                            profileProvider.getGroupsMembersInfoFlow(groups)
+                        } else {
+                            flowOf(emptyList())
+                        }
+                        combine(eventsFlow, sectionsFlow) { events, sections ->
+                            events to sections
+                        }
+                    }
+                    .catch { throwable ->
+                        logger.w(throwable = throwable) { "Failed to fetch events or squad members: ${throwable.message}" }
+                        timeoutJob?.cancel()
+                        isTimeoutDialogVisible.value = true
+                    }
+                    .collect { (events, sections) ->
+                        logger.d { "Events & Sections received: ${events.size} events, ${sections.size} sections" }
+                        eventsState.emit(events)
+                        groupSectionsState.emit(sections)
+                    }
             }
-            .flowOn(ioDispatcher)
-            .launchIn(viewModelScope)
+
+            launch {
+                combine(
+                    userInfoState,
+                    calendarUIState,
+                    eventsState,
+                    groupSectionsState,
+                ) { userInfo, calendar, events, groupSections ->
+                    userInfo ?: return@combine null
+
+                    val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(
+                        calendar = calendar,
+                        events = events,
+                        currentUserId = userInfo.uid,
+                        groupMembers = groupSections.associate { it.groupId to it.members },
+                    )
+
+                    val selectedDate = eventBasedCalendar.dates.firstOrNull { it.isSelected }
+                    val eventsBySelectedDate = getEventsBySelectedDate(
+                        events = events,
+                        selectedDate = selectedDate,
+                        calendarYear = eventBasedCalendar.yearMonth.year,
+                        currentUser = userInfo,
+                        userGroups = userInfo.groups,
+                        groupSections = groupSections,
+                    )
+                    val today = todayProvider()
+                    val dayOfMonth = selectedDate?.dayOfMonth
+                    val isCreateEventButtonVisible = if (userInfo.groups.isNotEmpty() && selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
+                        val selectedLocalDate = LocalDate(
+                            year = selectedDate.year ?: eventBasedCalendar.yearMonth.year,
+                            month = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
+                            day = dayOfMonth
+                        )
+                        selectedLocalDate >= today
+                    } else {
+                        false
+                    }
+                    HomeScreenUI(
+                        user = userInfo,
+                        calendarUI = eventBasedCalendar,
+                        gameEventsOnDate = eventsBySelectedDate,
+                        isCreateEventButtonVisible = isCreateEventButtonVisible,
+                    )
+                }
+                    .filterNotNull()
+                    .flowOn(ioDispatcher)
+                    .collect { homeScreenUI ->
+                        timeoutJob?.cancel()
+                        isTimeoutDialogVisible.value = false
+                        uiState.update {
+                            UiState.Normal(homeScreenUI)
+                        }
+                    }
+            }
+        }
     }
 
     fun onLogOutTap() = viewModelScope.launch {
@@ -282,6 +322,18 @@ class HomeScreenViewModel(
         )
     }
 
+    fun onRetryLoadingTap() {
+        logger.d { "Retrying data load after timeout" }
+        isTimeoutDialogVisible.value = false
+        uiState.update { UiState.Loading }
+        collectUiStateData()
+    }
+
+    fun onDismissTimeoutDialog() {
+        logger.d { "Dismissing timeout dialog" }
+        isTimeoutDialogVisible.value = false
+    }
+
     fun onAction(action: HomeScreenAction) {
         when (action) {
             is HomeScreenAction.OnDateTap -> onDateTap(action.date)
@@ -291,6 +343,8 @@ class HomeScreenViewModel(
             HomeScreenAction.OnLogOutTap -> onLogOutTap()
             HomeScreenAction.OnAvatarTap -> onAvatarTap()
             is HomeScreenAction.OnEventTap -> onEventTap(action.event)
+            HomeScreenAction.OnRetryLoadingTap -> onRetryLoadingTap()
+            HomeScreenAction.OnDismissTimeoutDialog -> onDismissTimeoutDialog()
         }
     }
 
