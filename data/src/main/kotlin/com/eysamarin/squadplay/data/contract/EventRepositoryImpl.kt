@@ -38,6 +38,7 @@ class EventRepositoryImpl(
                 emit(emptyList())
             } else {
                 logger.e(tag = "EventRepository", throwable = it) { "Cannot get events flow cause: ${it.message}" }
+                throw it
             }
         }
 
