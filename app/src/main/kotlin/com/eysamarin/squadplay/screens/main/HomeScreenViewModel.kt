@@ -218,7 +218,7 @@ class HomeScreenViewModel(
         )
 
         calendarUIState.emit(updatedCalendarUI)
-        analyticsProvider.trackEvent(AnalyticsEvent.CalendarDateSelected(date))
+        logger.d { "onDateTap: $date" }
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
