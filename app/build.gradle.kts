@@ -142,6 +142,7 @@ dependencies {
     implementation(libs.com.google.firebase.auth)
     implementation(libs.com.google.firebase.messaging)
     implementation(libs.com.google.firebase.appcheck.playintegrity)
+    implementation(libs.com.google.firebase.appcheck.debug)
 
     implementation(libs.jakewharton.timber)
 
