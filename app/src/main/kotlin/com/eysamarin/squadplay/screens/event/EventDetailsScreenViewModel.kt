@@ -13,6 +13,7 @@ import com.eysamarin.squadplay.models.EventMemberUI
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.Navigator
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -177,7 +178,8 @@ class EventDetailsScreenViewModel(
                         ?: sections.firstOrNull()?.members.orEmpty()
 
                     val membersList = friends.map { friend ->
-                        val memberStatus = matchingEvent?.getStatusForUser(friend.uid) ?: EventResponseStatus.NOT_SET
+                        val memberStatus = matchingEvent?.getStatusForUser(friend.uid)
+                            ?: EventResponseStatus.NOT_SET
                         EventMemberUI(
                             uid = friend.uid,
                             username = friend.username,
@@ -195,11 +197,17 @@ class EventDetailsScreenViewModel(
                     _uiState.update { current ->
                         current.copy(
                             members = memberUIs,
-                            userStatus = if (current.isYourEvent) current.userStatus else (latestUserStatus ?: current.userStatus),
+                            userStatus = if (current.isYourEvent) {
+                                current.userStatus
+                            } else {
+                                latestUserStatus ?: current.userStatus
+                            },
                             isObsolete = isObsolete ?: current.isObsolete,
                         )
                     }
                 }
+            } catch (_: CancellationException) {
+                /** do nothing */
             } catch (e: Exception) {
                 logger.w { "Failed to load members for group $groupId: ${e.message}" }
             }

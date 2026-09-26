@@ -10,6 +10,7 @@ import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventMemberUI
@@ -99,11 +100,18 @@ class HomeScreenViewModel(
         collectUiStateData()
     }
 
+    private fun resetStates() {
+        userInfoState.value = null
+        eventsState.value = emptyList()
+        groupSectionsState.value = emptyList()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
         dataCollectionJob?.cancel()
         isLoggingOut.value = false
         isTimeoutDialogVisible.value = false
+        resetStates()
 
         dataCollectionJob = viewModelScope.launch {
             launch {
@@ -141,6 +149,13 @@ class HomeScreenViewModel(
                     .flatMapLatest { groups ->
                         val groupIds = groups.map { it.uid }.toSet()
                         val eventsFlow = eventProvider.getEventsFlow(groupIds)
+                            .catch {
+                                if (it is AppErrorException) throw it
+
+                                logger.w(throwable = it) { "Failed to fetch events flow: ${it.message}" }
+                                isTimeoutDialogVisible.value = true
+                                emit(emptyList())
+                            }
                         val sectionsFlow = if (groups.isNotEmpty()) {
                             profileProvider.getGroupsMembersInfoFlow(groups)
                         } else {
@@ -149,10 +164,6 @@ class HomeScreenViewModel(
                         combine(eventsFlow, sectionsFlow) { events, sections ->
                             events to sections
                         }
-                    }
-                    .catch { throwable ->
-                        logger.w(throwable = throwable) { "Failed to fetch events or squad members: ${throwable.message}" }
-                        isTimeoutDialogVisible.value = true
                     }
                     .collect { (events, sections) ->
                         logger.d { "Events & Sections received: ${events.size} events, ${sections.size} sections" }
