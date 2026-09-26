@@ -48,11 +48,13 @@ class LogoutLoadingTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        HomeScreenViewModel.defaultIoDispatcher = testDispatcher
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        HomeScreenViewModel.defaultIoDispatcher = Dispatchers.IO
     }
 
     @Test
@@ -134,7 +136,7 @@ class LogoutLoadingTest {
         authProvider: AuthProvider,
         navigator: Navigator,
     ): HomeScreenViewModel {
-        return HomeScreenViewModel(
+        val vm = HomeScreenViewModel(
             navigator = navigator,
             authProvider = authProvider,
             calendarUIProvider = FakeCalendarUIProvider(),
@@ -144,6 +146,8 @@ class LogoutLoadingTest {
             analyticsProvider = FakeAnalyticsProvider(),
             logger = FakeAppLogger(),
         )
+        vm.ioDispatcher = testDispatcher
+        return vm
     }
 
     private class FakeAuthProvider : AuthProvider {
