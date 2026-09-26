@@ -151,12 +151,14 @@ fun SquadPlayNavigation(
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()
+                val isTimeoutDialogVisible by viewModel.isTimeoutDialogVisible.collectAsStateWithLifecycle()
 
                 RootScreenBackHandler(snackbarHostState = snackbarHostState)
 
                 HomeScreen(
                     state = uiState,
                     isLoggingOut = isLoggingOut,
+                    isTimeoutDialogVisible = isTimeoutDialogVisible,
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     windowSize = windowSize,
                     onAction = viewModel::onAction,

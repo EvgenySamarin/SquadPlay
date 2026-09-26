@@ -8,6 +8,8 @@
 
     <string name="yes">Да</string>
     <string name="no">Нет</string>
+    <string name="retry">Повторить</string>
+    <string name="cancel">Отмена</string>
     <string name="delete">Удалить</string>
     <string name="leave">Покинуть</string>
     <string name="edit">Редактировать</string>
@@ -51,6 +53,8 @@
     <string name="invite_new_friend">Пригласить приятеля</string>
     <string name="select_group">Выберите группу</string>
     <string name="no_squad_create_event_hint">Готовы к игре? Создайте или вступите в отряд, чтобы планировать игровые сессии!</string>
+    <string name="loading_timeout_title">Таймаут соединения</string>
+    <string name="loading_timeout_message">Загрузка данных заняла слишком много времени. Проверьте подключение к сети и повторите попытку.</string>
     <!-- endregion -->
 
     <!-- region profile screen -->
