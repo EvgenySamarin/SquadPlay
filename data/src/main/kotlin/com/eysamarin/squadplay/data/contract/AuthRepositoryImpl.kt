@@ -9,6 +9,7 @@ import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
+import kotlinx.coroutines.flow.Flow
 
 class AuthRepositoryImpl(
     val firebaseAuthManager: FirebaseAuthManager,
@@ -24,6 +25,8 @@ class AuthRepositoryImpl(
         logger.w(tag = "AuthRepository", throwable = userNotSignIn) { "Cannot get current user id, cause: ${userNotSignIn.message}" }
         null
     }
+
+    override fun getCurrentUserIdFlow(): Flow<String?> = firebaseAuthManager.getCurrentUserIdFlow()
 
     @Throws(AppErrorException::class)
     override suspend fun isUserExists(): Boolean = try {

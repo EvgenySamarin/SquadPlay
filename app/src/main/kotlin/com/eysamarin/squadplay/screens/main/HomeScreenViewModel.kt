@@ -102,16 +102,11 @@ class HomeScreenViewModel(
         collectUiStateData()
     }
 
-    fun initData() {
-        isLoggingOut.value = false
-        isTimeoutDialogVisible.value = false
-        collectUiStateData()
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
         dataCollectionJob?.cancel()
         isLoggingOut.value = false
+        isTimeoutDialogVisible.value = false
 
         dataCollectionJob = viewModelScope.launch {
             launch {
@@ -332,7 +327,7 @@ class HomeScreenViewModel(
     fun onRetryLoadingTap() {
         logger.d { "Retrying data load after timeout" }
         uiState.update { UiState.Loading }
-        initData()
+        collectUiStateData()
     }
 
     fun onDismissTimeoutDialog() {

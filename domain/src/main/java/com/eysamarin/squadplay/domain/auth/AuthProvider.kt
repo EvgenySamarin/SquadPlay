@@ -6,12 +6,14 @@ import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.suspendMap
+import kotlinx.coroutines.flow.Flow
 
 interface AuthProvider {
     suspend fun signInWithGoogle(): Boolean
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signOut(): Boolean
+    fun getCurrentUserIdFlow(): Flow<String?>
 
     @Throws(AppErrorException::class)
     suspend fun isUserExists(): Boolean
@@ -21,6 +23,8 @@ class AuthProviderImpl(
     private val authRepository: AuthRepository,
     private val profileRepository: ProfileRepository,
 ) : AuthProvider {
+
+    override fun getCurrentUserIdFlow(): Flow<String?> = authRepository.getCurrentUserIdFlow()
 
     @Throws(AppErrorException::class)
     override suspend fun isUserExists(): Boolean = authRepository.isUserExists()

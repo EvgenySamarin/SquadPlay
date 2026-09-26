@@ -8,8 +8,10 @@ import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.navigation.DefaultDeepLinkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -42,6 +44,7 @@ class LaunchApplicationViewModelSecurityTest {
         override suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean> = UiState.Empty
         override suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean> = UiState.Empty
         override suspend fun signOut(): Boolean = true
+        override fun getCurrentUserIdFlow(): Flow<String?> = flowOf("test_uid")
     }
 
     private class FakeSecurityLockoutManager : SecurityLockoutManager {

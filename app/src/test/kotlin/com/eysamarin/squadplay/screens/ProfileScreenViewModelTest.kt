@@ -557,6 +557,7 @@ class ProfileScreenViewModelTest {
         override suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean> = UiState.Normal(true)
         override suspend fun signOut(): Boolean = true
         override suspend fun isUserExists(): Boolean = true
+        override fun getCurrentUserIdFlow(): Flow<String?> = flowOf("test_uid")
     }
 
     private class FakeAnalyticsProvider : AnalyticsProvider {

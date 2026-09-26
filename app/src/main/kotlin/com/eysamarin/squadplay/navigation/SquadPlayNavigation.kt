@@ -24,6 +24,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.eysamarin.squadplay.R
 import com.eysamarin.squadplay.contracts.AnalyticsEvent
@@ -120,7 +121,10 @@ fun SquadPlayNavigation(
     }
 
     val saveableDecorator = rememberSaveableStateHolderNavEntryDecorator<NavKey>()
-    val decorators = remember(saveableDecorator) { listOf(saveableDecorator) }
+    val viewModelStoreDecorator = rememberViewModelStoreNavEntryDecorator<NavKey>()
+    val decorators = remember(saveableDecorator, viewModelStoreDecorator) {
+        listOf(saveableDecorator, viewModelStoreDecorator)
+    }
 
     val entries = rememberDecoratedNavEntries(
         backStack = backStack,
@@ -148,9 +152,6 @@ fun SquadPlayNavigation(
             }
             entry<Destination.HomeScreen> {
                 val viewModel: HomeScreenViewModel = koinViewModel()
-                LaunchedEffect(Unit) {
-                    viewModel.initData()
-                }
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()

@@ -21,6 +21,10 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.tasks.await
 
 interface FirebaseAuthManager {
@@ -32,6 +36,8 @@ interface FirebaseAuthManager {
 
     @Throws(IllegalStateException::class)
     fun getCurrentUserId(): String
+
+    fun getCurrentUserIdFlow(): Flow<String?>
 }
 
 class FirebaseAuthManagerImpl(
@@ -42,6 +48,19 @@ class FirebaseAuthManagerImpl(
     private val logger: AppLogger,
     private val securityLockoutManager: SecurityLockoutManager? = null,
 ) : FirebaseAuthManager {
+
+    override fun getCurrentUserIdFlow(): Flow<String?> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { auth ->
+            val uid = auth.currentUser?.uid
+            logger.d(tag = "Auth") { "AuthStateListener emitted uid: $uid" }
+            trySend(uid)
+        }
+        firebaseAuth.addAuthStateListener(listener)
+        awaitClose {
+            logger.d(tag = "Auth") { "Removing AuthStateListener" }
+            firebaseAuth.removeAuthStateListener(listener)
+        }
+    }.distinctUntilChanged()
 
     override fun getUserUid(): String? {
         val currentUser = firebaseAuth.currentUser
