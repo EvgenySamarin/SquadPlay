@@ -62,7 +62,6 @@ class FirebaseAuthManagerImpl(
         }
     }.distinctUntilChanged()
 
-    //TODO migrate all functions to be based on new rx approach getCurrentUserIdFlow
     override fun getUserUid(): String? {
         val currentUser = firebaseAuth.currentUser
         logger.d(tag = "Auth") { "currentUser: $currentUser" }
