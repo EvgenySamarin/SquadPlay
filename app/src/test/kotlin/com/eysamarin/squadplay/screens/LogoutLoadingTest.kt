@@ -76,6 +76,7 @@ class LogoutLoadingTest {
         signOutGate.complete(true)
         testDispatcher.scheduler.advanceUntilIdle()
 
+        assertFalse(viewModel.isLoggingOut.value)
         assertEquals(1, fakeNavigator.navigateToAuthGraphCalls)
     }
 
@@ -126,6 +127,7 @@ class LogoutLoadingTest {
         signOutGate.complete(true)
         testDispatcher.scheduler.advanceUntilIdle()
 
+        assertFalse(viewModel.isLoggingOut.value)
         assertEquals(1, fakeNavigator.navigateToAuthGraphCalls)
     }
 

@@ -29,13 +29,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -44,6 +45,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.number
@@ -88,7 +90,6 @@ class HomeScreenViewModel(
         field = MutableStateFlow<Boolean>(false)
 
     private var dataCollectionJob: Job? = null
-    private var timeoutJob: Job? = null
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
@@ -101,27 +102,35 @@ class HomeScreenViewModel(
         collectUiStateData()
     }
 
+    fun initData() {
+        isLoggingOut.value = false
+        isTimeoutDialogVisible.value = false
+        collectUiStateData()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectUiStateData() {
         dataCollectionJob?.cancel()
-        timeoutJob?.cancel()
-
-        if (uiState.value is UiState.Loading) {
-            timeoutJob = viewModelScope.launch {
-                delay(loadingTimeoutMillis)
-                if (uiState.value is UiState.Loading) {
-                    logger.w { "HomeScreen data loading timed out after ${loadingTimeoutMillis}ms" }
-                    isTimeoutDialogVisible.value = true
-                }
-            }
-        }
+        isLoggingOut.value = false
 
         dataCollectionJob = viewModelScope.launch {
+            launch {
+                try {
+                    withTimeout(loadingTimeoutMillis) {
+                        uiState.first { it is UiState.Normal }
+                    }
+                } catch (_: TimeoutCancellationException) {
+                    if (uiState.value is UiState.Loading) {
+                        logger.w { "HomeScreen data loading timed out after ${loadingTimeoutMillis}ms" }
+                        isTimeoutDialogVisible.value = true
+                    }
+                }
+            }
+
             launch {
                 profileProvider.getUserInfoFlow()
                     .catch { throwable ->
                         logger.w(throwable = throwable) { "Failed to fetch user info flow: ${throwable.message}" }
-                        timeoutJob?.cancel()
                         isTimeoutDialogVisible.value = true
                     }
                     .onEach {
@@ -151,7 +160,6 @@ class HomeScreenViewModel(
                     }
                     .catch { throwable ->
                         logger.w(throwable = throwable) { "Failed to fetch events or squad members: ${throwable.message}" }
-                        timeoutJob?.cancel()
                         isTimeoutDialogVisible.value = true
                     }
                     .collect { (events, sections) ->
@@ -208,7 +216,6 @@ class HomeScreenViewModel(
                     .filterNotNull()
                     .flowOn(ioDispatcher)
                     .collect { homeScreenUI ->
-                        timeoutJob?.cancel()
                         isTimeoutDialogVisible.value = false
                         uiState.update {
                             UiState.Normal(homeScreenUI)
@@ -222,11 +229,11 @@ class HomeScreenViewModel(
         if (isLoggingOut.value) return@launch
         isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
+        isLoggingOut.value = false
         if (isSuccess) {
             analyticsProvider.trackEvent(AnalyticsEvent.SignOut)
             navigator.navigateToAuthGraph()
         } else {
-            isLoggingOut.value = false
             logger.w { "Failed to sign out" }
         }
     }
@@ -324,9 +331,8 @@ class HomeScreenViewModel(
 
     fun onRetryLoadingTap() {
         logger.d { "Retrying data load after timeout" }
-        isTimeoutDialogVisible.value = false
         uiState.update { UiState.Loading }
-        collectUiStateData()
+        initData()
     }
 
     fun onDismissTimeoutDialog() {

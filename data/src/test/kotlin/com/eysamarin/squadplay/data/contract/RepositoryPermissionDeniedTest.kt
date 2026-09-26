@@ -129,4 +129,53 @@ class RepositoryPermissionDeniedTest {
         assertEquals(0, logger.errorLogs.size)
         assertEquals(1, logger.debugLogs.size)
     }
+
+    @Test
+    fun `ProfileRepository getUserInfoFlow emits user immediately when groups flow has not emitted yet`() = runTest {
+        val logger = RecordingLogger()
+        val user = User("uid1", "User 1", "u1@example.com", null, emptyList())
+        val fakeDataSource = object : BaseFakeFirestoreDataSource() {
+            override fun getUserInfoFlow(userId: String): Flow<User?> = flow {
+                emit(user)
+            }
+            override fun getUserGroupsFlow(userId: String): Flow<List<Group>> = flow {
+                kotlinx.coroutines.awaitCancellation()
+            }
+        }
+
+        val repository = ProfileRepositoryImpl(
+            firestoreDataSource = fakeDataSource,
+            logger = logger,
+        )
+
+        val result = repository.getUserInfoFlow("uid1").first()
+
+        assertEquals(user, result)
+    }
+
+    @Test
+    fun `ProfileRepository getUserInfoFlow rethrows unexpected exceptions`() = runTest {
+        val logger = RecordingLogger()
+        val fakeDataSource = object : BaseFakeFirestoreDataSource() {
+            override fun getUserInfoFlow(userId: String): Flow<User?> = flow {
+                throw IllegalStateException("Unexpected crash")
+            }
+        }
+
+        val repository = ProfileRepositoryImpl(
+            firestoreDataSource = fakeDataSource,
+            logger = logger,
+        )
+
+        var thrown = false
+        try {
+            repository.getUserInfoFlow("uid1").first()
+        } catch (_: IllegalStateException) {
+            thrown = true
+        }
+
+        org.junit.Assert.assertTrue(thrown)
+        assertEquals(1, logger.errorLogs.size)
+    }
 }
+

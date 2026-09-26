@@ -133,11 +133,11 @@ class ProfileScreenViewModel(
         if (isLoggingOut.value) return@launch
         isLoggingOut.value = true
         val isSuccess = authProvider.signOut()
+        isLoggingOut.value = false
         if (isSuccess) {
             analyticsProvider.trackEvent(AnalyticsEvent.SignOut)
             navigator.navigateToAuthGraph()
         } else {
-            isLoggingOut.value = false
             logger.w { "Failed to sign out" }
         }
     }

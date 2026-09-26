@@ -148,6 +148,9 @@ fun SquadPlayNavigation(
             }
             entry<Destination.HomeScreen> {
                 val viewModel: HomeScreenViewModel = koinViewModel()
+                LaunchedEffect(Unit) {
+                    viewModel.initData()
+                }
 
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()
