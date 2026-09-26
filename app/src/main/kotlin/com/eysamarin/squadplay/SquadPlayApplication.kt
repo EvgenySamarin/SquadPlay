@@ -8,6 +8,7 @@ import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.EventRepository
 import com.eysamarin.squadplay.contracts.GameRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
+import com.eysamarin.squadplay.contracts.SecurityLockoutManager
 import com.eysamarin.squadplay.contracts.StringRepository
 import com.eysamarin.squadplay.data.FirebaseAuthManager
 import com.eysamarin.squadplay.data.FirebaseAuthManagerImpl
@@ -22,6 +23,7 @@ import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
 import com.eysamarin.squadplay.data.datasource.RawgDataSource
 import com.eysamarin.squadplay.data.logging.CrashReportingTree
 import com.eysamarin.squadplay.data.logging.TimberAppLogger
+import com.eysamarin.squadplay.data.security.SecurityLockoutManagerImpl
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProviderImpl
 import com.eysamarin.squadplay.domain.auth.AuthProvider
@@ -51,9 +53,13 @@ import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
+import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
 import io.sentry.android.core.SentryAndroid
 import org.koin.android.ext.android.getKoin
@@ -71,6 +77,11 @@ class SquadPlayApplication : Application() {
 
         //region data
         single<CredentialManager> { CredentialManager.create(baseContext) }
+        single<SecurityLockoutManager> {
+            SecurityLockoutManagerImpl(
+                logger = get(),
+            )
+        }
         single<FirebaseAuthManager> {
             FirebaseAuthManagerImpl(
                 firebaseAuth = FirebaseAuth.getInstance(),
@@ -78,6 +89,7 @@ class SquadPlayApplication : Application() {
                 credentialManager = get(),
                 appContext = applicationContext,
                 logger = get(),
+                securityLockoutManager = get(),
             )
         }
         single<FirebaseFirestoreDataSource> {
@@ -85,6 +97,7 @@ class SquadPlayApplication : Application() {
                 firebaseFirestore = FirebaseFirestore.getInstance(),
                 firebaseMessaging = FirebaseMessaging.getInstance(),
                 logger = get(),
+                securityLockoutManager = get(),
             )
         }
         single<RawgDataSource> {
@@ -103,18 +116,21 @@ class SquadPlayApplication : Application() {
                 profileRepository = get(),
                 firestoreDataSource = get(),
                 logger = get(),
+                securityLockoutManager = get(),
             )
         }
         single<EventRepository> {
             EventRepositoryImpl(
                 firebaseFirestoreDataSource = get(),
                 logger = get(),
+                securityLockoutManager = get(),
             )
         }
         single<ProfileRepository> {
             ProfileRepositoryImpl(
                 firestoreDataSource = get(),
                 logger = get(),
+                securityLockoutManager = get(),
             )
         }
         single<StringRepository> { StringRepositoryImpl(appContext = get()) }
@@ -186,6 +202,11 @@ class SquadPlayApplication : Application() {
         }
 
         val logger = getKoin().get<AppLogger>()
+
+        Firebase.initialize(this)
+        Firebase.appCheck.installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance(),
+        )
 
         FirebaseMessaging.getInstance().register()
             .addOnFailureListener { exception ->

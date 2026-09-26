@@ -2,7 +2,9 @@ package com.eysamarin.squadplay.data.contract
 
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.contracts.EventRepository
+import com.eysamarin.squadplay.contracts.SecurityLockoutManager
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.Event
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -12,15 +14,26 @@ import kotlinx.coroutines.flow.catch
 class EventRepositoryImpl(
     val firebaseFirestoreDataSource: FirebaseFirestoreDataSource,
     private val logger: AppLogger,
+    private val securityLockoutManager: SecurityLockoutManager? = null,
 ) : EventRepository {
 
-    override suspend fun saveEventData(event: Event): Boolean = firebaseFirestoreDataSource
-        .saveEvent(event)
+    @Throws(AppErrorException::class)
+    override suspend fun saveEventData(event: Event): Boolean = try {
+        firebaseFirestoreDataSource.saveEvent(event)
+    } catch (e: AppErrorException) {
+        logger.w(tag = "EventRepository", throwable = e) { "App Check attestation failure in saveEventData: ${e.message}" }
+        securityLockoutManager?.triggerLockout()
+        throw e
+    }
 
     override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = firebaseFirestoreDataSource
         .getEventsFlow(groupIds)
         .catch {
-            if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+            if (it is AppErrorException) {
+                logger.w(tag = "EventRepository", throwable = it) { "App Check attestation failure in getEventsFlow: ${it.message}" }
+                securityLockoutManager?.triggerLockout()
+                throw it
+            } else if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                 logger.d(tag = "EventRepository") { "Permission denied for events: ${it.message}" }
                 emit(emptyList())
             } else {
@@ -28,9 +41,16 @@ class EventRepositoryImpl(
             }
         }
 
-    override suspend fun deleteEvent(eventID: String): Boolean = firebaseFirestoreDataSource
-        .deleteEvent(eventID)
+    @Throws(AppErrorException::class)
+    override suspend fun deleteEvent(eventID: String): Boolean = try {
+        firebaseFirestoreDataSource.deleteEvent(eventID)
+    } catch (e: AppErrorException) {
+        logger.w(tag = "EventRepository", throwable = e) { "App Check attestation failure in deleteEvent: ${e.message}" }
+        securityLockoutManager?.triggerLockout()
+        throw e
+    }
 
+    @Throws(AppErrorException::class)
     override suspend fun updateEventResponse(
         eventId: String,
         userId: String,
@@ -38,6 +58,10 @@ class EventRepositoryImpl(
     ) {
         try {
             firebaseFirestoreDataSource.updateEventResponse(eventId, userId, status)
+        } catch (e: AppErrorException) {
+            logger.w(tag = "EventRepository", throwable = e) { "App Check attestation failure in updateEventResponse: ${e.message}" }
+            securityLockoutManager?.triggerLockout()
+            throw e
         } catch (e: Exception) {
             logger.e(tag = "EventRepository", throwable = e) { "Cannot update event response cause: ${e.message}" }
         }

@@ -2,6 +2,7 @@ package com.eysamarin.squadplay.domain.auth
 
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.eysamarin.squadplay.models.suspendMap
@@ -11,6 +12,8 @@ interface AuthProvider {
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signOut(): Boolean
+
+    @Throws(AppErrorException::class)
     suspend fun isUserExists(): Boolean
 }
 
@@ -19,6 +22,7 @@ class AuthProviderImpl(
     private val profileRepository: ProfileRepository,
 ) : AuthProvider {
 
+    @Throws(AppErrorException::class)
     override suspend fun isUserExists(): Boolean = authRepository.isUserExists()
 
     override suspend fun signUpWithEmailPassword(

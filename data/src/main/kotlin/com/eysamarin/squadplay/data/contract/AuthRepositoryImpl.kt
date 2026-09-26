@@ -3,8 +3,10 @@ package com.eysamarin.squadplay.data.contract
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.contracts.AuthRepository
 import com.eysamarin.squadplay.contracts.ProfileRepository
+import com.eysamarin.squadplay.contracts.SecurityLockoutManager
 import com.eysamarin.squadplay.data.FirebaseAuthManager
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 
@@ -13,6 +15,7 @@ class AuthRepositoryImpl(
     val profileRepository: ProfileRepository,
     val firestoreDataSource: FirebaseFirestoreDataSource,
     private val logger: AppLogger,
+    private val securityLockoutManager: SecurityLockoutManager? = null,
 ) : AuthRepository {
 
     override fun getCurrentUserId(): String? = try {
@@ -22,9 +25,16 @@ class AuthRepositoryImpl(
         null
     }
 
-    override suspend fun isUserExists(): Boolean = firebaseAuthManager.getUserUid()?.let {
-        profileRepository.isUserProfileExists(it)
-    } == true
+    @Throws(AppErrorException::class)
+    override suspend fun isUserExists(): Boolean = try {
+        firebaseAuthManager.getUserUid()?.let {
+            profileRepository.isUserProfileExists(it)
+        } == true
+    } catch (e: AppErrorException) {
+        logger.w(tag = "AuthRepository", throwable = e) { "App Check attestation failure in isUserExists: ${e.message}" }
+        securityLockoutManager?.triggerLockout()
+        throw e
+    }
 
     override suspend fun signInWithGoogle() = firebaseAuthManager.signInWithGoogle()
 

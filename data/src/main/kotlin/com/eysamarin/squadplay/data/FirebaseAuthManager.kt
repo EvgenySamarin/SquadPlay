@@ -9,6 +9,8 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.contracts.SecurityLockoutManager
+import com.eysamarin.squadplay.data.security.isAppCheckAttestationFailure
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -39,6 +41,7 @@ class FirebaseAuthManagerImpl(
     private val credentialManager: CredentialManager,
     private val appContext: Context,
     private val logger: AppLogger,
+    private val securityLockoutManager: SecurityLockoutManager? = null,
 ) : FirebaseAuthManager {
 
     override fun getUserUid(): String? {
@@ -47,6 +50,7 @@ class FirebaseAuthManagerImpl(
         return currentUser?.uid
     }
 
+    @Throws(IllegalStateException::class)
     override fun getCurrentUserId(): String = firebaseAuth.currentUser?.uid
         ?: throw IllegalStateException("User is not signed in")
 
@@ -67,8 +71,14 @@ class FirebaseAuthManagerImpl(
             logger.w(tag = "Auth", throwable = exception) { "signUpWithEmailPassword:failure - weak password" }
             UiState.Error(exception.message ?: "Password is too weak")
         } catch (exception: Exception) {
-            logger.w(tag = "Auth", throwable = exception) { "signUpWithEmailPassword:failure" }
-            UiState.Error("Unexpected exception occurred")
+            if (exception.isAppCheckAttestationFailure()) {
+                logger.w(tag = "Auth", throwable = exception) { "App Check attestation failed during signUpWithEmailPassword: ${exception.message}" }
+                securityLockoutManager?.triggerLockout()
+                UiState.Error("Security verification failed")
+            } else {
+                logger.w(tag = "Auth", throwable = exception) { "signUpWithEmailPassword:failure" }
+                UiState.Error("Unexpected exception occurred")
+            }
         }
     }
 
@@ -89,8 +99,14 @@ class FirebaseAuthManagerImpl(
             logger.w(tag = "Auth", throwable = exception) { "signInWithEmailPassword:failure - invalid credentials" }
             UiState.Error("Cannot login, please check your email or password")
         } catch (exception: Exception) {
-            logger.w(tag = "Auth", throwable = exception) { "signInWithEmailPassword:failure" }
-            UiState.Error("Unexpected exception occurred")
+            if (exception.isAppCheckAttestationFailure()) {
+                logger.w(tag = "Auth", throwable = exception) { "App Check attestation failed during signInWithEmailPassword: ${exception.message}" }
+                securityLockoutManager?.triggerLockout()
+                UiState.Error("Security verification failed")
+            } else {
+                logger.w(tag = "Auth", throwable = exception) { "signInWithEmailPassword:failure" }
+                UiState.Error("Unexpected exception occurred")
+            }
         }
     }
 
@@ -150,7 +166,12 @@ class FirebaseAuthManagerImpl(
 
             firebaseUser.toAppUser()
         } catch (e: Exception) {
-            logger.w(tag = "Auth", throwable = e) { "signInWithCredential:failure" }
+            if (e.isAppCheckAttestationFailure()) {
+                logger.w(tag = "Auth", throwable = e) { "App Check attestation failed during signInWithCredential: ${e.message}" }
+                securityLockoutManager?.triggerLockout()
+            } else {
+                logger.w(tag = "Auth", throwable = e) { "signInWithCredential:failure" }
+            }
             null
         }
     }

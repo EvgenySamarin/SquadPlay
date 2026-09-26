@@ -1,5 +1,6 @@
 package com.eysamarin.squadplay.contracts
 
+import com.eysamarin.squadplay.models.AppErrorException
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.User
@@ -7,6 +8,7 @@ import com.eysamarin.squadplay.models.UserGroupSection
 import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
+    @Throws(AppErrorException::class)
     suspend fun isUserProfileExists(userId: String): Boolean
     fun getUserInfoFlow(userId: String): Flow<User?>
     suspend fun saveUserProfile(user: User)
