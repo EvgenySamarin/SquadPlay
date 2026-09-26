@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
 
 class ProfileRepositoryImpl(
     val firestoreDataSource: FirebaseFirestoreDataSource,
@@ -31,7 +32,7 @@ class ProfileRepositoryImpl(
 
     override fun getUserInfoFlow(userId: String): Flow<User?> = combine(
         firestoreDataSource.getUserInfoFlow(userId),
-        firestoreDataSource.getUserGroupsFlow(userId),
+        firestoreDataSource.getUserGroupsFlow(userId).onStart { emit(emptyList()) },
     ) { user, groups ->
         if (groups.isEmpty()) {
             user
@@ -51,6 +52,7 @@ class ProfileRepositoryImpl(
             emit(null)
         } else {
             logger.e(tag = "ProfileRepository", throwable = it) { "Cannot get user info cause: ${it.message}" }
+            throw it
         }
     }
 

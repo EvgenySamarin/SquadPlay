@@ -161,6 +161,30 @@ class HomeScreenLoadingTimeoutTest {
         assertTrue(viewModel.isTimeoutDialogVisible.value)
     }
 
+    @Test
+    fun `initData resets isTimeoutDialogVisible and isLoggingOut and restarts data collection`() = runTest(testDispatcher) {
+        val userFlow = MutableSharedFlow<User?>()
+        val viewModel = createViewModel(userFlow)
+        viewModel.loadingTimeoutMillis = 1000L
+
+        viewModel.initData()
+        advanceTimeBy(1100)
+        testDispatcher.scheduler.runCurrent()
+        assertTrue(viewModel.isTimeoutDialogVisible.value)
+
+        viewModel.initData()
+        testDispatcher.scheduler.runCurrent()
+
+        assertFalse(viewModel.isTimeoutDialogVisible.value)
+        assertFalse(viewModel.isLoggingOut.value)
+        assertTrue(viewModel.uiState.value is UiState.Loading)
+
+        userFlow.emit(User(uid = "user1", username = "tester", email = "test@example.com", photoUrl = null, groups = emptyList()))
+        testDispatcher.scheduler.runCurrent()
+
+        assertTrue(viewModel.uiState.value is UiState.Normal)
+    }
+
     private fun createViewModel(userFlow: Flow<User?>): HomeScreenViewModel {
         val fakeProfile = object : FakeProfileProvider() {
             override fun getUserInfoFlow(): Flow<User?> = userFlow
