@@ -18,7 +18,7 @@ import org.junit.Test
 class ProfileProviderTest {
 
     private class FakeAuthRepository(
-        val userIdFlow: MutableSharedFlow<String?> = MutableSharedFlow()
+        val userIdFlow: MutableSharedFlow<String?> = MutableSharedFlow(replay = 1)
     ) : AuthRepository {
         override suspend fun signInWithGoogle(): User? = null
         override suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User> = UiState.Empty
@@ -68,6 +68,7 @@ class ProfileProviderTest {
         val job = launch {
             provider.getUserInfoFlow().collect { emissions.add(it) }
         }
+        testScheduler.runCurrent()
 
         authRepo.userIdFlow.emit("uid1")
         testScheduler.runCurrent()
