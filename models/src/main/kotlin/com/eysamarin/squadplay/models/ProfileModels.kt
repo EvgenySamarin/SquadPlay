@@ -10,6 +10,7 @@ data class User(
     val photoUrl: String?,
     val groups: List<Group>,
     val nickname: String? = null,
+    val lastEventCreatedAt: Long? = null,
 )
 
 data class Group(

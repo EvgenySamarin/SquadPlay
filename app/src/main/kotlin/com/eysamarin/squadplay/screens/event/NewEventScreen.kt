@@ -258,13 +258,14 @@ private fun NewEventScreenMediumLayout(
         }
 
         item {
-            Box(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 DSButton(
                     modifier = Modifier
                         .fillMaxWidth(0.9f),
+                    enabled = !state.data.isSaving && !state.data.isCooldownActive,
                     text = stringResource(R.string.schedule_event),
                     onTap = {
                         val from = dateTimeFrom ?: return@DSButton
@@ -289,6 +290,19 @@ private fun NewEventScreenMediumLayout(
                         )
                     },
                 )
+                if (state.data.isCooldownActive) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        modifier = Modifier.fillMaxWidth(0.9f),
+                        text = stringResource(
+                            R.string.event_creation_cooldown_warning,
+                            state.data.cooldownRemainingSeconds,
+                        ),
+                        textAlign = TextAlign.Center,
+                        style = adaptiveBodyByHeight(windowSize),
+                        color = DesignSystemTheme.colorScheme.error,
+                    )
+                }
             }
         }
     }

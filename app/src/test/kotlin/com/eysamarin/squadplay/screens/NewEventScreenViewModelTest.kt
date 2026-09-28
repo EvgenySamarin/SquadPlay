@@ -214,6 +214,175 @@ class NewEventScreenViewModelTest {
         assertEquals(1, navigator.navigateUpCalls)
     }
 
+    @Test
+    fun collectInitScreenData_withRecentLastEventCreatedAt_activatesCooldownAndTicksDown() = runTest(testDispatcher) {
+        val baseTime = 100_000L
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "g-1", title = "Squad", members = listOf("user-1"))),
+            lastEventCreatedAt = baseTime, // created at 100_000 ms
+        )
+
+        val profileProvider = FakeProfileProvider(user = user)
+        // 10 seconds later: 20 seconds remaining
+        val viewModel = createViewModel(
+            profileProvider = profileProvider,
+            timeProvider = { baseTime + 10_000L }
+        )
+
+        val navArgs = Destination.NewEventScreen(
+            selectedDate = Date(dayOfMonth = 10, countEvents = 0, isSelected = true, enabled = true),
+            yearMonth = "2026-09-01",
+        )
+        viewModel.updateSelectedDate(navArgs)
+        testDispatcher.scheduler.advanceTimeBy(1)
+
+        val state = viewModel.uiState.value
+        assertTrue(state is UiState.Normal)
+        val data = (state as UiState.Normal).data
+        assertTrue(data.isCooldownActive)
+        assertEquals(20L, data.cooldownRemainingSeconds)
+
+        // Advance 5 seconds
+        testDispatcher.scheduler.advanceTimeBy(5000)
+        val stateAfter5s = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(stateAfter5s.isCooldownActive)
+        assertEquals(15L, stateAfter5s.cooldownRemainingSeconds)
+
+        // Advance past expiration
+        testDispatcher.scheduler.advanceTimeBy(16000)
+        val stateAfterExpired = (viewModel.uiState.value as UiState.Normal).data
+        org.junit.Assert.assertFalse(stateAfterExpired.isCooldownActive)
+        assertEquals(0L, stateAfterExpired.cooldownRemainingSeconds)
+    }
+
+    @Test
+    fun onEventSaveTap_whenCooldownActive_blocksEventCreation() = runTest(testDispatcher) {
+        val baseTime = 100_000L
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "g-1", title = "Squad", members = listOf("user-1"))),
+            lastEventCreatedAt = baseTime,
+        )
+
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider()
+        val viewModel = createViewModel(
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+            timeProvider = { baseTime + 5_000L }, // 25s remaining
+        )
+        testDispatcher.scheduler.advanceTimeBy(1)
+
+        viewModel.onAction(
+            NewEventScreenAction.OnEventSaveTap(
+                title = "CS2 Match",
+                timeFrom = LocalDateTime(2026, 9, 12, 18, 0),
+                timeTo = LocalDateTime(2026, 9, 12, 20, 0),
+                eventIconUrl = null,
+                groupId = "g-1",
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNull(eventProvider.lastSavedEvent)
+        assertEquals(0, eventProvider.saveCallCount)
+    }
+
+    @Test
+    fun onEventSaveTap_onSuccess_startsCooldownImmediately() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "g-1", title = "Squad", members = listOf("user-1"))),
+            lastEventCreatedAt = null,
+        )
+
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider()
+        val navigator = FakeNavigator()
+        val viewModel = createViewModel(
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+            navigator = navigator,
+        )
+        val navArgs = Destination.NewEventScreen(
+            selectedDate = Date(dayOfMonth = 10, countEvents = 0, isSelected = true, enabled = true),
+            yearMonth = "2026-09-01",
+        )
+        viewModel.updateSelectedDate(navArgs)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(
+            NewEventScreenAction.OnEventSaveTap(
+                title = "CS2 Match",
+                timeFrom = LocalDateTime(2026, 9, 12, 18, 0),
+                timeTo = LocalDateTime(2026, 9, 12, 20, 0),
+                eventIconUrl = null,
+                groupId = "g-1",
+            )
+        )
+        testDispatcher.scheduler.advanceTimeBy(1)
+
+        assertEquals(1, eventProvider.saveCallCount)
+        val state = (viewModel.uiState.value as UiState.Normal).data
+        assertTrue(state.isCooldownActive)
+        assertEquals(30L, state.cooldownRemainingSeconds)
+    }
+
+    @Test
+    fun onEventSaveTap_onFailure_resetsIsSavingAndShowsErrorMessage() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "Leader",
+            email = "leader@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "g-1", title = "Squad", members = listOf("user-1"))),
+            lastEventCreatedAt = null,
+        )
+
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(saveResult = false)
+        val snackbar = FakeSnackbarProvider()
+        val stringProvider = FakeStringProvider()
+        val viewModel = createViewModel(
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+            snackbar = snackbar,
+            stringProvider = stringProvider,
+        )
+        val navArgs = Destination.NewEventScreen(
+            selectedDate = Date(dayOfMonth = 10, countEvents = 0, isSelected = true, enabled = true),
+            yearMonth = "2026-09-01",
+        )
+        viewModel.updateSelectedDate(navArgs)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onAction(
+            NewEventScreenAction.OnEventSaveTap(
+                title = "CS2 Match",
+                timeFrom = LocalDateTime(2026, 9, 12, 18, 0),
+                timeTo = LocalDateTime(2026, 9, 12, 20, 0),
+                eventIconUrl = null,
+                groupId = "g-1",
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("Event save failed", snackbar.lastMessage)
+        val state = (viewModel.uiState.value as UiState.Normal).data
+        org.junit.Assert.assertFalse(state.isSaving)
+        org.junit.Assert.assertFalse(state.isCooldownActive)
+    }
+
     private fun createViewModel(
         navigator: Navigator = FakeNavigator(),
         snackbar: SnackbarProvider = FakeSnackbarProvider(),
@@ -222,8 +391,9 @@ class NewEventScreenViewModelTest {
         stringProvider: StringProvider = FakeStringProvider(),
         gameProvider: GameProvider = FakeGameProvider(),
         analyticsProvider: AnalyticsProvider = FakeAnalyticsProvider(),
+        timeProvider: (() -> Long)? = null,
     ): NewEventScreenViewModel {
-        return NewEventScreenViewModel(
+        val vm = NewEventScreenViewModel(
             navigator = navigator,
             snackbar = snackbar,
             profileProvider = profileProvider,
@@ -233,6 +403,10 @@ class NewEventScreenViewModelTest {
             analyticsProvider = analyticsProvider,
             logger = FakeAppLogger(),
         )
+        if (timeProvider != null) {
+            vm.timeProvider = timeProvider
+        }
+        return vm
     }
 
     private class FakeNavigator : Navigator {
@@ -265,11 +439,15 @@ class NewEventScreenViewModelTest {
         override suspend fun updateNickname(userId: String, nickname: String): Boolean = true
     }
 
-    private class FakeEventProvider : EventProvider {
+    private class FakeEventProvider(
+        var saveResult: Boolean = true,
+    ) : EventProvider {
         var lastSavedEvent: Event? = null
+        var saveCallCount = 0
         override suspend fun saveEventData(event: Event): Boolean {
+            saveCallCount++
             lastSavedEvent = event
-            return true
+            return saveResult
         }
         override fun getEventsFlow(groupIds: Set<String>): Flow<List<Event>> = emptyFlow()
         override suspend fun deleteEvent(eventId: String): Boolean = true

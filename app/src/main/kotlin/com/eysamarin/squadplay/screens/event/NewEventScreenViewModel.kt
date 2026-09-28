@@ -46,7 +46,13 @@ class NewEventScreenViewModel(
 
     private val userInfoState = MutableStateFlow<User?>(null)
     private val navigationArgsState = MutableStateFlow<Destination.NewEventScreen?>(null)
-    
+
+    private val isSavingState = MutableStateFlow(false)
+    private val cooldownRemainingSecondsState = MutableStateFlow(0L)
+    private var cooldownJob: Job? = null
+
+    internal var timeProvider: () -> Long = { System.currentTimeMillis() }
+
     private val gameTitleState = MutableStateFlow("")
     private val gameThumbnailUrlState = MutableStateFlow<String?>(null)
     private var searchJob: Job? = null
@@ -67,11 +73,11 @@ class NewEventScreenViewModel(
                 }
             }
             .filterNotNull()
-            .onEach {
-                logger.d { "User info received: $it" }
-                userInfoState.emit(it)
-                val args = navigationArgsState.value ?: return@onEach
-                updateUiState(args)
+            .onEach { user ->
+                logger.d { "User info received: $user" }
+                userInfoState.emit(user)
+                checkAndStartCooldown(user.lastEventCreatedAt)
+                refreshUiState()
             }
             .launchIn(viewModelScope)
 
@@ -81,20 +87,56 @@ class NewEventScreenViewModel(
                 updateUiState(args)
             }
             .launchIn(viewModelScope)
-            
+
         gameTitleState.onEach { title ->
-            val args = navigationArgsState.value ?: return@onEach
-            updateUiState(args)
+            refreshUiState()
         }.launchIn(viewModelScope)
-        
+
         gameThumbnailUrlState.onEach { url ->
-            val args = navigationArgsState.value ?: return@onEach
-            updateUiState(args)
+            refreshUiState()
         }.launchIn(viewModelScope)
     }
-    
+
+    private fun checkAndStartCooldown(lastEventCreatedAt: Long?) {
+        if (lastEventCreatedAt == null) return
+        val now = timeProvider()
+        val elapsed = now - lastEventCreatedAt
+        if (elapsed in 0 until COOLDOWN_DURATION_MILLIS) {
+            val remainingSeconds = ((COOLDOWN_DURATION_MILLIS - elapsed + 999L) / 1000L)
+            startCooldownTimer(remainingSeconds)
+        }
+    }
+
+    private fun startCooldownTimer(initialRemainingSeconds: Long) {
+        cooldownJob?.cancel()
+        if (initialRemainingSeconds <= 0L) {
+            cooldownRemainingSecondsState.value = 0L
+            refreshUiState()
+            return
+        }
+        cooldownRemainingSecondsState.value = initialRemainingSeconds
+        refreshUiState()
+        cooldownJob = viewModelScope.launch {
+            var remaining = initialRemainingSeconds
+            while (remaining > 0L) {
+                cooldownRemainingSecondsState.value = remaining
+                refreshUiState()
+                delay(1000.milliseconds)
+                remaining--
+            }
+            cooldownRemainingSecondsState.value = 0L
+            refreshUiState()
+        }
+    }
+
+    private fun refreshUiState() {
+        val args = navigationArgsState.value ?: return
+        updateUiState(args)
+    }
+
     private fun updateUiState(args: Destination.NewEventScreen) {
         val user = userInfoState.value
+        val remaining = cooldownRemainingSecondsState.value
         uiState.value = UiState.Normal(
             NewEventScreenUI(
                 title = "new event screen",
@@ -103,6 +145,9 @@ class NewEventScreenViewModel(
                 gameTitle = gameTitleState.value,
                 eventIconUrl = gameThumbnailUrlState.value,
                 userGroups = user?.groups.orEmpty(),
+                isCooldownActive = remaining > 0L,
+                cooldownRemainingSeconds = remaining,
+                isSaving = isSavingState.value,
             )
         )
     }
@@ -118,6 +163,15 @@ class NewEventScreenViewModel(
         eventIconUrl: String?,
         groupId: String,
     ) = viewModelScope.launch {
+        if (isSavingState.value) {
+            logger.d { "Save already in progress, ignoring duplicate tap" }
+            return@launch
+        }
+        if (cooldownRemainingSecondsState.value > 0L) {
+            logger.w { "Event creation is currently on cooldown" }
+            return@launch
+        }
+
         val currentUser = userInfoState.value ?: run {
             logger.w { "Current user is null, cannot save event" }
             return@launch
@@ -136,30 +190,39 @@ class NewEventScreenViewModel(
             }
         }
 
-        val eventData = Event(
-            uid = UUID.randomUUID().toString(),
-            creatorId = currentUser.uid,
-            groupId = targetGroupId,
-            title = title.takeIf { it.isNotBlank() } ?: "New event",
-            eventIconUrl = eventIconUrl,
-            fromDateTime = dateTimeFrom,
-            toDateTime = dateTimeTo,
-            responses = mapOf(currentUser.uid to EventResponseStatus.ACCEPTED.name),
-        )
-        val isSuccess = eventProvider.saveEventData(eventData)
-        if (isSuccess) {
-            analyticsProvider.trackEvent(AnalyticsEvent.EventSaved(eventId = eventData.uid))
-            navigator.navigateUp()
-        } else {
-            logger.w { "Failed to save event data for user ${currentUser.uid}" }
-        }
-        snackbar.showMessage(
+        isSavingState.value = true
+        refreshUiState()
+
+        try {
+            val eventData = Event(
+                uid = UUID.randomUUID().toString(),
+                creatorId = currentUser.uid,
+                groupId = targetGroupId,
+                title = title.takeIf { it.isNotBlank() } ?: "New event",
+                eventIconUrl = eventIconUrl,
+                fromDateTime = dateTimeFrom,
+                toDateTime = dateTimeTo,
+                responses = mapOf(currentUser.uid to EventResponseStatus.ACCEPTED.name),
+            )
+            val isSuccess = eventProvider.saveEventData(eventData)
             if (isSuccess) {
-                stringProvider.eventSaved
+                startCooldownTimer(COOLDOWN_DURATION_SECONDS)
+                analyticsProvider.trackEvent(AnalyticsEvent.EventSaved(eventId = eventData.uid))
+                navigator.navigateUp()
             } else {
-                stringProvider.eventSaveFailed
+                logger.w { "Failed to save event data for user ${currentUser.uid}" }
             }
-        )
+            snackbar.showMessage(
+                if (isSuccess) {
+                    stringProvider.eventSaved
+                } else {
+                    stringProvider.eventSaveFailed
+                }
+            )
+        } finally {
+            isSavingState.value = false
+            refreshUiState()
+        }
     }
     
     fun onGameTitleChanged(title: String) {
@@ -188,5 +251,10 @@ class NewEventScreenViewModel(
             )
             is NewEventScreenAction.OnGameTitleChanged -> onGameTitleChanged(action.title)
         }
+    }
+
+    companion object {
+        const val COOLDOWN_DURATION_SECONDS = 30L
+        const val COOLDOWN_DURATION_MILLIS = COOLDOWN_DURATION_SECONDS * 1000L
     }
 }
