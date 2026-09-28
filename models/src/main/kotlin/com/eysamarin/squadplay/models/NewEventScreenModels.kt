@@ -27,6 +27,9 @@ data class NewEventScreenUI(
     val gameTitle: String = "",
     val eventIconUrl: String? = null,
     val userGroups: List<Group> = emptyList(),
+    val isCooldownActive: Boolean = false,
+    val cooldownRemainingSeconds: Long = 0L,
+    val isSaving: Boolean = false,
 )
 
 val PREVIEW_NEW_EVENT_SCREEN_UI = NewEventScreenUI(

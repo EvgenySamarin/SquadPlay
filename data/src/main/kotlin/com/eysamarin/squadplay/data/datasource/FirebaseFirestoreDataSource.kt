@@ -122,6 +122,7 @@ class FirebaseFirestoreDataSourceImpl(
         val groupsDocumentRef = firebaseFirestore.collection(GROUPS_COLLECTION)
             .document(event.groupId)
         val eventDocumentRef = firebaseFirestore.collection(EVENTS_COLLECTION).document(event.uid)
+        val userDocumentRef = firebaseFirestore.collection(USERS_COLLECTION).document(event.creatorId)
 
         return try {
             firebaseFirestore.runTransaction { transaction ->
@@ -130,6 +131,7 @@ class FirebaseFirestoreDataSourceImpl(
                     logger.e(tag = "Firestore") { "Group with id: ${event.groupId} not found" }
                     return@runTransaction false
                 }
+                val userDocumentSnapshot = transaction.get(userDocumentRef)
                 val events = groupDocumentSnapshot["events"]?.let {
                     val anyList = it as? List<*>
                     anyList?.filterIsInstance<String>()
@@ -137,6 +139,11 @@ class FirebaseFirestoreDataSourceImpl(
 
                 transaction.set(eventDocumentRef, eventDataMap)
                 transaction.update(groupsDocumentRef, mapOf("events" to events.plus(event.uid)))
+                transaction.set(
+                    userDocumentRef,
+                    mapOf("lastEventCreatedAt" to FieldValue.serverTimestamp()),
+                    SetOptions.merge()
+                )
                 true
             }.await()
         } catch (exception: Exception) {
@@ -424,6 +431,13 @@ class FirebaseFirestoreDataSourceImpl(
                 return@addSnapshotListener
             }
 
+            val lastEventCreatedAt = when (val raw = userData["lastEventCreatedAt"]) {
+                is com.google.firebase.Timestamp -> raw.toDate().time
+                is Long -> raw
+                is Number -> raw.toLong()
+                else -> null
+            }
+
             val user = User(
                 uid = userId,
                 username = userData["username"] as String? ?: "User",
@@ -431,6 +445,7 @@ class FirebaseFirestoreDataSourceImpl(
                 photoUrl = userData["photoUrl"] as String?,
                 groups = emptyList(),
                 nickname = userData["nickname"] as String?,
+                lastEventCreatedAt = lastEventCreatedAt,
             )
             trySend(user)
         }

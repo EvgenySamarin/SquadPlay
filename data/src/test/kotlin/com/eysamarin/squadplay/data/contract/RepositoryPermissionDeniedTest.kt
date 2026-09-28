@@ -177,5 +177,43 @@ class RepositoryPermissionDeniedTest {
         org.junit.Assert.assertTrue(thrown)
         assertEquals(1, logger.errorLogs.size)
     }
+
+    @Test
+    fun `EventRepository saveEventData returns false and does not trigger lockout when rejected`() = runTest {
+        val logger = RecordingLogger()
+        var lockoutTriggered = false
+        val fakeLockoutManager = object : com.eysamarin.squadplay.contracts.SecurityLockoutManager {
+            override val isLockedOut: kotlinx.coroutines.flow.StateFlow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
+            override fun triggerLockout() {
+                lockoutTriggered = true
+            }
+            override suspend fun retryAttestation(): Result<Unit> = Result.success(Unit)
+            override fun clearLockout() {}
+        }
+        val fakeDataSource = object : BaseFakeFirestoreDataSource() {
+            override suspend fun saveEvent(event: Event): Boolean = false
+        }
+
+        val repository = EventRepositoryImpl(
+            firebaseFirestoreDataSource = fakeDataSource,
+            logger = logger,
+            securityLockoutManager = fakeLockoutManager,
+        )
+
+        val testEvent = Event(
+            uid = "e1",
+            creatorId = "u1",
+            groupId = "g1",
+            title = "Test",
+            eventIconUrl = null,
+            fromDateTime = kotlinx.datetime.LocalDateTime(2026, 9, 28, 10, 0),
+            toDateTime = kotlinx.datetime.LocalDateTime(2026, 9, 28, 11, 0),
+        )
+
+        val result = repository.saveEventData(testEvent)
+
+        org.junit.Assert.assertFalse(result)
+        org.junit.Assert.assertFalse(lockoutTriggered)
+    }
 }
 
