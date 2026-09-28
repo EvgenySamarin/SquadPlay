@@ -12,17 +12,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.eysamarin.squadplay.contracts.AppLogger
+import com.eysamarin.squadplay.data.FirebaseAuthManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import org.koin.android.ext.android.inject
 
-/**
- * Without cloud functions or any BE we no need to store newToken.
- */
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class SquadPlayMessagingService: FirebaseMessagingService() {
 
     private val logger: AppLogger by inject()
+    private val authManager: FirebaseAuthManager by inject()
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         logger.d(tag = "FCM") { "From: ${remoteMessage.from}" }
@@ -30,13 +29,26 @@ class SquadPlayMessagingService: FirebaseMessagingService() {
             logger.d(tag = "FCM") { "Message data payload: ${remoteMessage.data}" }
         }
 
+        val creatorId = remoteMessage.data["creatorId"]
+        val currentUserId = authManager.getUserUid()
+        if (creatorId != null && creatorId == currentUserId) {
+            logger.d(tag = "FCM") { "Suppressing event notification for creator: $creatorId" }
+            return
+        }
+
         remoteMessage.notification?.let {
             logger.d(tag = "FCM") { "Message Notification Body: ${it.body}" }
-            createNotification(title = it.title, body = it.body)
+            val notificationId = remoteMessage.data["eventId"]?.hashCode() ?: NOTIFICATION_ID
+            createNotification(title = it.title, body = it.body, data = remoteMessage.data, notificationId = notificationId)
         }
     }
 
-    private fun createNotification(title: String?, body: String?) {
+    private fun createNotification(
+        title: String?,
+        body: String?,
+        data: Map<String, String> = emptyMap(),
+        notificationId: Int = NOTIFICATION_ID,
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS
@@ -50,10 +62,13 @@ class SquadPlayMessagingService: FirebaseMessagingService() {
         createNotificationChannel()
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            data.forEach { (key, value) ->
+                putExtra(key, value)
+            }
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             /* context = */ this,
-            /* requestCode = */ 0,
+            /* requestCode = */ notificationId,
             /* intent = */ intent,
             /* flags = */ PendingIntent.FLAG_IMMUTABLE
         )
@@ -66,7 +81,7 @@ class SquadPlayMessagingService: FirebaseMessagingService() {
             .setAutoCancel(true)
 
         with(NotificationManagerCompat.from(this)) {
-            notify(NOTIFICATION_ID, builder.build())
+            notify(notificationId, builder.build())
         }
     }
 
