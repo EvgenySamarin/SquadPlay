@@ -73,7 +73,9 @@ class ProfileRepositoryImpl(
         .deleteUserProfile(userId)
 
     override suspend fun createNewUserGroup(userId: String, title: String): String =
-        firestoreDataSource.createNewUserGroup(userId, title)
+        firestoreDataSource.createNewUserGroup(userId, title).also { newGroupId ->
+            firestoreDataSource.subscribeToGroupTopic(newGroupId)
+        }
 
     override suspend fun joinGroup(userId: String, groupId: String): Boolean = firestoreDataSource
         .joinGroup(userId = userId, groupId = groupId)
