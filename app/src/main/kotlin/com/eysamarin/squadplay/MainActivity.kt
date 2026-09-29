@@ -29,11 +29,20 @@ import com.eysamarin.squadplay.navigation.Destination
 import com.eysamarin.squadplay.navigation.SquadPlayNavigation
 import com.eysamarin.squadplay.screens.security.SecurityVerificationErrorScreen
 import com.eysamarin.squadplay.ui.PermissionDialog
+import com.eysamarin.squadplay.update.InAppUpdateManager
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: LaunchApplicationViewModel by viewModel()
+    private val inAppUpdateManager: InAppUpdateManager by inject()
+
+    private val updateLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        inAppUpdateManager.onUpdateActivityResult(result.resultCode)
+    }
 
     private val permissionsToRequest = arrayOf(
         getPostNotificationsPermissionName()
@@ -51,6 +60,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        inAppUpdateManager.registerListener()
+        inAppUpdateManager.checkForUpdate(updateLauncher)
         val deepLinkUri = intent?.data
         intent?.data = null
         viewModel.handleIncomingIntent(deepLinkUri)
@@ -148,6 +159,16 @@ class MainActivity : ComponentActivity() {
         } else {
             "android.permission.POST_NOTIFICATIONS"
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        inAppUpdateManager.resumeCheck(updateLauncher)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        inAppUpdateManager.unregisterListener()
     }
 }
 

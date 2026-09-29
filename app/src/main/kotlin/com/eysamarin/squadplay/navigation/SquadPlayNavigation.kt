@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,8 +75,17 @@ fun SquadPlayNavigation(
     val snackbarProvider = koinInject<SnackbarProvider>()
     val coroutineScope = rememberCoroutineScope()
 
-    LifecycleEffect(snackbarProvider.messagesChannel) {
-        coroutineScope.launch { snackbarHostState.showSnackbar(message = it) }
+    LifecycleEffect(snackbarProvider.messagesChannel) { snackbarMessage ->
+        coroutineScope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = snackbarMessage.message,
+                actionLabel = snackbarMessage.actionLabel,
+                duration = snackbarMessage.duration,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                snackbarMessage.onAction?.invoke()
+            }
+        }
     }
 
     LifecycleEffect(flow = navigator.navigationActions) { action ->
@@ -207,6 +217,7 @@ fun SquadPlayNavigation(
                     state = uiState,
                     isLoggingOut = isLoggingOut,
                     windowSize = windowSize,
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     onAction = viewModel::onAction,
                 )
 

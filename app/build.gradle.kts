@@ -147,6 +147,8 @@ dependencies {
     implementation(libs.jakewharton.timber)
 
     implementation(libs.com.google.android.gms.oss.licenses)
+    implementation(libs.com.google.android.play.app.update)
+    implementation(libs.com.google.android.play.app.update.ktx)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)

@@ -20,6 +20,8 @@
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="press_again_to_exit">Press again to exit</string>
+    <string name="update_downloaded_message">An update has been downloaded.</string>
+    <string name="update_restart_action">Restart</string>
     <!-- endregion -->
 
     <!-- region auth screen -->

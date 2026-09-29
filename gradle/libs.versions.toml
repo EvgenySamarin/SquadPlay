@@ -35,6 +35,7 @@ comGoogleAndroidGmsOssLicenses = "17.5.2"
 timber = "5.0.1"
 sentry = "6.23.0"
 ioSentryAndroid = "8.58.0"
+playAppUpdate = "2.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -80,6 +81,8 @@ com-google-firebase-appcheck-debug = { group = "com.google.firebase", name = "fi
 jakewharton-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 com-google-android-gms-oss-licenses = {group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "comGoogleAndroidGmsOssLicenses"}
+com-google-android-play-app-update = { group = "com.google.android.play", name = "app-update", version.ref = "playAppUpdate" }
+com-google-android-play-app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "playAppUpdate" }
 
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}
 org-jetbrains-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "orgJetbrainsKotlinxCoroutinesCore"}

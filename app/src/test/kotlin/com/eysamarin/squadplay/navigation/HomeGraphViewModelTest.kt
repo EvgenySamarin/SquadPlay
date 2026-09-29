@@ -5,6 +5,7 @@ import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.messaging.SnackbarMessage
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Group
 import com.eysamarin.squadplay.models.UiState
@@ -248,9 +249,9 @@ class HomeGraphViewModelTest {
 
     private class FakeSnackbarProvider : SnackbarProvider {
         var lastMessage: String? = null
-        override val messagesChannel: Flow<String> = flowOf()
-        override suspend fun showMessage(message: String) {
-            lastMessage = message
+        override val messagesChannel: Flow<SnackbarMessage> = flowOf()
+        override suspend fun showMessage(message: SnackbarMessage) {
+            lastMessage = message.message
         }
     }
 
