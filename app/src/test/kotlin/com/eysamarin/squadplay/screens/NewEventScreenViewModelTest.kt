@@ -7,6 +7,7 @@ import com.eysamarin.squadplay.domain.event.EventProvider
 import com.eysamarin.squadplay.domain.game.GameProvider
 import com.eysamarin.squadplay.domain.profile.ProfileProvider
 import com.eysamarin.squadplay.domain.resource.StringProvider
+import com.eysamarin.squadplay.messaging.SnackbarMessage
 import com.eysamarin.squadplay.messaging.SnackbarProvider
 import com.eysamarin.squadplay.models.Date
 import com.eysamarin.squadplay.models.Event
@@ -456,9 +457,9 @@ class NewEventScreenViewModelTest {
 
     private class FakeSnackbarProvider : SnackbarProvider {
         var lastMessage: String? = null
-        override val messagesChannel: Flow<String> = emptyFlow()
-        override suspend fun showMessage(message: String) {
-            lastMessage = message
+        override val messagesChannel: Flow<SnackbarMessage> = emptyFlow()
+        override suspend fun showMessage(message: SnackbarMessage) {
+            lastMessage = message.message
         }
     }
 

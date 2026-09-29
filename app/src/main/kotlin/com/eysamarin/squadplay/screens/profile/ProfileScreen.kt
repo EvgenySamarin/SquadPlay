@@ -72,6 +72,7 @@ fun ProfileScreen(
     state: UiState<ProfileScreenUI>,
     isLoggingOut: Boolean = false,
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
+    snackbarHost: @Composable () -> Unit = {},
     onAction: (ProfileScreenAction) -> Unit
 ) {
     var editingGroup by remember { mutableStateOf<UserGroupSection?>(null) }
@@ -79,6 +80,7 @@ fun ProfileScreen(
     var leavingGroup by remember { mutableStateOf<UserGroupSection?>(null) }
 
     Scaffold(
+        snackbarHost = snackbarHost,
         topBar = {
             TopAppBar(
                 title = {},

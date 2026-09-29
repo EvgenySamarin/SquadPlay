@@ -53,6 +53,10 @@ import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
 import com.eysamarin.squadplay.screens.settings.SettingsScreenViewModel
+import com.eysamarin.squadplay.update.InAppUpdateManager
+import com.eysamarin.squadplay.update.InAppUpdateManagerImpl
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.appcheck.appCheck
@@ -164,6 +168,15 @@ class SquadPlayApplication : Application() {
         single<DeepLinkManager> { DefaultDeepLinkManager() }
         single<Navigator> { DefaultNavigator() }
         single<SnackbarProvider> { SnackbarProviderImpl() }
+        single<AppUpdateManager> { AppUpdateManagerFactory.create(androidContext()) }
+        single<InAppUpdateManager> {
+            InAppUpdateManagerImpl(
+                appUpdateManager = get(),
+                snackbarProvider = get(),
+                stringRepository = get(),
+                logger = get(),
+            )
+        }
         viewModelOf(::LaunchApplicationViewModel)
         viewModelOf(::HomeGraphViewModel)
         viewModelOf(::HomeScreenViewModel)

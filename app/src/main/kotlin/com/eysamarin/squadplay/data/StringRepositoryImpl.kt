@@ -25,4 +25,6 @@ class StringRepositoryImpl(
     override val eventSaveFailed: String = appContext.getString(R.string.event_save_failed)
     override val joinedSquad: String = appContext.getString(R.string.join_squad_success)
     override val joinSquadFailed: String = appContext.getString(R.string.join_squad_failed)
+    override val updateDownloadedMessage: String = appContext.getString(R.string.update_downloaded_message)
+    override val updateRestartAction: String = appContext.getString(R.string.update_restart_action)
 }

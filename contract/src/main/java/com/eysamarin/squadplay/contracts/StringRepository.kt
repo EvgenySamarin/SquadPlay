@@ -12,4 +12,9 @@ interface StringRepository {
     val eventSaveFailed: String
     val joinedSquad: String
     val joinSquadFailed: String
+
+    val updateDownloadedMessage: String
+        get() = "An update has been downloaded."
+    val updateRestartAction: String
+        get() = "Restart"
 }
