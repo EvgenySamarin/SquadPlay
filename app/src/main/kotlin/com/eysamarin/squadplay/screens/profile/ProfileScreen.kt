@@ -465,7 +465,7 @@ private fun MemberRow(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = member.username,
+                text = member.nickname ?: member.username,
                 style = adaptiveTitleByHeight(windowSize),
                 color = DesignSystemTheme.colorScheme.onSurface
             )
