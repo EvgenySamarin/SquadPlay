@@ -44,24 +44,24 @@ fun SettingsScreen(
     windowSize: WindowSizeClass = WINDOWS_SIZE_MEDIUM,
     onAction: (SettingsScreenAction) -> Unit,
 ) {
-    var showPickTimeDialog by remember { mutableStateOf(false) }
+    var activeNoticeDialog by remember { mutableStateOf<SettingsNoticeDialog?>(null) }
 
-    if (showPickTimeDialog) {
-        AlertDialog(
-            onDismissRequest = { showPickTimeDialog = false },
-            title = {
-                Text(text = stringResource(R.string.picktime_license_title))
-            },
-            text = {
-                Text(text = stringResource(R.string.picktime_license_notice))
-            },
-            confirmButton = {
-                DSButton(
-                    text = stringResource(R.string.close),
-                    onTap = { showPickTimeDialog = false }
-                )
-            }
-        )
+    when (activeNoticeDialog) {
+        SettingsNoticeDialog.PickTime -> {
+            AttributionNoticeDialog(
+                title = stringResource(R.string.picktime_license_title),
+                notice = stringResource(R.string.picktime_license_notice),
+                onDismiss = { activeNoticeDialog = null },
+            )
+        }
+        SettingsNoticeDialog.SteamGridDb -> {
+            AttributionNoticeDialog(
+                title = stringResource(R.string.steamgriddb_attribution_title),
+                notice = stringResource(R.string.steamgriddb_attribution_notice),
+                onDismiss = { activeNoticeDialog = null },
+            )
+        }
+        null -> Unit
     }
 
     Scaffold(
@@ -93,7 +93,8 @@ fun SettingsScreen(
                 SettingsMediumLayout(
                     modifier = if (isExpanded) Modifier.fillMaxWidth(0.6f) else Modifier.fillMaxSize(),
                     onAction = onAction,
-                    onPickTimeTap = { showPickTimeDialog = true }
+                    onPickTimeTap = { activeNoticeDialog = SettingsNoticeDialog.PickTime },
+                    onSteamGridDbTap = { activeNoticeDialog = SettingsNoticeDialog.SteamGridDb },
                 )
             }
         },
@@ -105,11 +106,40 @@ fun SettingsScreen(
     )
 }
 
+private enum class SettingsNoticeDialog {
+    PickTime,
+    SteamGridDb,
+}
+
+@Composable
+private fun AttributionNoticeDialog(
+    title: String,
+    notice: String,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text = notice)
+        },
+        confirmButton = {
+            DSButton(
+                text = stringResource(R.string.close),
+                onTap = onDismiss,
+            )
+        }
+    )
+}
+
 @Composable
 private fun SettingsMediumLayout(
     modifier: Modifier = Modifier,
     onAction: (SettingsScreenAction) -> Unit,
     onPickTimeTap: () -> Unit,
+    onSteamGridDbTap: () -> Unit,
 ) {
     LazyColumn(modifier = modifier) {
         item {
@@ -129,6 +159,19 @@ private fun SettingsMediumLayout(
                 modifier = Modifier.clickable { onPickTimeTap() },
                 headlineContent = { Text(text = stringResource(R.string.picktime_license_title)) },
                 supportingContent = { Text(text = stringResource(R.string.picktime_license_subtitle)) },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_license_24),
+                        contentDescription = null
+                    )
+                }
+            )
+        }
+        item {
+            ListItem(
+                modifier = Modifier.clickable { onSteamGridDbTap() },
+                headlineContent = { Text(text = stringResource(R.string.steamgriddb_attribution_title)) },
+                supportingContent = { Text(text = stringResource(R.string.steamgriddb_attribution_subtitle)) },
                 leadingContent = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_license_24),
