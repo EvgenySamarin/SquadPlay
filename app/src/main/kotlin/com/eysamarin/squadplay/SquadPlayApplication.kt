@@ -21,6 +21,7 @@ import com.eysamarin.squadplay.data.contract.ProfileRepositoryImpl
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSource
 import com.eysamarin.squadplay.data.datasource.FirebaseFirestoreDataSourceImpl
 import com.eysamarin.squadplay.data.datasource.RawgDataSource
+import com.eysamarin.squadplay.data.datasource.SteamGridDbDataSource
 import com.eysamarin.squadplay.data.logging.CrashReportingTree
 import com.eysamarin.squadplay.data.logging.TimberAppLogger
 import com.eysamarin.squadplay.data.security.SecurityLockoutManagerImpl
@@ -105,6 +106,12 @@ class SquadPlayApplication : Application() {
                 securityLockoutManager = get(),
             )
         }
+        single<SteamGridDbDataSource> {
+            SteamGridDbDataSource(
+                apiKey = BuildConfig.STEAMGRIDDB_API_KEY,
+                logger = get(),
+            )
+        }
         single<RawgDataSource> {
             RawgDataSource(
                 apiKey = BuildConfig.RAWG_API_KEY,
@@ -139,7 +146,12 @@ class SquadPlayApplication : Application() {
             )
         }
         single<StringRepository> { StringRepositoryImpl(appContext = get()) }
-        single<GameRepository> { GameRepositoryImpl(rawgDataSource = get()) }
+        single<GameRepository> {
+            GameRepositoryImpl(
+                steamGridDbDataSource = get(),
+                rawgDataSource = get(),
+            )
+        }
         single<AnalyticsTracker> { FirebaseAnalyticsTracker(firebaseAnalytics = get()) }
         single<AppLogger> { TimberAppLogger() }
         //endregion

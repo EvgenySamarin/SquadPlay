@@ -33,6 +33,7 @@ android {
         val firebaseDbUrl = System.getenv("FIREBASE_DATABASE_URL") ?: properties.getProperty("FIREBASE_DATABASE_URL") ?: ""
         val googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: properties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
         val rawgApiKey = System.getenv("RAWG_API_KEY") ?: properties.getProperty("RAWG_API_KEY") ?: ""
+        val steamGridDBApiKey = System.getenv("STEAMGRIDDB_API_KEY") ?: properties.getProperty("STEAMGRIDDB_API_KEY") ?: ""
         val sentryDsn = System.getenv("SENTRY_DSN") ?: properties.getProperty("SENTRY_DSN") ?: ""
 
         buildConfigField(
@@ -49,6 +50,11 @@ android {
             "String",
             "RAWG_API_KEY",
             "\"$rawgApiKey\""
+        )
+        buildConfigField(
+            "String",
+            "STEAMGRIDDB_API_KEY",
+            "\"$steamGridDBApiKey\""
         )
         buildConfigField(
             "String",

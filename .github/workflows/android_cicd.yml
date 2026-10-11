@@ -66,6 +66,7 @@ jobs:
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           RAWG_API_KEY: ${{ secrets.RAWG_API_KEY }}
+          STEAMGRIDDB_API_KEY: ${{ secrets.STEAMGRIDDB_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: ./gradlew app:bundleRelease app:assembleRelease
 
