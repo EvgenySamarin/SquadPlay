@@ -11,22 +11,22 @@ plugins {
     alias(libs.plugins.io.sentry.android.gradle)
 }
 
+val properties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.eysamarin.squadplay"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    val properties = Properties()
-    val localPropertiesFile = project.rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        properties.load(localPropertiesFile.inputStream())
-    }
 
     defaultConfig {
         applicationId = "com.eysamarin.squadplay"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 34
-        versionName = "0.9.9"
+        versionCode = 35
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -81,7 +81,8 @@ android {
         }
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             ndk {
                 debugSymbolLevel = SYMBOL_TABLE.toString()
             }
@@ -172,4 +173,11 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+sentry {
+    includeProguardMapping.set(true)
+    autoUploadProguardMapping.set(
+        System.getenv("SENTRY_AUTH_TOKEN") != null || properties.getProperty("SENTRY_AUTH_TOKEN") != null
+    )
 }
