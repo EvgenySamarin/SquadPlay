@@ -17,6 +17,9 @@ import java.util.Locale
 interface CalendarUIProvider {
     fun provideCalendarUIBy(yearMonth: LocalDate): CalendarUI
     fun updateCalendarBySelectedDate(target: CalendarUI, selectedDate: Date): CalendarUI
+    fun clearSelectedDate(target: CalendarUI): CalendarUI = target.copy(
+        dates = target.dates.map { if (it.isSelected) it.copy(isSelected = false) else it }
+    )
     fun mergedCalendarWithEvents(
         calendar: CalendarUI,
         events: List<Event>,
@@ -174,13 +177,12 @@ class CalendarDataSource {
         }
 
     fun getDates(yearMonth: LocalDate): List<Date> {
-        val today = java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
         return yearMonth.getDayOfMonthStartingFromMonday()
             .map { date ->
                 Date(
                     dayOfMonth = date.day,
                     monthNumber = date.month.number,
-                    isSelected = date == today && date.month.number == yearMonth.month.number,
+                    isSelected = false,
                     enabled = date.month.number == yearMonth.month.number,
                     countEvents = 0,
                     year = date.year,

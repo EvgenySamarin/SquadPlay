@@ -4,6 +4,7 @@ import com.eysamarin.squadplay.contracts.AnalyticsEvent
 import com.eysamarin.squadplay.contracts.AppLogger
 import com.eysamarin.squadplay.domain.analytics.AnalyticsProvider
 import com.eysamarin.squadplay.domain.auth.AuthProvider
+import com.eysamarin.squadplay.domain.calendar.CalendarDataSource
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProvider
 import com.eysamarin.squadplay.domain.calendar.CalendarUIProviderImpl
 import com.eysamarin.squadplay.domain.event.EventProvider
@@ -17,6 +18,7 @@ import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.Friend
 import com.eysamarin.squadplay.models.Group
+import com.eysamarin.squadplay.models.HomeEventFilter
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.UiState
 import com.eysamarin.squadplay.models.User
@@ -360,7 +362,7 @@ class HomeScreenEventNavigationTest {
     }
 
     @Test
-    fun homeScreenViewModel_eventsOnSelectedDate_whenNoDateSelected_returnsEmptyList() = runTest(testDispatcher) {
+    fun homeScreenViewModel_eventsOnSelectedDate_whenNoDateSelected_returnsAllMonthEventsSorted() = runTest(testDispatcher) {
         val fakeNavigator = FakeNavigator()
         val user = User(
             uid = "user-1",
@@ -369,19 +371,45 @@ class HomeScreenEventNavigationTest {
             photoUrl = null,
             groups = listOf(Group(uid = "group-1", title = "Squad 1", members = listOf("user-1")))
         )
-        val event2026 = Event(
-            uid = "event-2026",
+        val eventLaterInMonth = Event(
+            uid = "event-sep-20",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Valorant Cup",
+            fromDateTime = LocalDateTime(2026, 9, 20, 18, 0),
+            toDateTime = LocalDateTime(2026, 9, 20, 20, 0),
+        )
+        val eventEarlierInMonth = Event(
+            uid = "event-sep-9",
             creatorId = "user-1",
             groupId = "group-1",
             title = "Apex Tournament",
             fromDateTime = LocalDateTime(2026, 9, 9, 14, 0),
             toDateTime = LocalDateTime(2026, 9, 9, 16, 0),
         )
+        val eventOtherMonth = Event(
+            uid = "event-oct-5",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "October Match",
+            fromDateTime = LocalDateTime(2026, 10, 5, 14, 0),
+            toDateTime = LocalDateTime(2026, 10, 5, 16, 0),
+        )
+        val eventOtherYear = Event(
+            uid = "event-2027",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Next Year Match",
+            fromDateTime = LocalDateTime(2027, 9, 9, 14, 0),
+            toDateTime = LocalDateTime(2027, 9, 9, 16, 0),
+        )
         val unselectedDate = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 1, isSelected = false, enabled = true)
 
         val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(unselectedDate))
         val profileProvider = FakeProfileProvider(user = user)
-        val eventProvider = FakeEventProvider(events = listOf(event2026))
+        val eventProvider = FakeEventProvider(
+            events = listOf(eventLaterInMonth, eventEarlierInMonth, eventOtherMonth, eventOtherYear)
+        )
 
         val viewModel = createHomeScreenViewModel(
             fakeNavigator = fakeNavigator,
@@ -393,7 +421,172 @@ class HomeScreenEventNavigationTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val data = (viewModel.uiState.value as UiState.Normal).data
-        assertTrue(data.gameEventsOnDate.isEmpty())
+        assertEquals(listOf("event-sep-9", "event-sep-20"), data.gameEventsOnDate.map { it.eventId })
+        assertFalse(data.isCreateEventButtonVisible)
+    }
+
+    @Test
+    fun homeScreenViewModel_onAllMonthTap_clearsSelectedDateAndResetsFilter() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "group-1", title = "Squad 1", members = listOf("user-1")))
+        )
+        val date9 = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 1, isSelected = true, enabled = true)
+        val date15 = Date(dayOfMonth = 15, monthNumber = 9, year = 2026, countEvents = 1, isSelected = false, enabled = true)
+        val event9 = Event(
+            uid = "event-9",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "Day 9 Match",
+            fromDateTime = LocalDateTime(2026, 9, 9, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 9, 16, 0),
+        )
+        val event15 = Event(
+            uid = "event-15",
+            creatorId = "user-2",
+            groupId = "group-1",
+            title = "Day 15 Squad Match",
+            fromDateTime = LocalDateTime(2026, 9, 15, 18, 0),
+            toDateTime = LocalDateTime(2026, 9, 15, 20, 0),
+        )
+
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(date9, date15))
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(events = listOf(event9, event15))
+
+        val viewModel = createHomeScreenViewModel(
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(listOf("event-9"), data.gameEventsOnDate.map { it.eventId })
+        assertTrue(data.isTodaySelected)
+
+        // Apply filter MY_MATCHES then tap All Month
+        viewModel.onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.MY_MATCHES))
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(HomeEventFilter.MY_MATCHES, (viewModel.uiState.value as UiState.Normal).data.activeFilter)
+
+        viewModel.onAction(HomeScreenAction.OnAllMonthTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(HomeEventFilter.ALL, data.activeFilter)
+        assertFalse(data.isTodaySelected)
+        assertFalse(data.isCreateEventButtonVisible)
+        assertTrue(data.calendarUI.dates.none { it.isSelected })
+        assertEquals(listOf("event-9", "event-15"), data.gameEventsOnDate.map { it.eventId })
+    }
+
+    @Test
+    fun homeScreenViewModel_onTodayTap_selectsTodayDateEvenFromDifferentMonth() = runTest(testDispatcher) {
+        val date9 = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 1, isSelected = false, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(date9))
+        val viewModel = createHomeScreenViewModel(calendarProvider = calendarProvider)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Navigate to October 2026
+        viewModel.onAction(HomeScreenAction.OnNextMonthTap(LocalDate(2026, 10, 1)))
+        testDispatcher.scheduler.advanceUntilIdle()
+        var data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(LocalDate(2026, 10, 1), data.calendarUI.yearMonth)
+        assertFalse(data.isTodaySelected)
+
+        // Tap Today chip -> jumps back to September 2026 and selects day 9
+        viewModel.onAction(HomeScreenAction.OnTodayTap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(LocalDate(2026, 9, 1), data.calendarUI.yearMonth)
+        assertTrue(data.isTodaySelected)
+        assertTrue(data.isCreateEventButtonVisible)
+    }
+
+    @Test
+    fun homeScreenViewModel_onFilterTap_filtersSquadEventsMyMatchesAndConfirmed() = runTest(testDispatcher) {
+        val user = User(
+            uid = "user-1",
+            username = "tester",
+            email = "tester@test.com",
+            photoUrl = null,
+            groups = listOf(Group(uid = "group-1", title = "Squad 1", members = listOf("user-1", "user-2")))
+        )
+        val myConfirmedEvent = Event(
+            uid = "my-confirmed",
+            creatorId = "user-1",
+            groupId = "group-1",
+            title = "My Confirmed Match",
+            fromDateTime = LocalDateTime(2026, 9, 10, 14, 0),
+            toDateTime = LocalDateTime(2026, 9, 10, 16, 0),
+            responses = mapOf("user-1" to EventResponseStatus.ACCEPTED.name),
+        )
+        val squadPendingEvent = Event(
+            uid = "squad-pending",
+            creatorId = "user-2",
+            groupId = "group-1",
+            title = "Squad Pending Match",
+            fromDateTime = LocalDateTime(2026, 9, 12, 18, 0),
+            toDateTime = LocalDateTime(2026, 9, 12, 20, 0),
+            responses = emptyMap(),
+        )
+        val unselectedDate = Date(dayOfMonth = 9, monthNumber = 9, year = 2026, countEvents = 0, isSelected = false, enabled = true)
+        val calendarProvider = FakeCalendarUIProvider(initialDates = listOf(unselectedDate))
+        val profileProvider = FakeProfileProvider(user = user)
+        val eventProvider = FakeEventProvider(events = listOf(myConfirmedEvent, squadPendingEvent))
+
+        val viewModel = createHomeScreenViewModel(
+            calendarProvider = calendarProvider,
+            profileProvider = profileProvider,
+            eventProvider = eventProvider,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Default: ALL
+        var data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(listOf("my-confirmed", "squad-pending"), data.gameEventsOnDate.map { it.eventId })
+
+        // Filter: SQUAD_EVENTS
+        viewModel.onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.SQUAD_EVENTS))
+        testDispatcher.scheduler.advanceUntilIdle()
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(HomeEventFilter.SQUAD_EVENTS, data.activeFilter)
+        assertEquals(listOf("squad-pending"), data.gameEventsOnDate.map { it.eventId })
+
+        // Filter: MY_MATCHES
+        viewModel.onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.MY_MATCHES))
+        testDispatcher.scheduler.advanceUntilIdle()
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(HomeEventFilter.MY_MATCHES, data.activeFilter)
+        assertEquals(listOf("my-confirmed"), data.gameEventsOnDate.map { it.eventId })
+
+        // Filter: CONFIRMED
+        viewModel.onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.CONFIRMED))
+        testDispatcher.scheduler.advanceUntilIdle()
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(HomeEventFilter.CONFIRMED, data.activeFilter)
+        assertEquals(listOf("my-confirmed"), data.gameEventsOnDate.map { it.eventId })
+
+        // Tap CONFIRMED again to toggle back to ALL
+        viewModel.onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.CONFIRMED))
+        testDispatcher.scheduler.advanceUntilIdle()
+        data = (viewModel.uiState.value as UiState.Normal).data
+        assertEquals(HomeEventFilter.ALL, data.activeFilter)
+        assertEquals(listOf("my-confirmed", "squad-pending"), data.gameEventsOnDate.map { it.eventId })
+    }
+
+    @Test
+    fun calendarDataSource_getDates_defaultsToNoDateSelected() {
+        val dates = CalendarDataSource().getDates(LocalDate(2026, 9, 1))
+        assertTrue(dates.none { it.isSelected })
     }
 
     @Test
