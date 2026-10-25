@@ -387,7 +387,12 @@ private fun GroupsList(
     onLeaveGroup: (UserGroupSection) -> Unit,
 ) {
     if (groupSections.isEmpty()) {
-        EmptyContent(windowSize, modifier = modifier.fillMaxSize())
+        EmptyContent(
+            windowSize = windowSize,
+            modifier = modifier.fillMaxSize(),
+            title = stringResource(R.string.no_groups_found),
+            subtitle = stringResource(R.string.no_groups_found_subtitle),
+        )
         return
     }
     LazyColumn(

@@ -246,7 +246,16 @@ private fun HomeScreenMediumLayout(
             }
 
             if (state.data.gameEventsOnDate.isEmpty()) {
-                item { EmptyContent(windowSize, modifier = Modifier.fillMaxSize()) }
+                item {
+                    EmptyContent(
+                        windowSize = windowSize,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        title = stringResource(R.string.no_events_scheduled_title),
+                        subtitle = stringResource(R.string.no_events_scheduled_subtitle),
+                    )
+                }
             } else {
                 items(items = state.data.gameEventsOnDate) { item ->
                     EventItem(

@@ -7,6 +7,8 @@
     <string name="label_password">Password</string>
 
     <string name="no_data_yet">No data yet</string>
+    <string name="no_events_scheduled_title">No events scheduled</string>
+    <string name="no_events_scheduled_subtitle">There are no squad gaming sessions planned for this date. Create a new event or invite friends to play!</string>
 
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -67,6 +69,7 @@
     <string name="friends_list">Friends list:</string>
     <string name="group">Group: %s</string>
     <string name="no_groups_found">No groups found</string>
+    <string name="no_groups_found_subtitle">You are not part of any gaming squad yet. Create a new group or join a friend\'s squad using an invite link!</string>
     <string name="no_group_members">No other members yet</string>
     <string name="add_group">Add group</string>
     <string name="create_new_group_title">Create new group</string>
