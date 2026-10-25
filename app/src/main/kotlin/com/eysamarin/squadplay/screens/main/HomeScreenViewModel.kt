@@ -17,6 +17,7 @@ import com.eysamarin.squadplay.models.EventMemberUI
 import com.eysamarin.squadplay.models.EventResponseStatus
 import com.eysamarin.squadplay.models.EventUI
 import com.eysamarin.squadplay.models.Group
+import com.eysamarin.squadplay.models.HomeEventFilter
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.UiState
@@ -92,6 +93,7 @@ class HomeScreenViewModel(
     private val userInfoState = MutableStateFlow<User?>(null)
     private val eventsState = MutableStateFlow<List<Event>>(emptyList())
     private val groupSectionsState = MutableStateFlow<List<UserGroupSection>>(emptyList())
+    private val activeFilterState = MutableStateFlow(HomeEventFilter.ALL)
     private val calendarUIState = MutableStateFlow(
         calendarUIProvider.provideCalendarUIBy(yearMonth = todayProvider().run { LocalDate(year, month.number, 1) })
     )
@@ -104,6 +106,7 @@ class HomeScreenViewModel(
         userInfoState.value = null
         eventsState.value = emptyList()
         groupSectionsState.value = emptyList()
+        activeFilterState.value = HomeEventFilter.ALL
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -178,7 +181,8 @@ class HomeScreenViewModel(
                     calendarUIState,
                     eventsState,
                     groupSectionsState,
-                ) { userInfo, calendar, events, groupSections ->
+                    activeFilterState,
+                ) { userInfo, calendar, events, groupSections, activeFilter ->
                     userInfo ?: return@combine null
 
                     val eventBasedCalendar = calendarUIProvider.mergedCalendarWithEvents(
@@ -192,28 +196,36 @@ class HomeScreenViewModel(
                     val eventsBySelectedDate = getEventsBySelectedDate(
                         events = events,
                         selectedDate = selectedDate,
-                        calendarYear = eventBasedCalendar.yearMonth.year,
+                        calendarYearMonth = eventBasedCalendar.yearMonth,
+                        activeFilter = activeFilter,
                         currentUser = userInfo,
                         userGroups = userInfo.groups,
                         groupSections = groupSections,
                     )
                     val today = todayProvider()
                     val dayOfMonth = selectedDate?.dayOfMonth
-                    val isCreateEventButtonVisible = if (userInfo.groups.isNotEmpty() && selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
-                        val selectedLocalDate = LocalDate(
+                    val selectedLocalDate = if (selectedDate != null && dayOfMonth != null && selectedDate.enabled) {
+                        LocalDate(
                             year = selectedDate.year ?: eventBasedCalendar.yearMonth.year,
                             month = selectedDate.monthNumber ?: eventBasedCalendar.yearMonth.month.number,
                             day = dayOfMonth
                         )
-                        selectedLocalDate >= today
                     } else {
-                        false
+                        null
                     }
+                    val isCreateEventButtonVisible = userInfo.groups.isNotEmpty() &&
+                        selectedLocalDate != null &&
+                        selectedLocalDate >= today
+                    val isTodaySelected = selectedLocalDate == today
+
                     HomeScreenUI(
                         user = userInfo,
                         calendarUI = eventBasedCalendar,
                         gameEventsOnDate = eventsBySelectedDate,
                         isCreateEventButtonVisible = isCreateEventButtonVisible,
+                        activeFilter = activeFilter,
+                        isTodaySelected = isTodaySelected,
+                        todayDate = today,
                     )
                 }
                     .filterNotNull()
@@ -269,6 +281,53 @@ class HomeScreenViewModel(
 
         calendarUIState.emit(updatedCalendarUI)
         logger.d { "onDateTap: $date" }
+    }
+
+    fun onAllMonthTap() = viewModelScope.launch {
+        logger.d { "onAllMonthTap" }
+        activeFilterState.value = HomeEventFilter.ALL
+        val currentCalendar = calendarUIState.value
+        val updatedCalendarUI = calendarUIProvider.clearSelectedDate(currentCalendar)
+        calendarUIState.emit(updatedCalendarUI)
+    }
+
+    fun onTodayTap() = viewModelScope.launch {
+        logger.d { "onTodayTap" }
+        val today = todayProvider()
+        val todayYearMonth = LocalDate(today.year, today.month.number, 1)
+        val currentCalendar = calendarUIState.value
+        val baseCalendar = if (currentCalendar.yearMonth.year == today.year &&
+            currentCalendar.yearMonth.month.number == today.month.number
+        ) {
+            currentCalendar
+        } else {
+            calendarUIProvider.provideCalendarUIBy(yearMonth = todayYearMonth)
+        }
+        val todayDate = baseCalendar.dates.firstOrNull {
+            it.enabled &&
+                it.dayOfMonth == today.day &&
+                it.monthNumber == today.month.number &&
+                (it.year ?: baseCalendar.yearMonth.year) == today.year
+        } ?: Date(
+            dayOfMonth = today.day,
+            monthNumber = today.month.number,
+            year = today.year,
+            countEvents = 0,
+            isSelected = true,
+            enabled = true,
+        )
+        val updatedCalendarUI = calendarUIProvider.updateCalendarBySelectedDate(
+            target = baseCalendar,
+            selectedDate = todayDate,
+        )
+        calendarUIState.emit(updatedCalendarUI)
+    }
+
+    fun onFilterTap(filter: HomeEventFilter) = viewModelScope.launch {
+        logger.d { "onFilterTap: $filter" }
+        activeFilterState.update { current ->
+            if (current == filter) HomeEventFilter.ALL else filter
+        }
     }
 
     fun onAddGameEventTap() = viewModelScope.launch {
@@ -346,6 +405,9 @@ class HomeScreenViewModel(
             is HomeScreenAction.OnDateTap -> onDateTap(action.date)
             is HomeScreenAction.OnNextMonthTap -> onNextMonthTap(action.yearMonth)
             is HomeScreenAction.OnPrevMonthTap -> onPreviousMonthTap(action.yearMonth)
+            HomeScreenAction.OnAllMonthTap -> onAllMonthTap()
+            HomeScreenAction.OnTodayTap -> onTodayTap()
+            is HomeScreenAction.OnFilterTap -> onFilterTap(action.filter)
             HomeScreenAction.OnAddGameEventTap -> onAddGameEventTap()
             HomeScreenAction.OnLogOutTap -> onLogOutTap()
             HomeScreenAction.OnAvatarTap -> onAvatarTap()
@@ -364,64 +426,81 @@ class HomeScreenViewModel(
     private fun getEventsBySelectedDate(
         events: List<Event>,
         selectedDate: Date?,
-        calendarYear: Int,
+        calendarYearMonth: LocalDate,
+        activeFilter: HomeEventFilter,
         currentUser: User,
         userGroups: List<Group> = emptyList(),
         groupSections: List<UserGroupSection> = emptyList(),
     ): List<EventUI> {
-        if (selectedDate == null || events.isEmpty()) return emptyList()
-        val selectedDay = selectedDate.dayOfMonth ?: return emptyList()
-        val selectedMonth = selectedDate.monthNumber ?: return emptyList()
-        val selectedYear = selectedDate.year ?: calendarYear
+        if (events.isEmpty()) return emptyList()
+
+        val matchingEvents = if (selectedDate != null) {
+            val selectedDay = selectedDate.dayOfMonth ?: return emptyList()
+            val selectedMonth = selectedDate.monthNumber ?: return emptyList()
+            val selectedYear = selectedDate.year ?: calendarYearMonth.year
+            events.filter { event ->
+                val fromDate = event.fromDateTime
+                fromDate.day == selectedDay &&
+                    fromDate.month.number == selectedMonth &&
+                    fromDate.year == selectedYear
+            }
+        } else {
+            events.filter { event ->
+                val fromDate = event.fromDateTime
+                fromDate.month.number == calendarYearMonth.month.number &&
+                    fromDate.year == calendarYearMonth.year
+            }
+        }.sortedBy { it.fromDateTime }
 
         val groupsById = userGroups.associateBy { it.uid }
         val sectionsByGroupId = groupSections.associateBy { it.groupId }
 
-        return events.mapNotNull { event ->
+        return matchingEvents.map { event ->
             val fromDate = event.fromDateTime
-            if (fromDate.day == selectedDay &&
-                fromDate.month.number == selectedMonth &&
-                fromDate.year == selectedYear
-            ) {
-                val groupSection = sectionsByGroupId[event.groupId]
+            val groupSection = sectionsByGroupId[event.groupId]
 
-                // Current user is the first member
-                val userMember = EventMemberUI(
-                    uid = currentUser.uid,
-                    username = currentUser.username,
-                    photoUrl = currentUser.photoUrl,
-                    status = event.getStatusForUser(currentUser.uid)
-                )
+            // Current user is the first member
+            val userMember = EventMemberUI(
+                uid = currentUser.uid,
+                username = currentUser.username,
+                photoUrl = currentUser.photoUrl,
+                status = event.getStatusForUser(currentUser.uid)
+            )
 
-                // Other group members
-                val otherMembers = groupSection?.members
-                    ?.filter { it.uid != currentUser.uid }
-                    ?.map { friend ->
-                        EventMemberUI(
-                            uid = friend.uid,
-                            username = friend.username,
-                            photoUrl = friend.photoUrl,
-                            status = event.getStatusForUser(friend.uid)
-                        )
-                    }.orEmpty()
+            // Other group members
+            val otherMembers = groupSection?.members
+                ?.filter { it.uid != currentUser.uid }
+                ?.map { friend ->
+                    EventMemberUI(
+                        uid = friend.uid,
+                        username = friend.username,
+                        photoUrl = friend.photoUrl,
+                        status = event.getStatusForUser(friend.uid)
+                    )
+                }.orEmpty()
 
-                val allMembers = listOf(userMember) + otherMembers
+            val allMembers = listOf(userMember) + otherMembers
 
-                EventUI(
-                    eventId = event.uid,
-                    title = event.title,
-                    groupTitle = groupsById[event.groupId]?.title,
-                    groupId = event.groupId,
-                    subtitle = stringProvider.fromToDate(
-                        fromDate = formatTime(fromDate.hour, fromDate.minute),
-                        toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
-                    ),
-                    iconUrl = event.eventIconUrl,
-                    isYourEvent = event.creatorId == currentUser.uid,
-                    members = allMembers,
-                )
-            } else {
-                null
+            EventUI(
+                eventId = event.uid,
+                title = event.title,
+                groupTitle = groupsById[event.groupId]?.title,
+                groupId = event.groupId,
+                subtitle = stringProvider.fromToDate(
+                    fromDate = formatTime(fromDate.hour, fromDate.minute),
+                    toDate = formatTime(event.toDateTime.hour, event.toDateTime.minute),
+                ),
+                iconUrl = event.eventIconUrl,
+                isYourEvent = event.creatorId == currentUser.uid,
+                members = allMembers,
+            )
+        }.filter { eventUi ->
+            when (activeFilter) {
+                HomeEventFilter.ALL -> true
+                HomeEventFilter.SQUAD_EVENTS -> !eventUi.isYourEvent
+                HomeEventFilter.MY_MATCHES -> eventUi.isYourEvent
+                HomeEventFilter.CONFIRMED -> eventUi.members.isNotEmpty() &&
+                    eventUi.members.all { it.status == EventResponseStatus.ACCEPTED }
             }
         }
     }

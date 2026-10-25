@@ -60,6 +60,11 @@
     <string name="no_squad_create_event_hint">Готовы к игре? Создайте или вступите в отряд, чтобы планировать игровые сессии!</string>
     <string name="loading_timeout_title">Таймаут соединения</string>
     <string name="loading_timeout_message">Загрузка данных заняла слишком много времени. Проверьте подключение к сети и повторите попытку.</string>
+    <string name="filter_all_month">Весь месяц</string>
+    <string name="filter_today_format">Сегодня • %1$s</string>
+    <string name="filter_squad_events">Игры отряда</string>
+    <string name="filter_my_matches">Мои матчи</string>
+    <string name="filter_confirmed">Подтвержденные</string>
     <!-- endregion -->
 
     <!-- region profile screen -->

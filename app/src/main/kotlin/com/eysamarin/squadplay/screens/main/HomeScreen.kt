@@ -6,7 +6,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,10 +20,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -37,8 +42,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eysamarin.squadplay.R
@@ -52,6 +59,7 @@ import com.eysamarin.squadplay.designSystem.compose.utils.TabletDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.TabletLightModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.WearDarkModePreview
 import com.eysamarin.squadplay.designSystem.compose.utils.WearLightModePreview
+import com.eysamarin.squadplay.models.HomeEventFilter
 import com.eysamarin.squadplay.models.HomeScreenAction
 import com.eysamarin.squadplay.models.HomeScreenUI
 import com.eysamarin.squadplay.models.PREVIEW_MAIN_SCREEN_UI
@@ -64,6 +72,9 @@ import com.eysamarin.squadplay.ui.calendar.Calendar
 import com.eysamarin.squadplay.ui.squircle.CornerSmoothing
 import com.eysamarin.squadplay.ui.squircle.SquircleShape
 import com.eysamarin.squadplay.ui.theme.adaptiveHeadlineByHeight
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlinx.datetime.number
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -244,6 +255,12 @@ private fun HomeScreenMediumLayout(
             item {
                 HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
             }
+            item {
+                EventFilterChipsRow(
+                    data = state.data,
+                    onAction = onAction,
+                )
+            }
 
             if (state.data.gameEventsOnDate.isEmpty()) {
                 item {
@@ -319,22 +336,215 @@ private fun MainScreenExpandedLayout(
                 onAction(HomeScreenAction.OnAvatarTap)
             })
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+            EventFilterChipsRow(
+                data = state.data,
+                onAction = onAction,
+            )
+            Spacer(Modifier.height(8.dp))
 
             LazyColumn(
                 state = eventsListState,
                 contentPadding = PaddingValues(bottom = 80.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(items = state.data.gameEventsOnDate) { item ->
-                    EventItem(
-                        event = item,
-                        members = item.members,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        onDetailsTap = { onAction(HomeScreenAction.OnEventTap(item)) }
-                    )
+                if (state.data.gameEventsOnDate.isEmpty()) {
+                    item {
+                        EmptyContent(
+                            windowSize = windowSize,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            title = stringResource(R.string.no_events_scheduled_title),
+                            subtitle = stringResource(R.string.no_events_scheduled_subtitle),
+                        )
+                    }
+                } else {
+                    items(items = state.data.gameEventsOnDate) { item ->
+                        EventItem(
+                            event = item,
+                            members = item.members,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            onDetailsTap = { onAction(HomeScreenAction.OnEventTap(item)) }
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EventFilterChipsRow(
+    data: HomeScreenUI,
+    onAction: (HomeScreenAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val hasSelectedDate = data.calendarUI.dates.any { it.isSelected }
+    val isAllMonthActive = !hasSelectedDate && data.activeFilter == HomeEventFilter.ALL
+    val formattedToday = remember(data.todayDate) {
+        java.time.LocalDate.of(data.todayDate.year, data.todayDate.month.number, data.todayDate.day)
+            .format(DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()))
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // 1. All Month chip (resets selected day and category filter)
+        EventFilterChip(
+            text = stringResource(R.string.filter_all_month),
+            isSelected = isAllMonthActive,
+            onClick = { onAction(HomeScreenAction.OnAllMonthTap) },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_calendar_today_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(15.dp),
+                    tint = if (isAllMonthActive) {
+                        DesignSystemTheme.colorScheme.onPrimary
+                    } else {
+                        DesignSystemTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+        )
+
+        // 2. Today • <Month Day> chip
+        EventFilterChip(
+            text = stringResource(R.string.filter_today_format, formattedToday),
+            isSelected = data.isTodaySelected,
+            onClick = { onAction(HomeScreenAction.OnTodayTap) },
+            leadingContent = {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(
+                            color = if (data.isTodaySelected) {
+                                DesignSystemTheme.colorScheme.onPrimary
+                            } else {
+                                DesignSystemTheme.colorScheme.primary
+                            },
+                            shape = CircleShape,
+                        )
+                )
+            }
+        )
+
+        // 3. Squad Events chip
+        val isSquadEventsSelected = data.activeFilter == HomeEventFilter.SQUAD_EVENTS
+        EventFilterChip(
+            text = stringResource(R.string.filter_squad_events),
+            isSelected = isSquadEventsSelected,
+            onClick = { onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.SQUAD_EVENTS)) },
+            leadingContent = {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(
+                            color = if (isSquadEventsSelected) {
+                                DesignSystemTheme.colorScheme.onPrimary
+                            } else {
+                                DesignSystemTheme.extendedColors.blue
+                            },
+                            shape = CircleShape,
+                        )
+                )
+            }
+        )
+
+        // 4. My Matches chip
+        val isMyMatchesSelected = data.activeFilter == HomeEventFilter.MY_MATCHES
+        EventFilterChip(
+            text = stringResource(R.string.filter_my_matches),
+            isSelected = isMyMatchesSelected,
+            onClick = { onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.MY_MATCHES)) },
+            leadingContent = {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(
+                            color = if (isMyMatchesSelected) {
+                                DesignSystemTheme.colorScheme.onPrimary
+                            } else {
+                                DesignSystemTheme.extendedColors.orange
+                            },
+                            shape = CircleShape,
+                        )
+                )
+            }
+        )
+
+        // 5. Confirmed chip
+        val isConfirmedSelected = data.activeFilter == HomeEventFilter.CONFIRMED
+        EventFilterChip(
+            text = stringResource(R.string.filter_confirmed),
+            isSelected = isConfirmedSelected,
+            onClick = { onAction(HomeScreenAction.OnFilterTap(HomeEventFilter.CONFIRMED)) },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_check_circle_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(15.dp),
+                    tint = if (isConfirmedSelected) {
+                        DesignSystemTheme.colorScheme.onPrimary
+                    } else {
+                        DesignSystemTheme.extendedColors.green
+                    },
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun EventFilterChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    leadingContent: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val backgroundColor = if (isSelected) {
+        DesignSystemTheme.colorScheme.primary
+    } else {
+        DesignSystemTheme.colorScheme.surfaceContainerHigh
+    }
+    val textColor = if (isSelected) {
+        DesignSystemTheme.colorScheme.onPrimary
+    } else {
+        DesignSystemTheme.colorScheme.onSurfaceVariant
+    }
+    val borderModifier = if (isSelected) {
+        Modifier
+    } else {
+        Modifier.border(
+            width = 1.dp,
+            color = DesignSystemTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+            shape = CircleShape,
+        )
+    }
+
+    Row(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(color = backgroundColor, shape = CircleShape)
+            .then(borderModifier)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        leadingContent()
+        Text(
+            text = text,
+            style = DesignSystemTheme.typography.labelMedium,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = textColor,
+        )
     }
 }
 

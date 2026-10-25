@@ -13,8 +13,18 @@ sealed interface HomeScreenAction {
     class OnNextMonthTap(val yearMonth: LocalDate) : HomeScreenAction
     class OnDateTap(val date: Date) : HomeScreenAction
     class OnEventTap(val event: EventUI) : HomeScreenAction
+    data object OnAllMonthTap : HomeScreenAction
+    data object OnTodayTap : HomeScreenAction
+    data class OnFilterTap(val filter: HomeEventFilter) : HomeScreenAction
     data object OnRetryLoadingTap : HomeScreenAction
     data object OnDismissTimeoutDialog : HomeScreenAction
+}
+
+enum class HomeEventFilter {
+    ALL,
+    SQUAD_EVENTS,
+    MY_MATCHES,
+    CONFIRMED,
 }
 
 data class HomeScreenUI(
@@ -22,6 +32,9 @@ data class HomeScreenUI(
     val calendarUI: CalendarUI,
     val gameEventsOnDate: List<EventUI> = emptyList(),
     val isCreateEventButtonVisible: Boolean = true,
+    val activeFilter: HomeEventFilter = HomeEventFilter.ALL,
+    val isTodaySelected: Boolean = false,
+    val todayDate: LocalDate = java.time.LocalDate.now().run { LocalDate(year, monthValue, dayOfMonth) },
 )
 
 data class CalendarUI(

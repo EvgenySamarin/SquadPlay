@@ -62,6 +62,11 @@
     <string name="no_squad_create_event_hint">Ready to squad up? Create or join a gaming squad to start scheduling game sessions!</string>
     <string name="loading_timeout_title">Connection Timeout</string>
     <string name="loading_timeout_message">Data loading took longer than expected. Please check your network connection and try again.</string>
+    <string name="filter_all_month">All Month</string>
+    <string name="filter_today_format">Today • %1$s</string>
+    <string name="filter_squad_events">Squad Events</string>
+    <string name="filter_my_matches">My Matches</string>
+    <string name="filter_confirmed">Confirmed</string>
     <!-- endregion -->
 
     <!-- region profile screen -->
