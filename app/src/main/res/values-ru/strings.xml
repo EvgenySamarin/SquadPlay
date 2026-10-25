@@ -61,6 +61,7 @@
     <!-- endregion -->
 
     <!-- region profile screen -->
+    <string name="profile_screen_title">Профиль</string>
     <string name="friends_list">Список друзей:</string>
     <string name="group">Группа: %s</string>
     <string name="no_groups_found">Группы не найдены</string>

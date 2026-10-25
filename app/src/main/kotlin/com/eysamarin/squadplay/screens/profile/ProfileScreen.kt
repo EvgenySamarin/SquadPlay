@@ -1,11 +1,13 @@
 package com.eysamarin.squadplay.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -24,7 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -37,9 +42,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.eysamarin.squadplay.R
@@ -66,7 +71,7 @@ import com.eysamarin.squadplay.ui.theme.adaptiveLabelByHeight
 import com.eysamarin.squadplay.ui.theme.adaptiveTitleByHeight
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProfileScreen(
     state: UiState<ProfileScreenUI>,
@@ -82,8 +87,14 @@ fun ProfileScreen(
     Scaffold(
         snackbarHost = snackbarHost,
         topBar = {
-            TopAppBar(
-                title = {},
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.profile_screen_title),
+                        style = adaptiveTitleByHeight(windowSize),
+                        color = DesignSystemTheme.colorScheme.onSurface,
+                    )
+                },
                 navigationIcon = {
                     IconButton(
                         onClick = { onAction(ProfileScreenAction.OnBackButtonTap) }
@@ -91,6 +102,7 @@ fun ProfileScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_back_24),
                             contentDescription = stringResource(R.string.content_description_back),
+                            tint = DesignSystemTheme.colorScheme.onSurface,
                         )
                     }
                 },
@@ -102,9 +114,13 @@ fun ProfileScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_exit_to_app_24),
                             contentDescription = stringResource(R.string.content_description_log_out),
+                            tint = DesignSystemTheme.colorScheme.primary,
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = DesignSystemTheme.colorScheme.surface,
+                ),
             )
         },
         containerColor = DesignSystemTheme.colorScheme.surface,
@@ -243,14 +259,20 @@ private fun ProfileScreenMediumLayout(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(top = 16.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .clip(DesignSystemTheme.shapes.medium)
+                .background(DesignSystemTheme.colorScheme.surfaceContainer)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, false),
+                    .weight(1f)
+                    .padding(end = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
                     text = state.data.user.username,
@@ -260,15 +282,16 @@ private fun ProfileScreenMediumLayout(
                 state.data.user.email?.let {
                     Text(
                         text = it,
-                        style = adaptiveTitleByHeight(windowSize),
-                        color = DesignSystemTheme.colorScheme.onSurface
+                        style = adaptiveBodyByHeight(windowSize),
+                        color = DesignSystemTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 val nickname = state.data.user.nickname?.takeIf { it.isNotBlank() }
                     ?: stringResource(R.string.default_nickname)
                 Text(
+                    modifier = Modifier.padding(top = 4.dp),
                     text = "@$nickname",
-                    style = adaptiveBodyByHeight(windowSize),
+                    style = adaptiveLabelByHeight(windowSize),
                     color = DesignSystemTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -280,28 +303,30 @@ private fun ProfileScreenMediumLayout(
                 imageUrl = state.data.user.photoUrl,
             )
         }
-        HorizontalDivider()
+        HorizontalDivider(color = DesignSystemTheme.colorScheme.outlineVariant)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = { onAction(ProfileScreenAction.OnCreateNewGroupTap) }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_group_add_24),
-                    contentDescription = stringResource(R.string.content_description_create_new_group),
-                    tint = DesignSystemTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = { onAction(ProfileScreenAction.OnSettingsTap) }){
-                Icon(
-                    painter = painterResource(R.drawable.ic_settings_24),
-                    contentDescription = stringResource(R.string.content_description_settings),
-                    tint = DesignSystemTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ProfileActionChipButton(
+                iconPainter = painterResource(R.drawable.ic_group_add_24),
+                iconTint = DesignSystemTheme.colorScheme.primary,
+                text = stringResource(R.string.create_new_group_title),
+                windowSize = windowSize,
+                onClick = { onAction(ProfileScreenAction.OnCreateNewGroupTap) },
+            )
+            ProfileActionChipButton(
+                iconPainter = painterResource(R.drawable.ic_settings_24),
+                iconTint = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                text = stringResource(R.string.content_description_settings),
+                windowSize = windowSize,
+                onClick = { onAction(ProfileScreenAction.OnSettingsTap) },
+            )
         }
 
         GroupsList(
+            modifier = Modifier.weight(1f),
             groupSections = state.data.groupSections,
             currentUserId = state.data.user.uid,
             windowSize = windowSize,
@@ -314,7 +339,45 @@ private fun ProfileScreenMediumLayout(
 }
 
 @Composable
+private fun ProfileActionChipButton(
+    iconPainter: Painter,
+    iconTint: Color,
+    text: String,
+    windowSize: WindowSizeClass,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(12.dp)
+    Row(
+        modifier = Modifier
+            .clip(shape)
+            .background(DesignSystemTheme.colorScheme.surfaceContainerHigh)
+            .border(
+                width = 1.dp,
+                color = DesignSystemTheme.colorScheme.outlineVariant,
+                shape = shape,
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            modifier = Modifier.size(18.dp),
+            painter = iconPainter,
+            contentDescription = text,
+            tint = iconTint,
+        )
+        Text(
+            text = text,
+            style = adaptiveLabelByHeight(windowSize),
+            color = DesignSystemTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+@Composable
 private fun GroupsList(
+    modifier: Modifier = Modifier,
     groupSections: List<UserGroupSection>,
     currentUserId: String,
     windowSize: WindowSizeClass,
@@ -324,49 +387,85 @@ private fun GroupsList(
     onLeaveGroup: (UserGroupSection) -> Unit,
 ) {
     if (groupSections.isEmpty()) {
-        EmptyContent(windowSize, modifier = Modifier.fillMaxSize())
+        EmptyContent(windowSize, modifier = modifier.fillMaxSize())
         return
     }
     LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        groupSections.forEach { section ->
-            item(key = section.groupId) {
-                GroupHeader(
-                    section = section,
-                    currentUserId = currentUserId,
-                    windowSize = windowSize,
-                    onEditTap = { onEditGroup(section) },
-                    onShareTap = { onAction(ProfileScreenAction.OnCreateInviteLinkTap(section.groupId)) },
-                    onDeleteTap = { onDeleteGroup(section) },
-                    onLeaveTap = { onLeaveGroup(section) },
-                )
-            }
-            if (section.members.isEmpty()) {
-                item(key = "${section.groupId}_empty") {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 16.dp, bottom = 8.dp),
-                        text = stringResource(R.string.no_group_members),
-                        style = adaptiveLabelByHeight(windowSize),
-                        color = DesignSystemTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            } else {
-                items(
-                    items = section.members,
-                    key = { member -> "${section.groupId}_${member.uid}" }
-                ) { member ->
+        items(
+            items = groupSections,
+            key = { section -> section.groupId }
+        ) { section ->
+            GroupSectionCard(
+                section = section,
+                currentUserId = currentUserId,
+                windowSize = windowSize,
+                onEditTap = { onEditGroup(section) },
+                onShareTap = { onAction(ProfileScreenAction.OnCreateInviteLinkTap(section.groupId)) },
+                onDeleteTap = { onDeleteGroup(section) },
+                onLeaveTap = { onLeaveGroup(section) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun GroupSectionCard(
+    section: UserGroupSection,
+    currentUserId: String,
+    windowSize: WindowSizeClass,
+    onEditTap: () -> Unit,
+    onShareTap: () -> Unit,
+    onDeleteTap: () -> Unit,
+    onLeaveTap: () -> Unit,
+) {
+    val cardShape = DesignSystemTheme.shapes.medium
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(cardShape)
+            .background(DesignSystemTheme.colorScheme.surfaceContainer)
+            .border(
+                width = 1.dp,
+                color = DesignSystemTheme.colorScheme.outlineVariant,
+                shape = cardShape,
+            )
+            .padding(16.dp),
+    ) {
+        GroupHeader(
+            section = section,
+            currentUserId = currentUserId,
+            windowSize = windowSize,
+            onEditTap = onEditTap,
+            onShareTap = onShareTap,
+            onDeleteTap = onDeleteTap,
+            onLeaveTap = onLeaveTap,
+        )
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 12.dp),
+            color = DesignSystemTheme.colorScheme.outlineVariant,
+        )
+        if (section.members.isEmpty()) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.no_group_members),
+                style = adaptiveLabelByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                section.members.forEach { member ->
                     MemberRow(
                         member = member,
                         windowSize = windowSize,
                     )
                 }
-            }
-            item(key = "${section.groupId}_divider") {
-                HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
             }
         }
     }
@@ -385,48 +484,90 @@ private fun GroupHeader(
     val isOwner = section.ownerId.isNullOrEmpty() || section.ownerId == currentUserId
     val canLeave = !section.ownerId.isNullOrEmpty() && section.ownerId != currentUserId
 
-    Column(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = section.title,
-            textAlign = TextAlign.Start,
-            style = adaptiveHeadlineByHeight(windowSize),
-            color = DesignSystemTheme.colorScheme.onSurface
-        )
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = section.title,
+                style = adaptiveTitleByHeight(windowSize),
+                color = DesignSystemTheme.colorScheme.onSurface,
+            )
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(DesignSystemTheme.colorScheme.surfaceContainerHighest)
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = section.members.size.toString(),
+                    style = adaptiveLabelByHeight(windowSize),
+                    color = DesignSystemTheme.colorScheme.secondary,
+                )
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (isOwner) {
-                DSButton(
-                    iconPainter = painterResource(R.drawable.ic_edit_24),
-                    variant = ButtonStyle.Text,
-                    onTap = onEditTap
+                IconButton(
+                    modifier = Modifier.size(36.dp),
+                    onClick = onEditTap,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(R.drawable.ic_edit_24),
+                        contentDescription = stringResource(R.string.content_description_edit_group),
+                        tint = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            IconButton(
+                modifier = Modifier.size(36.dp),
+                onClick = onShareTap,
+            ) {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    painter = painterResource(R.drawable.ic_share_24),
+                    contentDescription = stringResource(R.string.content_description_share_invite),
+                    tint = DesignSystemTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            DSButton(
-                iconPainter = painterResource(R.drawable.ic_share_24),
-                variant = ButtonStyle.Text,
-                onTap = onShareTap
-            )
             if (isOwner) {
-                DSButton(
-                    iconPainter = painterResource(R.drawable.ic_delete_24),
-                    variant = ButtonStyle.Text,
-                    onTap = onDeleteTap
-                )
+                IconButton(
+                    modifier = Modifier.size(36.dp),
+                    onClick = onDeleteTap,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(R.drawable.ic_delete_24),
+                        contentDescription = stringResource(R.string.content_description_delete),
+                        tint = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             if (canLeave) {
-                DSButton(
-                    iconPainter = painterResource(R.drawable.ic_door_open_24),
-                    variant = ButtonStyle.Text,
-                    onTap = onLeaveTap
-                )
+                IconButton(
+                    modifier = Modifier.size(36.dp),
+                    onClick = onLeaveTap,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(R.drawable.ic_door_open_24),
+                        contentDescription = stringResource(R.string.content_description_leave_group),
+                        tint = DesignSystemTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
@@ -437,37 +578,49 @@ private fun MemberRow(
     member: Friend,
     windowSize: WindowSizeClass,
 ) {
+    val avatarShape = SquircleShape(cornerSmoothing = CornerSmoothing.High)
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (member.photoUrl != null) {
-            AsyncImage(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
-                model = member.photoUrl,
-                contentDescription = null,
-            )
-        } else {
-            Icon(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(shape = SquircleShape(cornerSmoothing = CornerSmoothing.High)),
-                painter = painterResource(R.drawable.default_avatar),
-                contentDescription = null,
-                tint = Color.Unspecified
-            )
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(shape = avatarShape)
+                .background(DesignSystemTheme.colorScheme.surfaceContainerHigh)
+                .border(
+                    width = 1.dp,
+                    color = DesignSystemTheme.colorScheme.outlineVariant,
+                    shape = avatarShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (member.photoUrl != null) {
+                AsyncImage(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape = avatarShape),
+                    model = member.photoUrl,
+                    contentDescription = null,
+                )
+            } else {
+                Icon(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape = avatarShape),
+                    painter = painterResource(R.drawable.default_avatar),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                )
+            }
         }
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = member.nickname ?: member.username,
                 style = adaptiveTitleByHeight(windowSize),
-                color = DesignSystemTheme.colorScheme.onSurface
+                color = DesignSystemTheme.colorScheme.onSurface,
             )
         }
     }

@@ -63,6 +63,7 @@
     <!-- endregion -->
 
     <!-- region profile screen -->
+    <string name="profile_screen_title">Profile</string>
     <string name="friends_list">Friends list:</string>
     <string name="group">Group: %s</string>
     <string name="no_groups_found">No groups found</string>
