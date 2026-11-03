@@ -6,7 +6,7 @@ android-minSdk = "28"
 #noinspection UnusedVersionCatalogEntry
 android-targetSdk = "37"
 
-agp = "9.4.1"
+agp = "9.5.0"
 kotlin = "2.4.21"
 kotlinxSerialization = "1.12.0"
 orgJetbrainsKotlinxCoroutinesCore = "1.11.0"
@@ -31,10 +31,10 @@ ioCoilKtCoil3Compose = "3.6.3"
 ioCoilKtCoil3NetworkOkHttp = "3.6.3"
 kotlinxDatetime = "0.8.0"
 googleAndroidGmsOssLicenses = "0.13.0"
-comGoogleAndroidGmsOssLicenses = "17.5.2"
+comGoogleAndroidGmsOssLicenses = "17.5.3"
 timber = "5.0.1"
-sentry = "6.24.0"
-ioSentryAndroid = "8.61.1"
+sentry = "6.25.0"
+ioSentryAndroid = "8.62.0"
 playAppUpdate = "2.1.0"
 
 [libraries]
