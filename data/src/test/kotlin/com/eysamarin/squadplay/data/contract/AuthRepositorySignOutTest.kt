@@ -54,6 +54,7 @@ class AuthRepositorySignOutTest {
             override suspend fun signInWithGoogle(): User? = null
             override suspend fun signInWithEmailPassword(email: String, password: String): UiState<User> = UiState.Empty
             override suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User> = UiState.Empty
+            override suspend fun resetPassword(email: String): UiState<Boolean> = UiState.Empty
             override suspend fun signOut(): Boolean {
                 executionOrder.add("firebaseAuthSignOut")
                 return true

@@ -156,6 +156,7 @@ class LogoutLoadingTest {
         override suspend fun signInWithGoogle(): Boolean = true
         override suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean> = UiState.Normal(true)
         override suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean> = UiState.Normal(true)
+        override suspend fun resetPassword(email: String): UiState<Boolean> = UiState.Normal(true)
         override suspend fun signOut(): Boolean {
             return signOutDeferred?.await() ?: true
         }

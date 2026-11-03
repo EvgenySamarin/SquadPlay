@@ -176,6 +176,12 @@ private fun EmailPasswordSignIn(
             text = stringResource(R.string.sign_up),
             onTap = { onAction(AuthScreenAction.OnSignUpTap) },
         )
+        DSButton(
+            modifier = Modifier.fillMaxWidth(),
+            variant = ButtonStyle.Text,
+            text = stringResource(R.string.forgot_password),
+            onTap = { onAction(AuthScreenAction.OnForgotPasswordTap) },
+        )
         GoogleButton(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.sign_in_with_google),

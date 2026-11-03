@@ -51,6 +51,10 @@ class AuthRepositoryImpl(
         password: String,
     ): UiState<User> = firebaseAuthManager.signInWithEmailPassword(email, password)
 
+    override suspend fun resetPassword(
+        email: String,
+    ): UiState<Boolean> = firebaseAuthManager.resetPassword(email)
+
     override suspend fun signOut(): Boolean {
         firestoreDataSource.clearListeners()
         return firebaseAuthManager.signOut()

@@ -39,6 +39,8 @@ import com.eysamarin.squadplay.screens.event.EventDetailsScreen
 import com.eysamarin.squadplay.screens.event.EventDetailsScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreen
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
+import com.eysamarin.squadplay.screens.forgotpassword.ForgotPasswordScreen
+import com.eysamarin.squadplay.screens.forgotpassword.ForgotPasswordScreenViewModel
 import com.eysamarin.squadplay.screens.main.ConfirmationDialog
 import com.eysamarin.squadplay.screens.main.HomeScreen
 import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
@@ -155,6 +157,15 @@ fun SquadPlayNavigation(
                 val viewModel: RegistrationScreenViewModel = koinViewModel()
 
                 RegistrationScreen(
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                    windowSize = windowSize,
+                    onAction = viewModel::onAction,
+                )
+            }
+            entry<Destination.ForgotPasswordScreen> {
+                val viewModel: ForgotPasswordScreenViewModel = koinViewModel()
+
+                ForgotPasswordScreen(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     windowSize = windowSize,
                     onAction = viewModel::onAction,

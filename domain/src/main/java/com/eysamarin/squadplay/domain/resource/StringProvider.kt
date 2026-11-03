@@ -14,6 +14,8 @@ interface StringProvider {
     val eventSaveFailed: String
     val joinedSquad: String
     val joinSquadFailed: String
+    val passwordResetEmailSent: String
+        get() = "Password reset email has been sent"
 }
 
 class StringProviderImpl(
@@ -32,4 +34,5 @@ class StringProviderImpl(
     override val eventSaveFailed = stringRepository.eventSaveFailed
     override val joinedSquad = stringRepository.joinedSquad
     override val joinSquadFailed = stringRepository.joinSquadFailed
+    override val passwordResetEmailSent = stringRepository.passwordResetEmailSent
 }

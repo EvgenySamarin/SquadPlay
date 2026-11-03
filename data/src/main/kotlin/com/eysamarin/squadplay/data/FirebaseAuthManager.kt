@@ -31,6 +31,7 @@ interface FirebaseAuthManager {
     suspend fun signInWithGoogle(): User?
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
+    suspend fun resetPassword(email: String): UiState<Boolean>
     suspend fun signOut(): Boolean
     fun getUserUid(): String?
 
@@ -121,6 +122,26 @@ class FirebaseAuthManagerImpl(
                 UiState.Error("Security verification failed")
             } else {
                 logger.w(tag = "Auth", throwable = exception) { "signInWithEmailPassword:failure" }
+                UiState.Error("Unexpected exception occurred")
+            }
+        }
+    }
+
+    override suspend fun resetPassword(email: String): UiState<Boolean> {
+        return try {
+            firebaseAuth.sendPasswordResetEmail(email).await()
+            logger.d(tag = "Auth") { "resetPassword:success" }
+            UiState.Normal(true)
+        } catch (exception: FirebaseAuthInvalidCredentialsException) {
+            logger.w(tag = "Auth", throwable = exception) { "resetPassword:failure - invalid email" }
+            UiState.Error(exception.message ?: "Invalid email address")
+        } catch (exception: Exception) {
+            if (exception.isAppCheckAttestationFailure()) {
+                logger.w(tag = "Auth", throwable = exception) { "App Check attestation failed during resetPassword: ${exception.message}" }
+                securityLockoutManager?.triggerLockout()
+                UiState.Error("Security verification failed")
+            } else {
+                logger.w(tag = "Auth", throwable = exception) { "resetPassword:failure" }
                 UiState.Error("Unexpected exception occurred")
             }
         }

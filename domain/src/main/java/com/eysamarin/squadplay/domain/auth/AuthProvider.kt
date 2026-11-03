@@ -12,6 +12,7 @@ interface AuthProvider {
     suspend fun signInWithGoogle(): Boolean
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<Boolean>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<Boolean>
+    suspend fun resetPassword(email: String): UiState<Boolean>
     suspend fun signOut(): Boolean
     fun getCurrentUserIdFlow(): Flow<String?>
 
@@ -42,6 +43,10 @@ class AuthProviderImpl(
     ): UiState<Boolean> = authRepository
         .signInWithEmailPassword(email, password)
         .suspendMap { it.handleSignIn() }
+
+    override suspend fun resetPassword(
+        email: String,
+    ): UiState<Boolean> = authRepository.resetPassword(email)
 
     override suspend fun signInWithGoogle(): Boolean = authRepository.signInWithGoogle()
             ?.handleSignIn() == true

@@ -9,6 +9,7 @@ interface AuthRepository {
     suspend fun signInWithGoogle(): User?
     suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User>
     suspend fun signInWithEmailPassword(email: String, password: String): UiState<User>
+    suspend fun resetPassword(email: String): UiState<Boolean>
     suspend fun signOut(): Boolean
     fun getCurrentUserId(): String?
     fun getCurrentUserIdFlow(): Flow<String?>
