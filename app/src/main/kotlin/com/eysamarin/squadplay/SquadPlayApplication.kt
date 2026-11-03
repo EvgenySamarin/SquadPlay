@@ -50,6 +50,7 @@ import com.eysamarin.squadplay.navigation.Navigator
 import com.eysamarin.squadplay.screens.auth.AuthScreenViewModel
 import com.eysamarin.squadplay.screens.event.EventDetailsScreenViewModel
 import com.eysamarin.squadplay.screens.event.NewEventScreenViewModel
+import com.eysamarin.squadplay.screens.forgotpassword.ForgotPasswordScreenViewModel
 import com.eysamarin.squadplay.screens.main.HomeScreenViewModel
 import com.eysamarin.squadplay.screens.profile.ProfileScreenViewModel
 import com.eysamarin.squadplay.screens.registration.RegistrationScreenViewModel
@@ -196,6 +197,7 @@ class SquadPlayApplication : Application() {
         viewModelOf(::EventDetailsScreenViewModel)
         viewModelOf(::AuthScreenViewModel)
         viewModelOf(::RegistrationScreenViewModel)
+        viewModelOf(::ForgotPasswordScreenViewModel)
         viewModelOf(::ProfileScreenViewModel)
         viewModelOf(::SettingsScreenViewModel)
         //endregion

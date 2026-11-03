@@ -30,6 +30,14 @@
     <string name="sign_in">Войти</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="sign_in_with_google">Войти с помощью Google</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <!-- endregion -->
+
+    <!-- region forgot password screen -->
+    <string name="forgot_password_screen_title">Восстановление пароля</string>
+    <string name="forgot_password_description">Введите ваш адрес электронной почты, и мы отправим ссылку для сброса пароля.</string>
+    <string name="send_reset_link">Отправить ссылку</string>
+    <string name="password_reset_email_sent">Письмо для сброса пароля отправлено</string>
     <!-- endregion -->
 
     <!-- region registration screen -->

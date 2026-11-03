@@ -58,11 +58,16 @@ class AuthScreenViewModel(
         navigator.navigate(Destination.RegistrationScreen)
     }
 
+    fun onForgotPasswordTap() = viewModelScope.launch {
+        navigator.navigate(Destination.ForgotPasswordScreen)
+    }
+
     fun onAction(action: AuthScreenAction) {
         when (action) {
             AuthScreenAction.OnSignInWithGoogleTap -> onSignInWithGoogleTap()
             is AuthScreenAction.OnSignInTap -> onSignInTap(action.email, action.password)
             AuthScreenAction.OnSignUpTap -> onSignUpTap()
+            AuthScreenAction.OnForgotPasswordTap -> onForgotPasswordTap()
         }
     }
 }

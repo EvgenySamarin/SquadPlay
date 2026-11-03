@@ -27,4 +27,5 @@ class StringRepositoryImpl(
     override val joinSquadFailed: String = appContext.getString(R.string.join_squad_failed)
     override val updateDownloadedMessage: String = appContext.getString(R.string.update_downloaded_message)
     override val updateRestartAction: String = appContext.getString(R.string.update_restart_action)
+    override val passwordResetEmailSent: String = appContext.getString(R.string.password_reset_email_sent)
 }

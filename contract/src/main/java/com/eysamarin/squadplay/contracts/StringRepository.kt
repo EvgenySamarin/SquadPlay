@@ -17,4 +17,6 @@ interface StringRepository {
         get() = "An update has been downloaded."
     val updateRestartAction: String
         get() = "Restart"
+    val passwordResetEmailSent: String
+        get() = "Password reset email has been sent"
 }

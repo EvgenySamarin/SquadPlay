@@ -56,6 +56,10 @@ sealed interface AnalyticsEvent {
         override val eventName: String = "sign_out"
     }
 
+    data object PasswordResetRequested : AnalyticsEvent {
+        override val eventName: String = "password_reset_requested"
+    }
+
     data object CreateEventClicked : AnalyticsEvent {
         override val eventName: String = "create_event_clicked"
     }

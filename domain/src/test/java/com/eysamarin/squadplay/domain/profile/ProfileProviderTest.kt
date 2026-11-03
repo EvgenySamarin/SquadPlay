@@ -23,6 +23,7 @@ class ProfileProviderTest {
         override suspend fun signInWithGoogle(): User? = null
         override suspend fun signUpWithEmailPassword(email: String, password: String): UiState<User> = UiState.Empty
         override suspend fun signInWithEmailPassword(email: String, password: String): UiState<User> = UiState.Empty
+        override suspend fun resetPassword(email: String): UiState<Boolean> = UiState.Empty
         override suspend fun signOut(): Boolean = true
         override fun getCurrentUserId(): String? = null
         override fun getCurrentUserIdFlow(): Flow<String?> = userIdFlow

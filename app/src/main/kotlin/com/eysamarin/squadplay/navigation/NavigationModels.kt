@@ -33,6 +33,12 @@ sealed interface Destination : NavKey {
     }
 
     @Serializable
+    data object ForgotPasswordScreen : Destination {
+        const val SCREEN_NAME = "ForgotPasswordScreen"
+        override val screenName: String get() = SCREEN_NAME
+    }
+
+    @Serializable
     data object HomeGraph : Destination
 
     @Serializable
